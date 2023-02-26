@@ -14,6 +14,7 @@ defmodule Flipdot.ClockGenerator do
   @impl true
   def init(state) do
     font = FontRenderer.parse_font(@font_file)
+
     {:ok, Map.put(state, :font, font)}
   end
 
@@ -31,7 +32,7 @@ defmodule Flipdot.ClockGenerator do
   def handle_call(:start, _, state) do
     {:ok, timer} = :timer.send_interval(250, self(), :tick)
 
-    {:reply, :ok, state  |> Map.put(:timer, timer) }
+    {:reply, :ok, Map.put(state, :timer, timer)}
   end
 
   @impl true
@@ -51,14 +52,18 @@ defmodule Flipdot.ClockGenerator do
   def handle_info(:tick, state) do
     bitmap = DisplayState.get()
 
-    {w,h} = Bitmap.dimensions(bitmap)
-
-    timestring =
+    time_string =
       Calendar.strftime(NaiveDateTime.utc_now(), "%c", preferred_datetime: "%H:%M:%S Uhr")
 
-      Bitmap.new(w,h)
-      |> FontRenderer.render_text(3, 2, state.font, timestring)
-      |> DisplayState.set()
-      {:noreply, state}
+    FontRenderer.render_text(
+      Bitmap.new(bitmap.meta.width, bitmap.meta.height),
+      4,
+      2,
+      state.font,
+      time_string
+    )
+    |> DisplayState.set()
+
+    {:noreply, state}
   end
 end
