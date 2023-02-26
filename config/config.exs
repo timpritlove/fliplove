@@ -27,7 +27,12 @@ config :flipdot, FlipdotWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :flipdot, Flipdot.Mailer, adapter: Swoosh.Adapters.Local
 
-config :flipdot, :display, width: 115, height: 16
+config :flipdot, :display,
+width: 115,
+height: 16,
+host: ["darthy.local"]
+
+
 
 # Configure esbuild (the version is required)
 config :esbuild,

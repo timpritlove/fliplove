@@ -23,7 +23,8 @@ defmodule Flipdot.Application do
          Application.fetch_env!(:flipdot, :display)[:width],
          Application.fetch_env!(:flipdot, :display)[:height]
        )},
-      Flipdot.ClockGenerator
+      Flipdot.ClockGenerator,
+      Flipdot.DisplayPusher,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
