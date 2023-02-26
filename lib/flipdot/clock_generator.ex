@@ -30,16 +30,16 @@ defmodule Flipdot.ClockGenerator do
 
   @impl true
   def handle_call(:start, _, state) do
-    timer = :timer.send_interval(250, self(), :tick)
+    {:ok, timer} = :timer.send_interval(250, self(), :tick)
 
-    {:reply, :ok, %{state | timer: timer}}
+    {:reply, :ok, Map.put(state, :timer, timer)}
   end
 
   @impl true
   def handle_call(:stop, _, state) do
     state =
       if Map.has_key?(state, :timer) do
-        :timer.cancel(state.timer)
+        {:ok, :cancel} = :timer.cancel(state.timer)
         Map.delete(state, :timer)
       else
         state
@@ -48,10 +48,22 @@ defmodule Flipdot.ClockGenerator do
     {:reply, :ok, state}
   end
 
+  @impl true
   def handle_info(:tick, state) do
-    {width, height} = DisplayState.get() |> Bitmap.dimensions()
+    bitmap = DisplayState.get()
 
-    time =
-      Calendar.strftime(NaiveDateTime.utc_now(), "%c", preferred_datetime: "%d.%m.%Y %H:%M:%S Uhr")
+    time_string =
+      Calendar.strftime(NaiveDateTime.utc_now(), "%c", preferred_datetime: "%H:%M:%S Uhr")
+
+    FontRenderer.render_text(
+      Bitmap.new(bitmap.meta.width, bitmap.meta.height),
+      4,
+      2,
+      state.font,
+      time_string
+    )
+    |> DisplayState.set()
+
+    {:noreply, state}
   end
 end
