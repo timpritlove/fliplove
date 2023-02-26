@@ -6,7 +6,7 @@ defmodule FlipdotWeb.FlipdotLive do
   def mount(_params, _session, socket) do
     if connected?(socket), do: :timer.send_interval(250, self(), :tick)
 
-    Phoenix.PubSub.subscribe(Flipdot.PubSub, "display")
+    Phoenix.PubSub.subscribe(Flipdot.PubSub, DisplayState.topic())
 
     socket =
       socket
