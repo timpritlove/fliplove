@@ -15,7 +15,7 @@ defmodule Flipdot.ClockGenerator do
   def init(state) do
     font = FontRenderer.parse_font(@font_file)
 
-    {:ok, %{state | font: font}}
+    {:ok, Map.put(state, :font, font)}
   end
 
   def start_generator() do
