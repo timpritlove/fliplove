@@ -1,0 +1,28 @@
+<div class="p-4 bg-gray-700 mt-0 ml-0">
+  <%= for y <- 15..0 do %>
+    <div class="flex">
+      <%= for x <- 0..114 do %>
+        <div
+          phx-click="toggle"
+          phx-value-x={x}
+          phx-value-y={y}
+          class={
+            ["shrink-0", "w-[8px]", "h-[8px]", "flex", "items-center", "justify-around"] ++
+              [
+                if(Map.get(@bitmap.matrix, {x, y}) == 1,
+                  do: "bg-[url('/images/flipdot/flipdot-pixel-on-8x8.png')]",
+                  else: "bg-[url('/images/flipdot/flipdot-pixel-off-8x8.png')]"
+                )
+              ]
+          }
+        >
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+<div class="w-10/12 bg-black m-4 p-8">
+  <div class="font-mono font-bold text-5xl text-green-500 text-center align-middle">
+    <%= @clock %>
+  </div>
+</div>
