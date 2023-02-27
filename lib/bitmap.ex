@@ -436,16 +436,22 @@ defmodule Bitmap do
 
   Bounding box information is ignored.
   """
-  def to_text(bitmap, on, off) do
+  def to_text(bitmap, options \\ []) do
     width = bitmap.meta.width
     height = bitmap.meta.height
+
+    options =
+      Keyword.validate!(options,
+        on: ?X,
+        off: ?\s
+      )
 
     # traverse pixels left to right, top to bottom
     for y <- (height - 1)..0 do
       for x <- 0..(width - 1) do
         case Map.get(bitmap.matrix, {x, y}, 0) do
-          0 -> off
-          _ -> on
+          0 -> options[:off]
+          _ -> options[:on]
         end
       end
       |> Enum.concat('\n')
