@@ -48,6 +48,23 @@ defmodule Bitmap do
   end
 
   @doc """
+  Clip image to bounding box
+  """
+  def clip(bitmap) do
+    {min_x, min_y, max_x, max_y} = bbox(bitmap)
+
+    matrix =
+      for x <- min_x..max_x, y <- min_y..max_y, into: %{} do
+        {{x - min_x, y - min_y}, Map.get(bitmap.matrix, {x, y}, 0)}
+      end
+
+    %Bitmap{
+      meta: %{width: max_x - min_x + 1, height: max_y - min_y + 1},
+      matrix: matrix
+    }
+  end
+
+  @doc """
   Translate bitmap to new position.
   """
   def translate(bitmap, dx, dy) do
