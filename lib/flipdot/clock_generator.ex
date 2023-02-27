@@ -52,18 +52,25 @@ defmodule Flipdot.ClockGenerator do
   def handle_info(:tick, state) do
     bitmap = DisplayState.get()
 
-    time_string =
-      Calendar.strftime(NaiveDateTime.utc_now(), "%c", preferred_datetime: "%H:%M:%S Uhr")
-
-    FontRenderer.render_text(
-      Bitmap.new(bitmap.meta.width, bitmap.meta.height),
-      4,
-      2,
-      state.font,
-      time_string
-    )
-    |> DisplayState.set()
+    render_time(bitmap, state.font) |> DisplayState.set()
 
     {:noreply, state}
+  end
+
+  def render_time(bitmap, font) do
+    time_string =
+      Calendar.strftime(NaiveDateTime.utc_now(), "%c", preferred_datetime: "%H:%M Uhr")
+
+    rendered_text =
+      Bitmap.new(1000, 1000)
+      |> FontRenderer.render_text(10, 10, font, time_string)
+      |> Bitmap.clip()
+
+    Bitmap.new(bitmap.meta.width, bitmap.meta.height)
+    |> Bitmap.overlay(
+      rendered_text,
+      cursor_x: div(bitmap.meta.width - rendered_text.meta.width, 2),
+      cursor_y: div(bitmap.meta.height - rendered_text.meta.height, 2)
+    )
   end
 end
