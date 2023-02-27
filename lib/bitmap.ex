@@ -47,6 +47,29 @@ defmodule Bitmap do
     {min_x, min_y, max_x, max_y}
   end
 
+  @doc """
+  Translate bitmap to new position.
+  """
+  def translate(bitmap, dx, dy) do
+    matrix =
+      for x <- 0..(bitmap.meta.width - 1),
+          y <- 0..(bitmap.meta.height - 1),
+          pos_x = x + dx,
+          pos_y = y + dy,
+          pos_x >= 0,
+          pos_y >= 0,
+          pos_x < bitmap.meta.width,
+          pos_y < bitmap.meta.height,
+          into: %{} do
+        {{pos_x, pos_y}, Map.get(bitmap.matrix, {x, y}, 0)}
+      end
+
+    %Bitmap{
+      meta: bitmap.meta,
+      matrix: matrix
+    }
+  end
+
   def new(width, height) do
     %Bitmap{
       meta: %{height: height, width: width},
