@@ -27,6 +27,26 @@ defmodule Bitmap do
     end
   end
 
+  @doc """
+  Determine the effective bounding box of the bitmap
+  """
+
+  def bbox(bitmap) do
+    pixels = Map.filter(bitmap.matrix, fn {_, value} -> value == 1 end) |> Map.keys()
+
+    {min_x, min_y} =
+      Enum.reduce(pixels, fn {x, y}, {min_x, min_y} ->
+        {min(x, min_x), min(y, min_y)}
+      end)
+
+    {max_x, max_y} =
+      Enum.reduce(pixels, fn {x, y}, {max_x, max_y} ->
+        {max(x, max_x), max(y, max_y)}
+      end)
+
+    {min_x, min_y, max_x, max_y}
+  end
+
   def new(width, height) do
     %Bitmap{
       meta: %{height: height, width: width},
