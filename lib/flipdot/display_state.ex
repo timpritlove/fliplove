@@ -1,3 +1,6 @@
+# TODO
+# - change state to struct
+
 defmodule Flipdot.DisplayState do
   use Agent
 
@@ -14,7 +17,11 @@ defmodule Flipdot.DisplayState do
   end
 
   def set(bitmap) do
-    Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:display_update, bitmap})
-    Agent.update(__MODULE__, fn _ -> bitmap end)
+    old_bitmap = Agent.get(__MODULE__, & &1)
+
+    if bitmap != old_bitmap do
+      Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:display_update, bitmap})
+      Agent.update(__MODULE__, fn _ -> bitmap end)
+    end
   end
 end
