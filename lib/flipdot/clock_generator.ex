@@ -14,6 +14,7 @@ defmodule Flipdot.ClockGenerator do
   @impl true
   def init(state) do
     font = FontRenderer.parse_font(@font_file)
+    Calendar.put_time_zone_database(Tz.TimeZoneDatabase)
 
     {:ok, Map.put(state, :font, font)}
   end
@@ -58,8 +59,7 @@ defmodule Flipdot.ClockGenerator do
   end
 
   def render_time(bitmap, font) do
-    time_string =
-      Calendar.strftime(NaiveDateTime.utc_now(), "%c", preferred_datetime: "%H:%M Uhr")
+    time_string = Calendar.strftime(DateTime.utc_now(), "%c", preferred_datetime: "%H:%M Uhr")
 
     rendered_text =
       Bitmap.new(1000, 1000)
@@ -72,5 +72,6 @@ defmodule Flipdot.ClockGenerator do
       cursor_x: div(bitmap.meta.width - rendered_text.meta.width, 2),
       cursor_y: div(bitmap.meta.height - rendered_text.meta.height, 2)
     )
+    |> Bitmap.overlay(Bitmap.frame(115, 16))
   end
 end
