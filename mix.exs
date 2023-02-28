@@ -48,7 +48,8 @@ defmodule Flipdot.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:nimble_parsec, "~> 1.2.3"},
-      {:bandit, ">= 0.6.9"}
+      {:bandit, ">= 0.6.9"},
+      {:tz, "~> 0.24.0"}
     ]
   end
 

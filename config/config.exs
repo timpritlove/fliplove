@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :elixir, :time_zone_database, Tz.TimeZoneDatabase
+
 # Configures the endpoint
 config :flipdot, FlipdotWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
@@ -28,11 +30,9 @@ config :flipdot, FlipdotWeb.Endpoint,
 config :flipdot, Flipdot.Mailer, adapter: Swoosh.Adapters.Local
 
 config :flipdot, :display,
-width: 115,
-height: 16,
-host: ["darthy.local"]
-
-
+  width: 115,
+  height: 16,
+  host: ["darthy.local"]
 
 # Configure esbuild (the version is required)
 config :esbuild,
