@@ -60,7 +60,7 @@ defmodule Flipdot.ClockGenerator do
 
   def render_time(bitmap, font) do
     time_string =
-      DateTime.now("Europe/Berlin", Tz.TimeZoneDatabase)
+      DateTime.now!("Europe/Berlin", Tz.TimeZoneDatabase)
       |> Calendar.strftime("%c", preferred_datetime: "%H:%M Uhr")
 
     rendered_text =

@@ -66,6 +66,7 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def clock do
-    Calendar.strftime(NaiveDateTime.utc_now(), "%c", preferred_datetime: "%d.%m.%Y %H:%M:%S")
+    DateTime.now!("Europe/Berlin", Tz.TimeZoneDatabase)
+    |> Calendar.strftime("%c", preferred_datetime: "%d.%m.%Y %H:%M:%S")
   end
 end
