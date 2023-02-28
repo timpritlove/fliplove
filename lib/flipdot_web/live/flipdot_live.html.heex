@@ -21,14 +21,34 @@
     </div>
   <% end %>
 </div>
-<div class="w-10/12 bg-black m-4 p-8">
+<div class="mt-4">
+  <button
+    class="text-white text-4xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
+    phx-click="start-clock"
+  >
+    Start Clock
+  </button>
+  <button
+    class="text-white text-4xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
+    phx-click="stop-clock"
+  >
+    Stop Clock
+  </button>
+  <button
+    class="text-white text-4xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
+    phx-click="random"
+  >
+    Random
+  </button>
+  <button
+    class="text-white text-4xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
+    phx-click="game-of-life"
+  >
+    Game of Life
+  </button>
+</div>
+<div class="mt-20 w-10/12 bg-black m-4 p-8">
   <div class="font-mono font-bold text-5xl text-green-500 text-center align-middle">
     <%= @clock %>
   </div>
 </div>
-<button
-  class="text-white text-4xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
-  phx-click="clock"
->
-  Enable Clock
-</button>
