@@ -5,17 +5,19 @@ defmodule Flipdot.ClockGenerator do
   use GenServer
   alias Flipdot.DisplayState
 
+  defstruct font: nil, timer: nil, time_string: ""
+
   @font_file "data/fonts/x11/helvB12.bdf"
 
   def start_link(_state) do
-    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
+    GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
   @impl true
   def init(state) do
     font = FontRenderer.parse_font(@font_file)
 
-    {:ok, Map.put(state, :font, font)}
+    {:ok, %{state | font: font}}
   end
 
   def start_generator() do
@@ -32,15 +34,15 @@ defmodule Flipdot.ClockGenerator do
   def handle_call(:start, _, state) do
     {:ok, timer} = :timer.send_interval(250, self(), :tick)
 
-    {:reply, :ok, Map.put(state, :timer, timer)}
+    {:reply, :ok, %{state | timer: timer}}
   end
 
   @impl true
   def handle_call(:stop, _, state) do
     state =
-      if Map.has_key?(state, :timer) do
+      if state.timer do
         {:ok, :cancel} = :timer.cancel(state.timer)
-        Map.delete(state, :timer)
+        %{state | timer: nil}
       else
         state
       end
@@ -50,21 +52,21 @@ defmodule Flipdot.ClockGenerator do
 
   @impl true
   def handle_info(:tick, state) do
-    bitmap = DisplayState.get()
-
-    render_time(bitmap, state.font) |> DisplayState.set()
-
-    {:noreply, state}
-  end
-
-  def render_time(bitmap, font) do
     time_string =
       DateTime.now!("Europe/Berlin", Tz.TimeZoneDatabase)
       |> Calendar.strftime("%c", preferred_datetime: "%H:%M Uhr")
 
+    if time_string != state.time_string do
+      DisplayState.get() |> render_text(state.font, time_string) |> DisplayState.set()
+    end
+
+    {:noreply, %{state | time_string: time_string}}
+  end
+
+  def render_text(bitmap, font, text) do
     rendered_text =
       Bitmap.new(1000, 1000)
-      |> FontRenderer.render_text(10, 10, font, time_string)
+      |> FontRenderer.render_text(10, 10, font, text)
       |> Bitmap.clip()
 
     Bitmap.new(bitmap.meta.width, bitmap.meta.height)
