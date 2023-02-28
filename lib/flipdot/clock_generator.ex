@@ -14,7 +14,6 @@ defmodule Flipdot.ClockGenerator do
   @impl true
   def init(state) do
     font = FontRenderer.parse_font(@font_file)
-    Calendar.put_time_zone_database(Tz.TimeZoneDatabase)
 
     {:ok, Map.put(state, :font, font)}
   end
