@@ -30,8 +30,26 @@ defmodule FlipdotWeb.FlipdotLive do
      |> assign(:clock, clock())}
   end
 
-  def handle_event("clock", _params, socket) do
+  def handle_event("start-clock", _params, socket) do
     ClockGenerator.start_generator()
+
+    {:noreply, socket}
+  end
+
+  def handle_event("stop-clock", _params, socket) do
+    ClockGenerator.stop_generator()
+
+    {:noreply, socket}
+  end
+
+  def handle_event("random", _params, socket) do
+    Bitmap.random(115, 16) |> DisplayState.set()
+
+    {:noreply, socket}
+  end
+
+  def handle_event("game-of-life", _params, socket) do
+    DisplayState.get() |> Bitmap.game_of_life() |> DisplayState.set()
 
     {:noreply, socket}
   end
