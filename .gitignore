@@ -35,3 +35,4 @@ flipdot-*.tar
 npm-debug.log
 /assets/node_modules/
 
+data/keys/openweathermap.txt
