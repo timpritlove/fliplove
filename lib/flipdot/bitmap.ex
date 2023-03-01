@@ -1,4 +1,6 @@
 defmodule Bitmap do
+  require Integer
+
   defstruct meta: %{}, matrix: %{}
 
   defimpl Inspect, for: Bitmap do
@@ -55,7 +57,7 @@ defmodule Bitmap do
 
     matrix =
       for x <- min_x..max_x, y <- min_y..max_y, into: %{} do
-        {{x - min_x, y - min_y}, get_pixel(bitmap, x, y)}
+        {{x - min_x, y - min_y}, get_pixel(bitmap, {x, y})}
       end
 
     %Bitmap{
@@ -78,7 +80,7 @@ defmodule Bitmap do
           pos_x < bitmap.meta.width,
           pos_y < bitmap.meta.height,
           into: %{} do
-        {{pos_x, pos_y}, get_pixel(bitmap, x, y)}
+        {{pos_x, pos_y}, get_pixel(bitmap, {x, y})}
       end
 
     %Bitmap{
@@ -121,7 +123,7 @@ defmodule Bitmap do
 
     matrix =
       for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
-        {{x, y}, 1 - get_pixel(bitmap, x, y)}
+        {{x, y}, 1 - get_pixel(bitmap, {x, y})}
       end
 
     %Bitmap{
@@ -136,7 +138,7 @@ defmodule Bitmap do
 
     matrix =
       for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
-        {{x, y}, get_pixel(bitmap, width - 1 - x, y)}
+        {{x, y}, get_pixel(bitmap, {width - 1 - x, y})}
       end
 
     %Bitmap{
@@ -151,7 +153,7 @@ defmodule Bitmap do
 
     matrix =
       for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
-        {{x, y}, get_pixel(bitmap, x, height - 1 - y)}
+        {{x, y}, get_pixel(bitmap, {x, height - 1 - y})}
       end
 
     %Bitmap{
@@ -164,11 +166,11 @@ defmodule Bitmap do
     {bitmap.meta.width, bitmap.meta.height}
   end
 
-  def get_pixel(bitmap, x, y) do
+  def get_pixel(bitmap, {x, y}) do
     Map.get(bitmap.matrix, {x, y}, 0)
   end
 
-  def set_pixel(bitmap, x, y, value) do
+  def set_pixel(bitmap, {x, y}, value) do
     matrix = Map.put(bitmap.matrix, {x, y}, value)
 
     %Bitmap{
@@ -178,7 +180,7 @@ defmodule Bitmap do
   end
 
   def toggle_pixel(bitmap, x, y) do
-    matrix = Map.put(bitmap.matrix, {x, y}, 1 - get_pixel(bitmap, x, y))
+    matrix = set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
 
     %Bitmap{
       meta: bitmap.meta,
@@ -224,7 +226,7 @@ defmodule Bitmap do
           bg_y >= 0,
           bg_y < background.meta.height,
           into: %{} do
-        pixel = get_pixel(overlay, x, y)
+        pixel = get_pixel(overlay, {x, y})
 
         cond do
           pixel == 1 ->
@@ -234,7 +236,7 @@ defmodule Bitmap do
             {{bg_x, bg_y}, 0}
 
           pixel == 0 and not options[:opaque] ->
-            {{bg_x, bg_y}, get_pixel(background, bg_x, bg_y)}
+            {{bg_x, bg_y}, get_pixel(background, {bg_x, bg_y})}
         end
       end
 
@@ -259,7 +261,7 @@ defmodule Bitmap do
           pos_x < bitmap.meta.width,
           pos_y < bitmap.meta.height,
           into: %{} do
-        {{x, y}, get_pixel(bitmap, pos_x, pos_y)}
+        {{x, y}, get_pixel(bitmap, {pos_x, pos_y})}
       end
 
     %Bitmap{
@@ -325,12 +327,12 @@ defmodule Bitmap do
               dx < bitmap.meta.width,
               dy < bitmap.meta.height,
               not (dx == x and dy == y),
-              get_pixel(bitmap, dx, dy) == 1,
+              get_pixel(bitmap, {dx, dy}) == 1,
               reduce: 0 do
             count -> count + 1
           end
 
-        old_cell = get_pixel(bitmap, x, y)
+        old_cell = get_pixel(bitmap, {x, y})
 
         new_cell =
           cond do
@@ -448,7 +450,7 @@ defmodule Bitmap do
     # traverse pixels left to right, top to bottom
     for y <- (height - 1)..0 do
       for x <- 0..(width - 1) do
-        case get_pixel(bitmap, x, y) do
+        case get_pixel(bitmap, {x, y}) do
           0 -> options[:off]
           _ -> options[:on]
         end
@@ -479,7 +481,69 @@ defmodule Bitmap do
     # traverse pixels bottom to top, left to right
 
     for x <- 0..(width - 1), y <- 0..(height - 1), into: <<>> do
-      <<get_pixel(bitmap, x, y)::1>>
+      <<get_pixel(bitmap, {x, y})::1>>
+    end
+  end
+
+  @doc """
+  Generate a maze. Both width and height must be odd numbers
+  """
+
+  def maze(width, height) do
+    if Integer.is_even(width) or Integer.is_even(height),
+      do: raise("maze dimensions must be odd numbers")
+
+    {start_x, start_y} = {Enum.random(1..(width - 1)//2), Enum.random(1..(height - 1)//2)}
+    {entry_x, entry_y} = {0, Enum.random(1..(height - 1)//2)}
+    {exit_x, exit_y} = {width - 1, Enum.random(1..(height - 1)//2)}
+
+    Bitmap.new(width, height)
+    |> Bitmap.invert()
+    |> Bitmap.set_pixel({start_x, start_y}, 0)
+    |> maze_gen([{start_x, start_y}])
+    |> Bitmap.set_pixel({entry_x, entry_y}, 0)
+    |> Bitmap.set_pixel({exit_x, exit_y}, 0)
+  end
+
+  defp maze_gen(bitmap, []) do
+    bitmap
+  end
+
+  defp maze_gen(bitmap, visited_cells) do
+    {cur_x, cur_y} = hd(visited_cells)
+
+    unvisited_neighbors =
+      for {x, y} <- [
+            {cur_x, cur_y + 2},
+            {cur_x + 2, cur_y},
+            {cur_x, cur_y - 2},
+            {cur_x - 2, cur_y}
+          ],
+          x >= 0,
+          y >= 0,
+          x < bitmap.meta.width,
+          y < bitmap.meta.height,
+          get_pixel(bitmap, {x, y}) == 1 do
+        {x, y}
+      end
+
+    case unvisited_neighbors do
+      [] ->
+        maze_gen(bitmap, tl(visited_cells))
+
+      list ->
+        {next_x, next_y} = Enum.random(list)
+
+        {wall_x, wall_y} =
+          cond do
+            cur_x == next_x -> {cur_x, min(cur_y, next_y) + 1}
+            cur_y == next_y -> {min(cur_x, next_x) + 1, cur_y}
+          end
+
+        bitmap
+        |> Bitmap.set_pixel({wall_x, wall_y}, 0)
+        |> Bitmap.set_pixel({next_x, next_y}, 0)
+        |> maze_gen([{next_x, next_y} | visited_cells])
     end
   end
 end
