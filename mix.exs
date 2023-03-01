@@ -49,6 +49,7 @@ defmodule Flipdot.MixProject do
       {:jason, "~> 1.2"},
       {:nimble_parsec, "~> 1.2.3"},
       {:bandit, ">= 0.6.9"},
+      {:httpoison, "~> 2.0"},
       {:tz, "~> 0.24.0"}
     ]
   end
