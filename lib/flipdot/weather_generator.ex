@@ -95,7 +95,11 @@ defmodule Flipdot.WeatherGenerator do
     ]
 
     case HTTPoison.get(url, [], params: params) do
-      {:ok, %{status_code: 200, body: body}} -> Jason.decode!(body)
+      {:ok, %{status_code: 200, body: body}} ->
+        Jason.decode!(body)
+
+      {:ok, %{status_code: status_code}} ->
+        raise("OpenWeatherMap API call failed (#{status_code})")
     end
   end
 end
