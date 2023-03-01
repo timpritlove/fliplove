@@ -54,12 +54,18 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  def handle_event("maze", _params, socket) do
+    Bitmap.maze(115, 15) |> Bitmap.crop(115, 16, rel_y: :top) |> DisplayState.set()
+
+    {:noreply, socket}
+  end
+
   def handle_event("toggle", params, socket) do
     x = String.to_integer(params["x"])
     y = String.to_integer(params["y"])
 
     DisplayState.get()
-    |> Bitmap.toggle_pixel(x, y)
+    |> Bitmap.toggle_pixel({x, y})
     |> DisplayState.set()
 
     {:noreply, assign(socket, :bitmap, DisplayState.get())}

@@ -69,7 +69,7 @@ defmodule Bitmap do
   @doc """
   Translate bitmap to new position.
   """
-  def translate(bitmap, dx, dy) do
+  def translate(bitmap, {dx, dy}) do
     matrix =
       for x <- 0..(bitmap.meta.width - 1),
           y <- 0..(bitmap.meta.height - 1),
@@ -179,7 +179,7 @@ defmodule Bitmap do
     }
   end
 
-  def toggle_pixel(bitmap, x, y) do
+  def toggle_pixel(bitmap, {x, y}) do
     matrix = set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
 
     %Bitmap{
