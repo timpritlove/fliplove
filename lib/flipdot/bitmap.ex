@@ -180,12 +180,7 @@ defmodule Bitmap do
   end
 
   def toggle_pixel(bitmap, {x, y}) do
-    matrix = set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
-
-    %Bitmap{
-      meta: bitmap.meta,
-      matrix: matrix
-    }
+    set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
   end
 
   # overlay one bitmap on another
@@ -513,18 +508,18 @@ defmodule Bitmap do
     {cur_x, cur_y} = hd(visited_cells)
 
     unvisited_neighbors =
-      for {x, y} <- [
-            {cur_x, cur_y + 2},
-            {cur_x + 2, cur_y},
-            {cur_x, cur_y - 2},
-            {cur_x - 2, cur_y}
+      for {nx, ny, wx, wy, _} <- [
+            {cur_x, cur_y + 2, cur_x, cur_y + 1, :up},
+            {cur_x + 2, cur_y, cur_x + 1, cur_y, :right},
+            {cur_x, cur_y - 2, cur_x, cur_y - 1, :down},
+            {cur_x - 2, cur_y, cur_x - 1, cur_y, :left}
           ],
-          x >= 0,
-          y >= 0,
-          x < bitmap.meta.width,
-          y < bitmap.meta.height,
-          get_pixel(bitmap, {x, y}) == 1 do
-        {x, y}
+          nx >= 0,
+          ny >= 0,
+          nx < bitmap.meta.width,
+          ny < bitmap.meta.height,
+          get_pixel(bitmap, {nx, ny}) == 1 do
+        {nx, ny, wx, wy}
       end
 
     case unvisited_neighbors do
@@ -532,13 +527,7 @@ defmodule Bitmap do
         maze_gen(bitmap, tl(visited_cells))
 
       list ->
-        {next_x, next_y} = Enum.random(list)
-
-        {wall_x, wall_y} =
-          cond do
-            cur_x == next_x -> {cur_x, min(cur_y, next_y) + 1}
-            cur_y == next_y -> {min(cur_x, next_x) + 1, cur_y}
-          end
+        {next_x, next_y, wall_x, wall_y} = Enum.random(list)
 
         bitmap
         |> Bitmap.set_pixel({wall_x, wall_y}, 0)
