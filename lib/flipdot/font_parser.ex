@@ -1,6 +1,11 @@
 defmodule FontParser do
   import NimbleParsec
 
+  @moduledoc """
+  Parser for BDF font files. BDF files contain font definitions for low-resolution monochrome
+  pixel fonts.
+  """
+
   # Generic terms
 
   newline = ascii_char([?\n])

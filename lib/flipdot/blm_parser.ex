@@ -1,6 +1,12 @@
 defmodule BLMParser do
   import NimbleParsec
 
+  @moduledoc """
+  Parser for Blinkenlights Movie (BLM) files. These are typically delivered
+  in a monochrome 18x8 pixel matrix and have been used by the Blinkenlights
+  art installation in Berlin (2001).
+  """
+
   # Generic terms
 
   newline = ascii_char([?\n])

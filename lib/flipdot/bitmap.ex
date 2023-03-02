@@ -1,6 +1,16 @@
 defmodule Bitmap do
   require Integer
 
+  @moduledoc """
+  Functions for working with low-resolution monochrome  2D-bitmaps. You can
+  create, crop, transform, invert, flip and overlay bitmaps as well as read
+  and write bitmaps to and from files. Generators create mazes or apply
+  game of life and other algorithms on the bitmaps.
+
+  Bitmaps are stored in a simple matrix structure as maps with {x,y} coordinates
+  as keys. Only 0 and 1 are allowed as values (no greyscaling or color).
+  """
+
   defstruct meta: %{}, matrix: %{}
 
   defimpl Inspect, for: Bitmap do
