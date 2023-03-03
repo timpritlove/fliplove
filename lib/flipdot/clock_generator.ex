@@ -66,7 +66,7 @@ defmodule Flipdot.ClockGenerator do
   def render_text(bitmap, font, text) do
     rendered_text =
       Bitmap.new(1000, 1000)
-      |> FontRenderer.render_text(10, 10, font, text)
+      |> FontRenderer.render_text({10, 10}, font, text)
       |> Bitmap.clip()
 
     Bitmap.new(bitmap.meta.width, bitmap.meta.height)

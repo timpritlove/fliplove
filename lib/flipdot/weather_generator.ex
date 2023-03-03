@@ -8,7 +8,7 @@ defmodule Flipdot.WeatherGenerator do
 
   defstruct font: nil, timer: nil, api_key: nil, display_text: ""
 
-  @font_file "data/fonts/x11/helvB12.bdf"
+  @font_file "data/fonts/x11/helvB10.bdf"
   @latitude 52.5363101
   @longitude 13.4273403
   @api_key "data/keys/openweathermap.txt"
@@ -33,11 +33,15 @@ defmodule Flipdot.WeatherGenerator do
     GenServer.call(__MODULE__, :stop)
   end
 
+  def update_weather do
+    GenServer.call(__MODULE__, :update_weather)
+  end
+
   # server functions
 
   @impl true
   def handle_call(:start, _, state) do
-    {_, state} = update_weather(state)
+    {_, state} = show_weather_info(state)
     {:ok, timer} = :timer.send_interval(300_000, self(), :update_weather)
     {:reply, :ok, %{state | timer: timer}}
   end
@@ -54,13 +58,17 @@ defmodule Flipdot.WeatherGenerator do
 
   @impl true
   def handle_info(:update_weather, state) do
-    update_weather(state)
+    show_weather_info(state)
   end
 
-  def update_weather(state) do
+  def show_weather_info(state) do
     weather = get_weather(state.api_key)
     temp = weather["current"]["temp"]
-    display_text = Float.to_string(temp) <> "°"
+    wind_speed = weather["current"]["wind_speed"]
+
+    display_text =
+      Float.to_string(temp, decimals: 1) <>
+        "°  " <> Float.to_string(wind_speed, decimals: 1) <> "m/s"
 
     if display_text != state.display_text do
       DisplayState.get() |> render_text(state.font, display_text) |> DisplayState.set()
@@ -72,7 +80,7 @@ defmodule Flipdot.WeatherGenerator do
   def render_text(bitmap, font, text) do
     rendered_text =
       Bitmap.new(1000, 1000)
-      |> FontRenderer.render_text(10, 10, font, text)
+      |> FontRenderer.render_text({10, 10}, font, text)
       |> Bitmap.clip()
 
     Bitmap.new(bitmap.meta.width, bitmap.meta.height)
