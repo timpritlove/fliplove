@@ -2,6 +2,7 @@ defmodule FlipdotWeb.FlipdotLive do
   use FlipdotWeb, :live_view
 
   alias Flipdot.ClockGenerator
+  alias Flipdot.WeatherGenerator
   alias Flipdot.DisplayState
 
   def mount(_params, _session, socket) do
@@ -30,7 +31,21 @@ defmodule FlipdotWeb.FlipdotLive do
      |> assign(:clock, clock())}
   end
 
+  def handle_event("start-weather", _params, socket) do
+    ClockGenerator.stop_generator()
+    WeatherGenerator.start_generator()
+
+    {:noreply, socket}
+  end
+
+  def handle_event("stop-weather", _params, socket) do
+    WeatherGenerator.stop_generator()
+
+    {:noreply, socket}
+  end
+
   def handle_event("start-clock", _params, socket) do
+    WeatherGenerator.stop_generator()
     ClockGenerator.start_generator()
 
     {:noreply, socket}
