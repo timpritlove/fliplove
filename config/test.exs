@@ -8,8 +8,7 @@ config :flipdot, FlipdotWeb.Endpoint,
   server: false
 
 # In test we don't send emails.
-config :flipdot, Flipdot.Mailer,
-  adapter: Swoosh.Adapters.Test
+config :flipdot, Flipdot.Mailer, adapter: Swoosh.Adapters.Test
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
