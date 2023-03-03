@@ -13,6 +13,12 @@ defmodule Bitmap do
 
   defstruct meta: %{}, matrix: %{}
 
+  defmacro defbitmap(lines) do
+    quote do
+      Bitmap.from_lines_of_text(unquote(lines), on: ?X, off: ?\s)
+    end
+  end
+
   defimpl Inspect, for: Bitmap do
     def inspect(bitmap, _opts) do
       width = bitmap.meta.width
