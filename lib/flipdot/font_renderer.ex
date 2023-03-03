@@ -19,7 +19,7 @@ defmodule FontRenderer do
 
   def render_text(bitmap, _, _, []), do: bitmap
 
-  def render_text(bitmap, {cursor_x, cursor_y}, font, [character | tail]) do
+  def render_text(bitmap, {cursor_x, cursor_y} = _cursor, font, [character | tail]) do
     case Map.get(font.characters, character, nil) do
       nil ->
         # skip non-existing characters
