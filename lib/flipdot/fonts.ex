@@ -5,6 +5,7 @@ defmodule Flipdot.Fonts do
     %{
       version: "2.1",
       name: "space-invaders",
+      size: 8,
       properties: %{
         copyright: "Public domain font. Share and enjoy."
       },

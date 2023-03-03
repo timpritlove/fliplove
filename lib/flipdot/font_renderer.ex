@@ -29,7 +29,7 @@ defmodule FontRenderer do
         kerning =
           case tail do
             [] -> 0
-            _ -> Kerning.get_kerning(font.name, [character, hd(tail)])
+            _ -> Kerning.get_kerning(font, [character, hd(tail)])
           end
 
         Bitmap.overlay(bitmap, char.bitmap,

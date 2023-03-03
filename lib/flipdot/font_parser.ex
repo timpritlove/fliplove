@@ -82,8 +82,8 @@ defmodule FontParser do
     |> wrap()
     |> map(:font_map)
 
-  defp size_map([_, point_size, xres, yres]) do
-    %{point_size: point_size, xres: xres, yres: yres}
+  defp size_map([_, size, xres, yres]) do
+    %{size: size, xres: xres, yres: yres}
   end
 
   bdf_SIZE =
