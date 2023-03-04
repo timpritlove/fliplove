@@ -70,7 +70,7 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_event("maze", _params, socket) do
-    Bitmap.maze(115, 15) |> Bitmap.crop(115, 16, rel_y: :top) |> DisplayState.set()
+    Bitmap.maze(115, 15) |> Bitmap.crop_relative(115, 16, rel_y: :top) |> DisplayState.set()
 
     {:noreply, socket}
   end
