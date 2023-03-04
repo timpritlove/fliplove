@@ -5,7 +5,7 @@ defmodule Flipdot.DisplayPusher do
   # @host 'flipdot.local'
   @host 'localhost'
   @port 1337
-  @req_rendering_mode '/rendering/mode'
+  # @req_rendering_mode '/rendering/mode'
   defstruct host: @host, port: @port, socket: nil, addresses: []
 
   def start_link(_config) do
