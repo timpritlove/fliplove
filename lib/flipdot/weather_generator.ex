@@ -67,8 +67,8 @@ defmodule Flipdot.WeatherGenerator do
     wind_speed = weather["current"]["wind_speed"]
 
     display_text =
-      Float.to_string(temp, decimals: 1) <>
-        "°  " <> Float.to_string(wind_speed, decimals: 1) <> "m/s"
+      :erlang.float_to_binary(temp, decimals: 1) <>
+        "°  " <> :erlang.float_to_binary(wind_speed, decimals: 1) <> "m/s"
 
     if display_text != state.display_text do
       DisplayState.get() |> render_text(state.font, display_text) |> DisplayState.set()
