@@ -3,20 +3,17 @@ defmodule Fluepdot do
   Functions supporting the fluepdot hardware controller for flipdot displays by fluepke
 
   """
-
+  alias Flipdot.DisplayState
   @host 'flipdot.local'
   @port 1337
-
-  @fluepdot_width 115
-  @fluepdot_height 16
 
   def send(bitmap) do
     send_bitmap_via_udp(bitmap)
   end
 
   def send_bitmap_via_udp(bitmap) do
-    if bitmap.meta.width != @fluepdot_width, do: raise("Bitmap has the wrong width")
-    if bitmap.meta.height != @fluepdot_height, do: raise("Bitmap has the wrong height")
+    if bitmap.meta.width != DisplayState.width(), do: raise("Bitmap has the wrong width")
+    if bitmap.meta.height != DisplayState.height(), do: raise("Bitmap has the wrong height")
 
     frame = Bitmap.to_binary(bitmap)
 

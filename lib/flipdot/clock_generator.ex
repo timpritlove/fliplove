@@ -75,6 +75,11 @@ defmodule Flipdot.ClockGenerator do
       cursor_x: div(bitmap.meta.width - rendered_text.meta.width, 2),
       cursor_y: div(bitmap.meta.height - rendered_text.meta.height, 2)
     )
-    |> Bitmap.overlay(Bitmap.frame(115, 16))
+    |> Bitmap.overlay(
+      Bitmap.frame(
+        DisplayState.width(),
+        DisplayState.height()
+      )
+    )
   end
 end

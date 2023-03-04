@@ -4,6 +4,7 @@ defmodule FlipdotWeb.FlipdotLive do
   alias Flipdot.ClockGenerator
   alias Flipdot.WeatherGenerator
   alias Flipdot.DisplayState
+  require Integer
 
   def mount(_params, _session, socket) do
     if connected?(socket), do: :timer.send_interval(250, self(), :tick)
@@ -70,7 +71,14 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_event("maze", _params, socket) do
-    Bitmap.maze(115, 15) |> Bitmap.crop_relative(115, 16, rel_y: :top) |> DisplayState.set()
+    display_width = DisplayState.width()
+    display_height = DisplayState.height()
+    maze_width = if Integer.is_odd(display_width), do: display_width, else: display_width - 1
+    maze_height = if Integer.is_odd(display_height), do: display_height, else: display_height - 1
+
+    Bitmap.maze(maze_width, maze_height)
+    |> Bitmap.crop_relative(display_width, display_height, rel_y: :top)
+    |> DisplayState.set()
 
     {:noreply, socket}
   end

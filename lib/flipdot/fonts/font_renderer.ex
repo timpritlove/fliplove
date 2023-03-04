@@ -1,11 +1,12 @@
 defmodule FontRenderer do
   alias Flipdot.Kerning
+  alias Flipdot.DisplayState
 
   def test(text, path) do
     font = parse_font(path)
-    bitmap = Bitmap.new(115, 16)
 
-    render_text(bitmap, {4, 4}, font, text)
+    Bitmap.new(DisplayState.width(), DisplayState.height())
+    |> render_text({4, 4}, font, text)
   end
 
   def parse_font(path) do
