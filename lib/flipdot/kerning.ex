@@ -2,6 +2,7 @@ defmodule Flipdot.Kerning do
   @kerning %{
     "-Adobe-Helvetica-Bold-O-Normal--17-120-100-100-P-92-ISO8859-1" => %{
       12 => %{
+        'We' => -1,
         'lu' => -1,
         'le' => -1,
         'nu' => -1,
