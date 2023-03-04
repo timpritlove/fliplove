@@ -85,7 +85,7 @@ defmodule Bitmap do
   @doc """
   Translate bitmap to new position.
   """
-  def translate(bitmap, {dx, dy}) do
+  def translate(bitmap, {dx, dy} = _transformation) do
     matrix =
       for x <- 0..(bitmap.meta.width - 1),
           y <- 0..(bitmap.meta.height - 1),
@@ -182,11 +182,11 @@ defmodule Bitmap do
     {bitmap.meta.width, bitmap.meta.height}
   end
 
-  def get_pixel(bitmap, {x, y}) do
+  def get_pixel(bitmap, {x, y} = _coordinate) do
     Map.get(bitmap.matrix, {x, y}, 0)
   end
 
-  def set_pixel(bitmap, {x, y}, value) do
+  def set_pixel(bitmap, {x, y} = _coordinate, value) do
     matrix = Map.put(bitmap.matrix, {x, y}, value)
 
     %Bitmap{
@@ -195,7 +195,7 @@ defmodule Bitmap do
     }
   end
 
-  def toggle_pixel(bitmap, {x, y}) do
+  def toggle_pixel(bitmap, {x, y} = _coordinate) do
     set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
   end
 
@@ -260,7 +260,7 @@ defmodule Bitmap do
   @doc """
   Crop bitmap at a certain bounding box
   """
-  def crop(bitmap, start_x, start_y, crop_width, crop_height)
+  def crop(bitmap, {start_x, start_y} = _coordinate, crop_width, crop_height)
       when crop_width > 0 and crop_height > 0 do
     cropped_matrix =
       for x <- 0..(crop_width - 1),
@@ -281,7 +281,7 @@ defmodule Bitmap do
     }
   end
 
-  def crop(bitmap, crop_width, crop_height, options \\ [])
+  def crop_relative(bitmap, crop_width, crop_height, options \\ [])
       when crop_width > 0 and crop_height > 0 do
     options =
       Keyword.validate!(options,
@@ -305,7 +305,7 @@ defmodule Bitmap do
         rel_position -> raise("unkown relative position #{rel_position}")
       end
 
-    crop(bitmap, pos_x, pos_y, crop_width, crop_height)
+    crop(bitmap, {pos_x, pos_y}, crop_width, crop_height)
   end
 
   def random(width, height) do
