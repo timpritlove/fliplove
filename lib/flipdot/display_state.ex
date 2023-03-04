@@ -13,6 +13,9 @@ defmodule Flipdot.DisplayState do
 
   def topic, do: @topic
 
+  def width, do: Application.fetch_env!(:flipdot, :display)[:width]
+  def height, do: Application.fetch_env!(:flipdot, :display)[:height]
+
   def get do
     Agent.get(__MODULE__, fn state -> state.bitmap end)
   end
