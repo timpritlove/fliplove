@@ -32,7 +32,7 @@ config :flipdot, Flipdot.Mailer, adapter: Swoosh.Adapters.Local
 config :flipdot, :display,
   width: 115,
   height: 16,
-  host: ["darthy.local"]
+  host: ["flipdot.local"]
 
 # Configure esbuild (the version is required)
 config :esbuild,
