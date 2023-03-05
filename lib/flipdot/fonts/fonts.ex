@@ -10,6 +10,20 @@ defmodule Flipdot.Fonts do
       copyright: "Public domain font. Share and enjoy."
     },
     characters: %{
+      0 => %{
+        encoding: 0,
+        name: "defaultchar",
+        bitmap:
+          defbitmap([
+            "XXXXX",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            "XXXXX"
+          ])
+      },
       ?\s => %{
         encoding: ?\s,
         bitmap:
