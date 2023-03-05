@@ -14,17 +14,17 @@ defmodule FontRenderer do
     font
   end
 
-  def render_text(bitmap, {cursor_x, cursor_y}, font, text) when is_binary(text) do
-    render_text(bitmap, {cursor_x, cursor_y}, font, String.to_charlist(text))
+  def render_text(bitmap, cursor, font, text) when is_binary(text) do
+    render_text(bitmap, cursor, font, String.to_charlist(text))
   end
 
   def render_text(bitmap, _, _, []), do: bitmap
 
-  def render_text(bitmap, {cursor_x, cursor_y} = _cursor, font, [character | tail]) do
+  def render_text(bitmap, {cursor_x, cursor_y} = cursor, font, [character | tail]) do
     case Map.get(font.characters, character, nil) do
       nil ->
         # skip non-existing characters
-        render_text(bitmap, {cursor_x, cursor_y}, font, tail)
+        render_text(bitmap, cursor, font, tail)
 
       char ->
         kerning =
