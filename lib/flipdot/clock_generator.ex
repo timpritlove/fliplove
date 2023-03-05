@@ -7,7 +7,7 @@ defmodule Flipdot.ClockGenerator do
 
   defstruct font: nil, timer: nil, time_string: ""
 
-  @font_file "data/fonts/x11/helvB12.bdf"
+  @font_file "helvB12.bdf"
 
   def start_link(_state) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -15,7 +15,7 @@ defmodule Flipdot.ClockGenerator do
 
   @impl true
   def init(state) do
-    font = FontRenderer.parse_font(@font_file)
+    font = (Flipdot.static_dir() <> "fonts/" <> @font_file) |> FontRenderer.parse_font()
 
     {:ok, %{state | font: font}}
   end

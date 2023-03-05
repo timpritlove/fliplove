@@ -8,7 +8,7 @@ defmodule Flipdot.WeatherGenerator do
 
   defstruct font: nil, timer: nil, api_key: nil, display_text: ""
 
-  @font_file "data/fonts/x11/helvB10.bdf"
+  @font_file "helvB10.bdf"
   @latitude 52.5363101
   @longitude 13.4273403
   @api_key "data/keys/openweathermap.txt"
@@ -19,7 +19,7 @@ defmodule Flipdot.WeatherGenerator do
 
   @impl true
   def init(state) do
-    font = FontRenderer.parse_font(@font_file)
+    font = (Flipdot.static_dir() <> "fonts/" <> @font_file) |> FontRenderer.parse_font()
     api_key = File.read!(@api_key)
 
     {:ok, %{state | font: font, api_key: api_key}}
