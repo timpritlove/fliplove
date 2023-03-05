@@ -1,4 +1,4 @@
-defmodule FontRenderer do
+defmodule Flipdot.FontRenderer do
   alias Flipdot.Kerning
   alias Flipdot.DisplayState
 

@@ -4,6 +4,8 @@ defmodule FlipdotWeb.FlipdotLive do
   alias Flipdot.ClockGenerator
   alias Flipdot.WeatherGenerator
   alias Flipdot.DisplayState
+  alias Flipdot.FontRenderer
+
   require Integer
 
   def mount(_params, _session, socket) do

@@ -4,6 +4,7 @@ defmodule Flipdot.ClockGenerator do
   """
   use GenServer
   alias Flipdot.DisplayState
+  alias Flipdot.FontRenderer
 
   defstruct font: nil, timer: nil, time_string: ""
 

@@ -4,6 +4,8 @@ defmodule Flipdot.WeatherGenerator do
   """
   use GenServer
   alias Flipdot.DisplayState
+  alias Flipdot.FontRenderer
+
   require HTTPoison
 
   defstruct font: nil, timer: nil, api_key: nil, display_text: ""
