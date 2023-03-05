@@ -1,4 +1,4 @@
-defmodule Fluepdot do
+defmodule Flipdot.Fluepdot do
   @moduledoc """
   Functions supporting the fluepdot hardware controller for flipdot displays by fluepke
 
