@@ -42,7 +42,8 @@ defmodule Flipdot.Application do
       {Flipdot.DisplayState, space_invaders},
       Flipdot.ClockGenerator,
       Flipdot.WeatherGenerator,
-      Flipdot.DisplayPusher
+      Flipdot.DisplayPusher,
+      Flipdot.FontLibrary
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

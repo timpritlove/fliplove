@@ -76,6 +76,11 @@
       autocomplete="off"
       phx-debounce="500"
     />
+    <select :if={@font_index} name="font" id="font-select">
+      <option :for={font <- @font_index} value={elem(font, 0)}>
+        <%= IO.inspect(elem(font, 0)) %>
+      </option>
+    </select>
     <button class="rounded-full">Render</button>
   </form>
 </div>

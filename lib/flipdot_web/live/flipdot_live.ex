@@ -1,6 +1,7 @@
 defmodule FlipdotWeb.FlipdotLive do
   use FlipdotWeb, :live_view
 
+  alias Flipdot.FontLibrary
   alias Flipdot.ClockGenerator
   alias Flipdot.WeatherGenerator
   alias Flipdot.DisplayState
@@ -12,6 +13,7 @@ defmodule FlipdotWeb.FlipdotLive do
     if connected?(socket) do
       :timer.send_interval(250, self(), :tick)
       Phoenix.PubSub.subscribe(Flipdot.PubSub, DisplayState.topic())
+      Phoenix.PubSub.subscribe(Flipdot.PubSub, FontLibrary.topic())
     end
 
     socket =
@@ -20,6 +22,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:bitmap, DisplayState.get())
       |> assign(:clock, clock())
       |> assign(:text, "")
+      |> assign(:font_index, FontLibrary.get_font_index())
 
     {:ok, socket}
   end
@@ -28,6 +31,12 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply,
      socket
      |> assign(:bitmap, bitmap)}
+  end
+
+  def handle_info({:font_library_update, font_index}, socket) do
+    {:noreply,
+     socket
+     |> assign(:font_index, font_index)}
   end
 
   def handle_info(:tick, socket) do
@@ -98,9 +107,9 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, assign(socket, :bitmap, DisplayState.get())}
   end
 
-  def handle_event("render", %{"text" => text}, socket) do
+  def handle_event("render", %{"text" => text, "font" => font}, socket) do
     DisplayState.clear()
-    |> FontRenderer.render_text({0, 2}, Flipdot.Fonts.SpaceInvaders.get(), text)
+    |> FontRenderer.render_text({0, 2}, Flipdot.FontLibrary.get_font(font), text)
     |> DisplayState.set()
 
     {:noreply, assign(socket, :text, text)}

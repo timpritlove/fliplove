@@ -5,6 +5,7 @@ defmodule Flipdot.ClockGenerator do
   use GenServer
   alias Flipdot.DisplayState
   alias Flipdot.FontRenderer
+  alias Flipdot.FontLibrary
 
   defstruct font: nil, timer: nil, time_string: ""
 
@@ -16,7 +17,7 @@ defmodule Flipdot.ClockGenerator do
 
   @impl true
   def init(state) do
-    font = (Flipdot.static_dir() <> "fonts/" <> @font_file) |> FontRenderer.parse_font()
+    font = (Flipdot.static_dir() <> "fonts/" <> @font_file) |> FontLibrary.parse_font()
 
     {:ok, %{state | font: font}}
   end
