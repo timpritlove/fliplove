@@ -24,7 +24,11 @@ defmodule FontRenderer do
     case Map.get(font.characters, character, nil) do
       nil ->
         # skip non-existing characters
-        render_text(bitmap, cursor, font, tail)
+        if Map.get(font.characters, 0, nil) do
+          render_text(bitmap, cursor, font, [0 | tail])
+        else
+          render_text(bitmap, cursor, font, tail)
+        end
 
       char ->
         kerning =
