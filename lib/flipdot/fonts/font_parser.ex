@@ -30,7 +30,8 @@ defmodule FontParser do
 
   # BDF specific terms
 
-  bdf_name = ascii_string([?a..?z, ?A..?Z, ?-, ?+, ?0..?9], min: 1)
+  bdf_font_name = ascii_string([0x20..0x7E], min: 1)
+  bdf_name = ascii_string([0x21..0x7E], min: 1)
 
   defp number_map(members) do
     case members do
@@ -77,7 +78,7 @@ defmodule FontParser do
   bdf_FONT =
     string("FONT")
     |> ignore(whitespace)
-    |> concat(bdf_name)
+    |> concat(bdf_font_name)
     |> concat(eol)
     |> wrap()
     |> map(:font_map)
