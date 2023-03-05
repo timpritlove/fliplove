@@ -20,6 +20,10 @@ defmodule Flipdot.DisplayState do
     Agent.get(__MODULE__, fn state -> state.bitmap end)
   end
 
+  def clear do
+    Bitmap.new(width(), height()) |> set()
+  end
+
   def set(bitmap) do
     old_bitmap = get()
 
@@ -27,5 +31,7 @@ defmodule Flipdot.DisplayState do
       Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:display_update, bitmap})
       Agent.update(__MODULE__, fn _ -> %__MODULE__{bitmap: bitmap} end)
     end
+
+    bitmap
   end
 end
