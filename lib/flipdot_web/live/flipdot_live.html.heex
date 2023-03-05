@@ -65,6 +65,19 @@
     Game of Life
   </button>
 </div>
+<div id="text">
+  <form phx-submit="render">
+    <input
+      type="text"
+      name="text"
+      value={@text}
+      placeholder="Type some text…"
+      autofocus
+      autocomplete="off"
+    />
+    <button class="rounded-full">Render</button>
+  </form>
+</div>
 <div class="mt-20 w-10/12 bg-black m-4 p-8">
   <div class="font-mono font-bold text-5xl text-green-500 text-center align-middle">
     <%= @clock %>
