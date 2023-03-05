@@ -98,7 +98,7 @@ defmodule FlipdotWeb.FlipdotLive do
 
   def handle_event("render", %{"text" => text}, socket) do
     DisplayState.clear()
-    |> FontRenderer.render_text({0, 2}, Flipdot.Fonts.get("space-invaders"), text)
+    |> FontRenderer.render_text({0, 2}, Flipdot.Fonts.SpaceInvaders.get(), text)
     |> DisplayState.set()
 
     {:noreply, assign(socket, :text, text)}
