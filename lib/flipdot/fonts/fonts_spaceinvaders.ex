@@ -1,6 +1,5 @@
-defmodule Flipdot.Fonts do
+defmodule Flipdot.Fonts.SpaceInvaders do
   import Bitmap
-  # use GenServer
 
   @space_invaders %{
     version: "2.1",
@@ -1398,9 +1397,5 @@ defmodule Flipdot.Fonts do
     }
   }
 
-  defstruct fonts: [@space_invaders]
-
-  def get(font_name) do
-    if font_name == "space-invaders", do: @space_invaders, else: nil
-  end
+  def get(), do: @space_invaders
 end
