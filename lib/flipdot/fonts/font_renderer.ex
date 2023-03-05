@@ -1,18 +1,6 @@
 defmodule Flipdot.FontRenderer do
-  alias Flipdot.Kerning
+  alias Flipdot.FontRenderer.Kerning
   alias Flipdot.DisplayState
-
-  def test(text, path) do
-    font = parse_font(path)
-
-    Bitmap.new(DisplayState.width(), DisplayState.height())
-    |> render_text({4, 4}, font, text)
-  end
-
-  def parse_font(path) do
-    {:ok, [font], _, _, _, _} = path |> File.read!() |> FontParser.parse_bdf()
-    font
-  end
 
   def render_text(bitmap, cursor, font, text) when is_binary(text) do
     render_text(bitmap, cursor, font, String.to_charlist(text))
