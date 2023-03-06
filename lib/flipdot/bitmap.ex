@@ -497,6 +497,34 @@ defmodule Bitmap do
   end
 
   @doc """
+  Create bitmap from binary representation where each pixels gets shoved into a single bit.
+  Pixels are traversed from bottom to top, left to right.
+  """
+
+  def from_binary(data, width, height) do
+    if byte_size(data) != div(width * height, 8),
+      do:
+        raise(
+          "Packet size (#{byte_size(data)}) does not match dimensions (width: #{width}, height: #{height})"
+        )
+
+    pixels = for <<pixel::1 <- data>>, do: pixel
+    columns = Enum.chunk_every(pixels, height)
+
+    matrix =
+      for {column, x} <- Enum.with_index(columns),
+          {pixel, y} <- Enum.with_index(column),
+          into: %{} do
+        {{x, y}, pixel}
+      end
+
+    %Bitmap{
+      meta: %{width: width, height: height},
+      matrix: matrix
+    }
+  end
+
+  @doc """
   Generate a maze. Both width and height must be odd numbers
   """
 
