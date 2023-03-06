@@ -27,7 +27,6 @@ config :flipdot, FlipdotWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :flipdot, Flipdot.Mailer, adapter: Swoosh.Adapters.Local
 
 config :flipdot, :display,
   width: 115,
