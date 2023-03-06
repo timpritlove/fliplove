@@ -1,0 +1,209 @@
+
+ISO 10646-1 encoded versions of the Adobe and B&H X11 75/100 dpi BDF fonts
+--------------------------------------------------------------------------
+
+Markus Kuhn <mkuhn@acm.org> -- 2001-04-08
+
+This package contains ISO10646-1 encoded versions of the fonts found
+in the xc/fonts/bdf/{75,100,unnec_75,unnec_100}dpi/ subdirectories of
+the X11R6.4 distribution. These fonts - donated originally by Adobe
+and B&H - were only available ISO8859-1 encoded in the X11R6.4
+distribution. Most of them contained over 30 additional typographic
+characters found in the Adobe standard encoding (ligature oe, em dash,
+dagger, etc.) that were not accessible via the ISO8859-1 encoding. I
+therefore created ISO10646-1 encoded versions that make all characters
+in these fonts accessible.
+
+This modification was done fully automatically from the glyph names
+found in the ISO8859-1 versions, using the Adobe glyph name to ISO
+10646-1 mapping table on
+
+  http://partners.adobe.com/asn/developer/typeforum/glyphlist.txt
+
+One change that this recoding implies for the ASCII section is that
+0x27 and 0x60 (quotesingle and grave) have now the official modern
+shapes. See <http://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html> for
+details on this issue. Also HYPHEN-MINUS now uses the shorter "hyphen"
+glyph instead of "minus" (except for lut*.bdf, where "hyphen" is
+really far too short for use as a HYPHEN-MINUS) and the no-break space
+is finally present.
+
+I went on to extended the resulting ISO10646-1 fonts by generating
+automatically numerous additional precomposed glyphs, which I obtained
+by superpositioning the available base characters and accents. The
+resulting fonts cover ISO 8859-{1,2,3,4,9,10,13,14,15} completely and
+CEN MES-1 almost completely. I also wrote software to automatically
+generate various box drawing characters for the monospaced upright
+fonts.
+
+ISO 8859-{1,2,3,4,9,10,13,14,15} versions of these BDF fonts can be
+generated very easily using the ucs2any.pl tool. The map_fonts shell
+script shows how to do this.
+
+This package is available from
+
+  http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts-75dpi100dpi.tar.gz
+  (around 5 MB)
+
+Further information is available from
+
+  http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html
+
+The copyright status of these fonts is the same as that of the X11R6.4
+ISO8859-1 source fonts from which they were constructed and I hope
+that the ISO10646-1 versions will be included into the next X.org X11
+release (R6.6.1) in 2001-Q4. They will also be in XFree86 4.1.
+
+I did not convert the following fonts found in the same subdirectories:
+
+  tech*14.bdf   These DEC fonts are not ISO 8859-1 based and contain many
+                characters that are not available in ISO10646-1:2000 (though
+                many of them will apparently be added to Unicode 3.2).
+
+  char*.bdf
+  term*14.bdf   These DEC fonts did not contain any hidden characters
+                that are not already accessible in ISO 8859-1.
+
+  symb*.bdf     The Adobe Symbol font was specifically designed to be
+                used together with Adobe Times Roman and the split into
+                two separate fonts was only necessary due to historic 8-bit
+                restrictions.  I therefore added the glyphs from Symbol
+                to Times Roman and did not provide an extra iso10646-1
+                file for the Symbol glyphs.
+
+A note for users who experience problems after the installation of
+these fonts: Problems due to bugs in some applications can occur if
+the new *-iso10646-1 fonts appear earlier in the font path than the
+old *-iso8859-1 versions. Most notably, the GTK+ 1.2.3 widget library
+used by gimp and gnome uses the default font
+
+  -adobe-helvetica-medium-r-normal--*-120-*-*-*-*-*-*
+
+which means that the iso10646-1 version ("iso10646" < "iso8859") will
+be selected instead of the iso8859-1 version if both are installed in
+the same subdirectory. This alone would not yet be a problem, but GTK+
+1.2.3 also assumes that any string displayed using a font that
+contains glyphs > 0xff must be a sequence of 16-bit words (a dangerous
+and primitive hack to accommodate the Japanese EUC-JP encoding). This
+causes all text displayed in an iso10646-1 font by GTK+ 1.2.3 to be
+hopelessly garbled. Most ASCII characters are displayed as the default
+character (dotted empty box). The problem has been fixed in more
+recent GTK+ releases. If you still encounter it, either update the
+application to a more recent version or specify its fonts explicitly
+without using a wildcard for the character set and encoding.
+
+Suggested installation procedure:
+
+  - The iso10646-1 font files in this package replace the old
+    iso8859-1 font files of the same name in
+    xc/fonts/bdf/{75,100,unnec_75,unnec_100}dpi/.
+
+  - Use ucs2any.pl to generated the desired iso8859-* versions of the
+    iso10646-1 fonts and store them in the same subdirectory
+    respectively.
+
+The X Consortium had moved some rarely used bold BDF fonts that are
+are also available in Type1 format into separate unnec_*dpi
+subdirectories, presumably because for bold versions of less
+frequently used font styles the output quality of the Type1 renderer
+was considered to be sufficient. Since the Type1 renderer cannot yet
+produce the same iso10464-1 repertoire that the BDF fonts in this
+package provide, the {unnec_75,unnec_100}dpi/UTB*.bdf fonts are now
+not as "unnecessary" any more as before and might well be moved back
+into fonts/bdf/{75,100}dpi/.
+
+
+Just for the record, here are some notes on minor technical issues
+that had to be resolved during the conversion process:
+
+  - I did not encode any characters > U+31FF, which in practice means
+    that only the two ligatures "fi" and "ff" (U+FB00-FB01) remain
+    unavailable. The current X11 protocol transmits XFontStruct font
+    data as arrays that go from the lowest to the highest character
+    code. All the other characters in these fonts are in the U+0020 to
+    U+2FFF range, and adding the two U+FB0x ligatures would have
+    increased the size of these data structures significantly. The
+    bitmaps of two ligatures are still preserved in the file with
+    encoding -1 just as they used to be in the ISO8859-1 version, so
+    they can be added easily at a later time when appropriate.
+
+  - The following fonts from X11R6.4 unfortunately did not contain
+    most or all Adobe standard encoding characters as hidden glyphs
+    (probably due to mistakes that were made when someone at the
+    X Consortium edited something in these fonts):
+
+      75dpi/
+
+        ncenR18.bdf ncenR24.bdf
+
+        lutRS19.bdf lutRS24.bdf lutBS19.bdf lutBS24.bdf lutRS08.bdf
+        lutBS08.bdf
+
+     100dpi/
+
+        lutBS08.bdf lutBS10.bdf lutBS12.bdf lutBS14.bdf lutBS18.bdf
+        lutBS19.bdf lutBS24.bdf
+
+        lutRS08.bdf lutRS10.bdf lutRS12.bdf lutRS14.bdf lutRS18.bdf
+        lutRS19.bdf lutRS24.bdf
+
+    Fortunately, the British glyph archeologist Robert Brady found the
+    missing glyphs in ancient X11 distributions (ncen* in X11R3 and
+    lut* in X11R4), such that even these could now be reconstructed.
+
+  - Some of the lutRS*.bdf fonts had the Latin-1 divide and multiply
+    signs mixed up (fixed in this release).
+
+  - The original fonts lu[RB]S{19,24} had erroneously shifted accented
+    i/I glyphs U+00CC..U+00CF and U+00EC..U+00EF (fixed in this release,
+    thanks to D.Yu.Bolkhovityanov@inp.nsk.su for the bug report).
+
+  - Some of the fonts lacked X_HEIGHT and CAP_HEIGHT properties, so I
+    added them where they are missing. Other fonts had sometimes
+    rather wrong X_HEIGHT, CAP_HEIGHT, FONT_DESCENT, and FONT_ASCENT
+    properties. If the precompose tool is executed with command line
+    option -f, these properties will get regenerated by measuring ink
+    metrics of some example glyphs, but this option -f was not applied
+    to the fonts distributed in this package simply because I didn't
+    want to fix anything for which I don't understand how and why it
+    went wrong in the first place.
+
+  - The fonts in this package were derived from the fonts in X11R6.4.
+    The fonts in the newer X11R6.5.1 contain the following changes
+    relative to X11R6.4:
+
+        a) no-break space added to some fonts
+        b) lutRS*.bdf divide and multiply mixup fixed
+        c) some minor bitmap changes in 75dpi/lutRS12.bdf
+
+    Since these fixes were apparently done by Xorg manually and
+    occasionally in an inconsistent way and since a) and b) are
+    already taken care of anyway in this package, I decided it is best
+    to continue working from the fonts in the X11R6.4 release as a
+    basis for the ISO10646-1 versions. The additional changes
+    in 75dpi/lutRS12.bdf affect the characters plus, minus, equal,
+    plusminus, multiply and divide, which have been made smaller
+    to keep the leftmost and rightmost column free such that these
+    characters do not stick together any more.
+
+  - Some characters deserved manual tweeking:
+
+       75dpi/timeR14.bdf: hyphen (too low)
+
+Things that might be added in future releases:
+
+  - Merge in stylistically matching Cyrillic and Greek glyphs from
+    existing free fonts. Which existing fonts? Would the foundry
+    name for the fonts have to be changed then?
+
+  - Add in WGL4 updates of luRS12, lutRS10, and lutRS12 provided by B&H.
+
+  - Manual extension of some of the more important fonts to say WGL4.
+    This should only start really after the autoextended version has
+    been stable for a long time, to avoid version branching.
+
+Markus
+
+-- 
+Markus G. Kuhn, Computer Laboratory, University of Cambridge, UK
+Email: mkuhn at acm.org,  WWW: <http://www.cl.cam.ac.uk/~mgk25/>

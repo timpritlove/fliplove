@@ -1,0 +1,1458 @@
+#!/usr/bin/perl
+# Take an ISO 10646-1 BDF font and add additional precomposed characters
+# by superpositioning, rotating, etc. existing glyphs
+# Markus Kuhn <mkuhn@acm.org> -- 2001-03-11
+
+use strict 'subs';
+
+$notice = "COMMENT ISO10646-1 extension by Markus Kuhn <mkuhn\@acm.org>, 2001-03-20\n";
+
+$truncate = 0x3200;      # first non-encoded character (see bdftruncate)
+#$truncate = 0x10000;    # first non-encoded character (see bdftruncate)
+
+$unicodedata = "UnicodeData-Latest.txt";
+$datadir = "/homes/mgk25/local/lib/ucs";
+
+# functions to access character properties
+sub swidth {
+    my ($char) = @_;
+    die("undefined character queried for swidth!\n") unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    return $swidth;
+}
+sub dwidth {
+    my ($char) = @_;
+    die("undefined character queried for dwidth!\n") unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    return $dwidth;
+}
+sub width {
+    my ($char) = @_;
+    die("undefined character queried for width!\n") unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    return $width;
+}
+sub height {
+    my ($char) = @_;
+    die("undefined character queried for height!\n") unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    return $height;
+}
+sub xoff {
+    my ($char) = @_;
+    die("undefined character queried for xoff!\n") unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    return $xoff;
+}
+sub yoff {
+    my ($char) = @_;
+    die("undefined character queried for yoff!\n") unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    return $yoff;
+}
+sub bitmap {
+    my ($char) = @_;
+    die("undefined character queried for bitmap!\n") unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    return $bitmap;
+}
+
+# print out a character
+sub printchar {
+    my ($char) = @_;
+    if (!defined($char)) {
+	print "UNDEFINED\n";
+    }
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+        @$char;
+    
+    print "SWIDTH $swidth 0\nDWIDTH $dwidth 0\n";
+    print "BBX $width $height $xoff $yoff\n";
+    print "BITMAP\n";
+    for ($i = 0; $i < length($bitmap); $i += $width) {
+	print (substr($bitmap, $i, $width) . "\n");
+    }
+}
+
+# assign character if there is something to assign,
+# but don't overwrite
+sub set {
+    my ($ucs, $newchar) = @_;
+    
+    if (!exists $char{$ucs}) {
+	if (defined $newchar) {
+	    $char{$ucs} = $newchar;
+	}
+    } else {
+	#printf "Not Overwriting U+%04X\n", $ucs;
+    }
+}
+
+# calculate the bounding box that covers both provided bounding boxes
+sub combine_bbx {
+    my ($awidth, $aheight, $axoff, $ayoff,
+	$cwidth, $cheight, $cxoff, $cyoff) = @_;
+
+    if ($axoff < $cxoff) {
+	$cwidth += $cxoff - $axoff;
+	$cxoff = $axoff;
+    }
+    if ($ayoff < $cyoff) {
+	$cheight += $cyoff - $ayoff;
+	$cyoff = $ayoff;
+    }
+    if ($awidth + $axoff > $cwidth + $cxoff) {
+	$cwidth = $awidth + $axoff - $cxoff;
+    }
+    if ($aheight + $ayoff > $cheight + $cyoff) {
+	$cheight = $aheight + $ayoff - $cyoff;
+    }
+
+    return ($cwidth, $cheight, $cxoff, $cyoff);
+}
+
+# move a glyph by a provided offset vector
+sub translate {
+    my ($char, $xmove, $ymove) = @_;
+    return undef unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+        @$char;
+    return
+	['?', '?', $width, $height, $xoff + $xmove, $yoff + $ymove, $bitmap];
+}
+
+# print B onto A but keep swidth/dwidth of A
+sub overstrike {
+    my ($a, @b) = @_;
+    return undef unless defined($a);
+    return $a unless @b;
+    my $b = shift @b;
+    return undef unless defined($b);
+    my ($aswidth, $adwidth, $awidth, $aheight, $axoff, $ayoff, $abitmap) = @$a;
+    my ($bswidth, $bdwidth, $bwidth, $bheight, $bxoff, $byoff, $bbitmap) = @$b;
+    my ($cwidth, $cheight, $cxoff, $cyoff) =
+	combine_bbx($awidth, $aheight, $axoff, $ayoff,
+		    $bwidth, $bheight, $bxoff, $byoff);
+    my ($cbitmap, $i, $j);
+    my ($ai, $aj, $bi, $bj);
+
+    $cbitmap = '';
+    for ($i = 0; $i < $cheight; $i++) {
+	for ($j = 0; $j < $cwidth; $j++) {
+	    $ai = $i - $cheight - $cyoff + $ayoff + $aheight;
+	    $aj = $j + $cxoff - $axoff;
+	    $bi = $i - $cheight - $cyoff + $byoff + $bheight;
+	    $bj = $j + $cxoff - $bxoff;
+	    if (($ai >= 0 && $ai < $aheight && $aj >= 0 && $aj < $awidth &&
+		 substr($abitmap, $ai * $awidth + $aj, 1) eq 'X') ||
+		($bi >= 0 && $bi < $bheight && $bj >= 0 && $bj < $bwidth &&
+		 substr($bbitmap, $bi * $bwidth + $bj, 1) eq 'X')) {
+		$cbitmap .= 'X';
+	    } else {
+		$cbitmap .= '.';
+	    }
+	}
+    }
+
+    my $c = [$aswidth, $adwidth, $cwidth, $cheight, $cxoff, $cyoff, $cbitmap];
+    return overstrike($c, @b) if @b;
+    return $c;
+}
+
+# erase B from A but keep swidth/dwidth of A
+sub subtract {
+    my ($a, @b) = @_;
+    return undef unless defined($a);
+    return $a unless @b;
+    my $b = shift @b;
+    return undef unless defined($b);
+    my ($aswidth, $adwidth, $awidth, $aheight, $axoff, $ayoff, $abitmap) = @$a;
+    my ($bswidth, $bdwidth, $bwidth, $bheight, $bxoff, $byoff, $bbitmap) = @$b;
+    my ($cwidth, $cheight, $cxoff, $cyoff) =
+	combine_bbx($awidth, $aheight, $axoff, $ayoff,
+		    $bwidth, $bheight, $bxoff, $byoff);
+    my ($cbitmap, $i, $j);
+    my ($ai, $aj, $bi, $bj);
+
+    $cbitmap = '';
+    for ($i = 0; $i < $cheight; $i++) {
+	for ($j = 0; $j < $cwidth; $j++) {
+	    $ai = $i - $cheight - $cyoff + $ayoff + $aheight;
+	    $aj = $j + $cxoff - $axoff;
+	    $bi = $i - $cheight - $cyoff + $byoff + $bheight;
+	    $bj = $j + $cxoff - $bxoff;
+	    if (($ai >= 0 && $ai < $aheight && $aj >= 0 && $aj < $awidth &&
+		 substr($abitmap, $ai * $awidth + $aj, 1) eq 'X') && !
+		($bi >= 0 && $bi < $bheight && $bj >= 0 && $bj < $bwidth &&
+		 substr($bbitmap, $bi * $bwidth + $bj, 1) eq 'X')) {
+		$cbitmap .= 'X';
+	    } else {
+		$cbitmap .= '.';
+	    }
+	}
+    }
+
+    my $c = [$aswidth, $adwidth, $cwidth, $cheight, $cxoff, $cyoff, $cbitmap];
+    return subtract($c, @b) if @b;
+    return $c;
+}
+
+# make bounding box as small as possible
+sub tightenbox {
+    my ($char) = @_;
+    return undef unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    my ($newbitmap, $x, $y);
+    my $xmin = $width;
+    my $ymin = $height;
+    my $xmax = 0;
+    my $ymax = 0;
+
+    for ($y = 0; $y < $height; $y++) {
+	for ($x = 0; $x < $width; $x++) {
+	    if (substr($bitmap, $x + $width * ($height - 1 - $y), 1) eq 'X') {
+		$xmin = $x if $x < $xmin;
+		$xmax = $x if $x > $xmax;
+		$ymin = $y if $y < $ymin;
+		$ymax = $y if $y > $ymax;
+	    }
+	}
+    }
+
+    $newbitmap='';
+    for ($y = $ymax; $y >= $ymin; $y--) {
+	for ($x = $xmin; $x <= $xmax; $x++) {
+	    $newbitmap .=
+		substr($bitmap, $x + $width * ($height - 1 - $y), 1);
+	}
+    }
+    $xoff += $xmin;
+    $yoff += $ymin;
+    $width  = $xmax - $xmin + 1;
+    $height = $ymax - $ymin + 1;
+
+    return [$swidth, $dwidth, $width, $height, $xoff, $yoff, $newbitmap];
+}
+
+# find an appropriate glyph for a combining character
+sub accent
+{
+    my ($ucs) = @_;
+
+    return $char{$ucs} if exists $char{$ucs};
+    return $char{ 0x60} if $ucs == 0x300 && exists $char{0x60};
+    return $char{ 0xb4} if $ucs == 0x301 && exists $char{0xb4};
+    return $char{0x2c6} if $ucs == 0x302 && exists $char{0x2c6};
+    return $char{0x2dc} if $ucs == 0x303 && exists $char{0x2dc};
+    return $char{0x2c9} if $ucs == 0x304 && exists $char{0x2c9};
+    return $char{0x2d8} if $ucs == 0x306 && exists $char{0x2d8};
+    return $char{0x2d9} if $ucs == 0x307 && exists $char{0x2d9};
+    return $char{ 0xa8} if $ucs == 0x308 && exists $char{0xa8};
+    return $char{0x2da} if $ucs == 0x30a && exists $char{0x2da};
+    return $char{0x2dd} if $ucs == 0x30b && exists $char{0x2dd};
+    return $char{0x2c7} if $ucs == 0x30c && exists $char{0x2c7};
+    return $char{0x2bb} if $ucs == 0x312 && exists $char{0x2bb};
+    return $char{0x2bc} if $ucs == 0x313 && exists $char{0x2bc};
+    return $char{0x2bd} if $ucs == 0x314 && exists $char{0x2bd};
+    return $char{0x2bc} if $ucs == 0x315 && exists $char{0x2bc};
+    return $char{0x2bc} if $ucs == 0x31b && exists $char{0x2bc};
+    return $char{0x2d9} if $ucs == 0x323 && exists $char{0x2d9};
+    return $char{ 0xa8} if $ucs == 0x324 && exists $char{0xa8};
+    return $char{0x2da} if $ucs == 0x325 && exists $char{0x2da};
+    return $char{ 0x2c} if $ucs == 0x326 && exists $char{0x2c};
+    return $char{ 0xb8} if $ucs == 0x327 && exists $char{0xb8};
+    return $char{0x2db} if $ucs == 0x328 && exists $char{0x2db};
+    return $char{0x2c7} if $ucs == 0x32c && exists $char{0x2c7};
+    return $char{0x2c6} if $ucs == 0x32d && exists $char{0x2c6};
+    return $char{0x2d8} if $ucs == 0x32e && exists $char{0x2d8};
+    return $char{0x2dc} if $ucs == 0x330 && exists $char{0x2dc};
+    return $char{0x2c9} if $ucs == 0x331 && exists $char{0x2c9};
+    return $char{ 0x5f} if $ucs == 0x332 && exists $char{0x5f};
+    return $char{ 0x2f} if $ucs == 0x338 && exists $char{0x2f};
+    return $char{ 0x60} if $ucs == 0x340 && exists $char{0x60};
+    return $char{ 0xb4} if $ucs == 0x341 && exists $char{0xb4};
+    return $char{0x2dc} if $ucs == 0x342 && exists $char{0x2dc};
+    return $char{ 0x2c} if $ucs == 0x343 && exists $char{0x2c};
+    return $char{0x385} if $ucs == 0x344 && exists $char{0x385};
+    if ($slant eq 'r') {
+	return hmirror($char{0x2dd}) if $ucs == 0x30f && exists $char{0x2dd};
+	return vmirror($char{0x2d8}) if $ucs == 0x311 && exists $char{0x2d8};
+    }
+    return undef;
+}
+
+# determine the y coordinate of the center of gravity of the $lines
+# top-most lines or the -$lines bottom-most lines of a glyph.
+sub center_of_gravity {
+    my ($char, $lines) = @_;
+    die("center_of_gravity: no character!\n") unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+        @$char;
+    my ($y, $i, $j);
+
+    $y = 0;
+    $c = 0;
+    if ($lines > 0) {
+	for ($i = 0; $i < $lines && $i < $height; $i++) {
+	    for ($j = 0; $j < $width; $j++) {
+		if (substr($bitmap, $i * $width + $j, 1) eq 'X') {
+		    $c++;
+		    $y += $j;
+		}
+	    }
+	}
+    } elsif ($lines < 0) {
+	for ($i = $height + $lines; $i < $height; $i++) {
+	    next if $i < 0;
+	    for ($j = 0; $j < $width; $j++) {
+		if (substr($bitmap, $i * $width + $j, 1) eq 'X') {
+		    $c++;
+		    $y += $j;
+		}
+	    }
+	}
+    } else {
+	die("center_of_gravity: lines = $lines!\n");
+    }
+
+    die("center_of_gravity: no ink!\n") unless $c;
+
+    return $xoff + (2*$y/$c + $width/2)/3;
+}
+
+# estimate the left and right serif lengths of a glyph
+sub seriflen {
+    my ($char) = @_;
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+        @$char;
+    my $line = substr($bitmap, $width * ($height + $yoff - $serifheight),
+		      $width);
+
+    return (index($line, 'X'), $width - 1 - rindex($line, 'X'));
+}
+
+# remove serif to allow attachment of j descender
+sub serifkill {
+    my ($side, $char) = @_;
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+        @$char;
+    my ($x, $y);
+    my $newbitmap = '';
+
+    for ($y = 0; $y < $height; $y++) {
+	for ($x = 0; $x < $width; $x++) {
+	    if ($y <= $height - $serifheight ||
+		($x < $width/2 && $side eq 'right') ||
+		($x > $width/2 && $side eq 'left')) {
+		$newbitmap .=
+		    substr($bitmap,
+			   $x + $width * $y, 1);
+	    } else {
+		$newbitmap .= '.';
+	    }
+	}
+    }
+
+    $char = tightenbox([$swidth, $dwidth, $width, $height,
+			$xoff, $yoff, $newbitmap]);
+
+    return $char;
+}
+
+# Overstrike one glyph with another in various specifiable alignments
+sub combine {
+    my ($base, $accent, $xalign, $yalign) = @_;
+    return undef unless defined($base) && defined($accent);
+    my ($aswidth, $adwidth, $awidth, $aheight, $axoff, $ayoff, $abitmap) =
+        @$accent;
+    my ($bswidth, $bdwidth, $bwidth, $bheight, $bxoff, $byoff, $bbitmap) =
+        @$base;
+    my ($xoff, $yoff, $char);
+    my ($xcorr, $ycorr);
+
+    if ($bbitmap eq '.') {
+	die("combine: use valign instead of combining with " .
+	    "space base character\n");
+    }
+
+    $xcorr = $ycorr = 0;
+    if ($xalign =~ /^(.*)([+-]\d*\.\d*)(d?)$/) {
+	$xalign = $1;
+	if ($3 eq 'd') {
+	    $xcorr = $2 * $bdwidth;
+	} else {
+	    $xcorr = $2 * $bwidth;
+	}
+    }
+    if ($yalign =~ /^(.*)([+-]\d*\.\d*)$/) {
+	$yalign = $1;
+	$ycorr = $2 * $bheight;
+    }
+
+    if ($debug) {
+	print "combine(base, accent, '$xalign', '$yalign'):\n";
+	print "\nBase character:\n\n";
+	printchar $base;
+	print "\nAccent character:\n\n";
+	printchar $accent;
+    }
+    if ($xalign eq '') {
+	# don't move horizontally
+	$xoff = 0;
+    } elsif ($xalign eq 'cogabove') {
+	# align horizontally the centers of gravity of the
+	# black pixels in the nearest two rows if accent goes on top
+	$xoff = int(center_of_gravity($base, int($bheight/4)+1) -
+		    center_of_gravity($accent, -int($aheight/4)-1)
+		    + 1000.5) - 1000;
+    } elsif ($xalign eq 'cogbelow') {
+	# align horizontally the centers of gravity of the
+	# black pixels in the nearest two rows if accent goes below
+	$xoff = int(center_of_gravity($base, -int($bheight/4)-1) -
+		    center_of_gravity($accent, int($aheight/4)+1)
+		    + 1000.5) - 1000;
+    } elsif ($xalign eq 'center') {
+	# align the centers of the bounding boxes horizontally
+	$xoff = int($bxoff + $bwidth/2.0 - ($axoff + $awidth/2.0) + 1000.5)
+	    - 1000;
+    } elsif ($xalign eq 'next') {
+	# place accent bounding boxes right according to dwidth
+	$xoff = $bdwidth;
+    } elsif ($xalign eq 'right') {
+	# place accent bounding boxes right with some white space
+	$xoff = $bxoff + $bwidth - $axoff + 1;
+    } elsif ($xalign eq 'rightcontact') {
+	# place accent bounding boxes right without space
+	$xoff = $bxoff + $bwidth - $axoff - int($bwidth * 0.12);
+    } elsif ($xalign eq 'leftcontact') {
+	# place accent bounding boxes left without space
+	$xoff = $bxoff - $awidth - $axoff + int($bwidth * 0.12);
+    } elsif ($xalign eq 'leftcenter') {
+	# center accent bounding boxes onto leftmost column
+	$xoff = int($bxoff - ($axoff + $awidth/2.0) + 1000.5) - 1000;
+    } elsif ($xalign eq 'rightcenter') {
+	# center accent bounding boxes onto rightmost column
+	$xoff = int($bxoff + $bwidth - 1 - ($axoff + $awidth/2.0) + 1000.5)
+	    - 1000;
+    } elsif ($xalign eq 'leftstemcogbelow') {
+	# center accent bounding boxes onto leftmost column
+	my ($leftbseriflen, $rightbseriflen) = seriflen($base);
+	my ($leftaseriflen, $rightaseriflen) = seriflen($accent);
+	$xoff = int($bxoff + $leftbseriflen -
+		    ($axoff + $leftaseriflen) + 1000.5) - 1000;
+    } elsif ($xalign eq 'rightstemcogbelow') {
+	# center accent bounding boxes onto rightmost column
+	my ($leftbseriflen, $rightbseriflen) = seriflen($base);
+	my ($leftaseriflen, $rightaseriflen) = seriflen($accent);
+	$xoff = int($bxoff + $bwidth - 1 - $rightbseriflen -
+		    ($axoff + $awidth - 1 - $rightaseriflen) + 1000.4) - 1000;
+    } else {
+	die("combine: xalign = '$xalign' unknown!\n");
+    }
+
+    if ($yalign eq '') {
+	# don't move vertically
+	$yoff = 0;
+    } elsif ($yalign eq 'above') {
+	# place accent bounding on top with some white space
+	$yoff = $byoff + $bheight - $ayoff + 1;
+    } elsif ($yalign eq 'below') {
+	# place accent bounding below with some white space
+	$yoff = $byoff - $ayoff - $aheight - 1;
+    } elsif ($yalign eq 'center') {
+	# align the centers of the bounding boxes vertically
+	$yoff = int($byoff + $bheight/2.0 - ($ayoff + $aheight/2.0) + 1000.5)
+	    - 1000;
+    } elsif ($yalign eq 'centerx') {
+	# align the centers of the accent bounding boxes on xheight
+	$yoff = int($xheight - ($ayoff + $aheight/2.0) + 1000.5)
+	    - 1000;
+    } elsif ($yalign eq 'top') {
+	# align the top lines of the bounding boxes vertically
+	$yoff = $byoff + $bheight - ($ayoff + $aheight);
+    } elsif ($yalign eq 'bottom') {
+	# align the bottom lines of the bounding boxes vertically
+	$yoff = $byoff - $ayoff;
+    } else {
+	die("combine: yalign = '$yalign' unknown!\n");
+    }
+
+    $char =
+	overstrike($base,
+		   translate($accent,
+			     $xoff + int($xcorr + 1000.5) - 1000,
+			     $yoff + int($ycorr + 1000.5) - 1000));
+
+    if ($debug) {
+	print "xoff=$xoff, yoff=$yoff\n";
+	print "\nResult character:\n\n";
+	printchar $char;
+	print "\n";
+    }
+
+    return $char;
+}
+
+# attach $addon to right of $base and sum up the S/DWIDTH metrics
+sub combine_right {
+    my ($base, $addon) = @_;
+    return undef unless defined($base) && defined($addon);
+    my ($aswidth, $adwidth, $awidth, $aheight, $axoff, $ayoff, $abitmap) =
+        @$addon;
+    my ($bswidth, $bdwidth, $bwidth, $bheight, $bxoff, $byoff, $bbitmap) =
+        @$base;
+    my $cchar = combine($base, $addon, 'next-0.05d', '');
+    return undef unless defined($cchar);
+    my ($cswidth, $cdwidth, $cwidth, $cheight, $cxoff, $cyoff, $cbitmap) =
+	@$cchar;
+    return [int($aswidth + 0.95*$bswidth + 0.5),
+	    int($adwidth + 0.95*$bdwidth + 0.5),
+	    $cwidth, $cheight, $cxoff, $cyoff, $cbitmap];
+}
+
+# horizontally mirror glyph
+sub hmirror {
+    my ($char) = @_;
+    return undef unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    my ($i, $newbitmap);
+    
+    $newbitmap = $bitmap;
+    # form new character
+    for ($i = 0; $i < $height; $i++) {
+	substr($newbitmap, $width * $i, $width) =
+	    reverse(substr($bitmap, $width * $i, $width));
+    }
+
+    return [$swidth, $dwidth, $width, $height, $xoff, $yoff, $newbitmap];
+}
+
+# vertically mirror glyph
+sub vmirror {
+    my ($char) = @_;
+    return undef unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    my ($i, $newbitmap);
+    
+    $newbitmap = $bitmap;
+    # form new character
+    for ($i = 0; $i < $height; $i++) {
+	substr($newbitmap, $width * $i, $width) =
+	    substr($bitmap, $width * ($height - 1 - $i), $width);
+    }
+
+    return [$swidth, $dwidth, $width, $height, $xoff, $yoff, $newbitmap];
+}
+
+# rotate glyph
+sub rotate {
+    my ($angle, $char) = @_;
+
+    $angle %= 360;
+    return hmirror(vmirror($char)) if $angle == 180;
+    return $char                   if $angle == 0;
+
+    die("rotate(..., $angle) is not yet implemented!\n");
+}
+
+# align top pixel row of glyph with specified height above baseline
+# (1 = row on top of base line, 0 = the row below base line,
+# also $xheight or $capheight)
+sub valign {
+    my ($align, $char) = @_;
+    return undef unless defined($char);
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) = @$char;
+    
+    if ($align eq 'bottom=baseline') {
+	# let bounding box sit on top of baseline
+	$yoff = 0;
+    } elsif ($align eq 'top=xheight') {
+	# let bounding box hang below xheight
+	$yoff = $xheight - $height;
+    } elsif ($align eq 'top=capheight') {
+	# let bounding box hang below capheight
+	$yoff = $capheight - $height;
+    } elsif ($align eq 'below') {
+	# place bounding box below baseline with space
+	$yoff = - $height - 1;
+    } elsif ($align eq 'above') {
+	# place bounding box above capheight with space
+	$yoff = $capheight + 1;
+    } elsif ($align eq 'operator') {
+	# center vertically with plus sign
+	my ($pswidth, $pdwidth, $pwidth, $pheight, $pxoff, $pyoff, $pbitmap) = 
+	    @{$char{ord '+'}};
+	$yoff = int($pyoff + ($pheight - $height) / 2);
+    } elsif ($align eq 'subscript') {
+	# let bounding box sit on fontdescent
+	$yoff = -$fontdescent;
+    } else {
+	die("valign: align = '$align' unknown!\n");
+    }
+
+    return [$swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap];
+}
+
+# generate space with width given in ems.
+sub space_em {
+    my ($ems) = @_;
+
+    my $swidth = int($ems * 1000 + 0.5);
+    my $dwidth = int($swidth * $pointsize * $resolution_x / 72000 + 0.5);
+
+    return [$swidth, $dwidth, 1, 1, 0, 0, '.'];
+}
+
+# generate space with width given by other character.
+sub space_char {
+    my ($char) = @_;
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@$char;
+    
+    return [$swidth, $dwidth, 1, 1, 0, 0, '.'];
+}
+
+# generate horizontal bar with width given by other character.
+sub dash_char {
+    my ($char) = @_;
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@$char;
+    
+    $height = $thickness;
+
+    return [$swidth, $dwidth, $width, $height, 0, 0,
+	    ('X' x ($width * $height))];
+}
+
+sub create_tempglyphs {
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap);
+    my ($h, $i, $j);
+
+    undef $dotless_j;
+    undef $default_char;
+
+    # dotless_j
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{$char{ord 'j'}};
+    $h = $height - ($height/4 + 1);
+    # erase up to $height/4 + 1 lines with ink
+    while (substr($bitmap, 0, $width) ne ('.' x $width) && $height > $h) {
+	$bitmap = substr($bitmap, $width);
+	$height--;
+	die("j in dotless_j disappeared\n!") if $height < 1;
+    }
+    # erase top white lines
+    while (substr($bitmap, 0, $width) eq ('.' x $width)) {
+	$bitmap = substr($bitmap, $width);
+	$height--;
+    }
+    die("j in dotless_j disappeared\n!") if $height < 1;
+    $dotless_j =
+	[$swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap];
+
+    # descender_j
+    $serifheight = int($xheight/2.5+0.9);
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{$char{ord 'j'}};
+    while ($height > $serifheight-$yoff) {
+	$bitmap = substr($bitmap, $width);
+	$height--;
+    }
+    $descender_j =
+	[$swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap];
+    $descender_j = tightenbox($descender_j);
+    undef $descender_hook;
+    $descender_hook = hmirror($descender_j) if ($slant eq 'r');
+    
+    # kra
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{$char{ord 'k'}};
+    while ($height > $xheight) {
+	$bitmap = substr($bitmap, $width);
+	$height--;
+    }
+    $kra =
+	[$swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap];
+
+    # default_char
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{$char{ord 'H'}};
+    $width--  if $width  > 1 && $width  % 2 == 0;
+    $height-- if $height > 1 && $height % 2 == 0;
+    $bitmap = '';
+    for ($i = 0; $i < $height; $i++) {
+	for ($j = 0; $j < $width; $j++) {
+	    $bitmap .= (($i == 0 || $i == $height-1 ||
+			 $j == 0 || $j == $width-1) &&
+			!(($i + $j) & 1)) ? 'X' : '.';
+	}
+    }
+    $default_char = 
+	[$swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap];
+}
+
+sub create_blockgraphics {
+    my ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap);
+
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{$char{ord 'H'}};
+    # extreme coordinates
+    my $left = 0;
+    my $right = $dwidth - 1;
+    my $bottom = -$fontdescent;
+    my $top = $fontascent;
+    my ($i,$j);
+    my $bitmap;
+
+    # block elements
+    for ($i = 1; $i <= 8; $i++) {
+	$width = $right - $left + 1;
+	$height = int(($top - $bottom + 1) * $i / 8 + 0.5);
+	$xoff = 0;
+	$yoff = $bottom;
+	set(0x2580 + $i, [$swidth, $dwidth, $width, $height, $xoff, $yoff,
+			  ('X' x ($width * $height))]);
+    }
+    for ($i = 1; $i <= 8; $i++) {
+	$width = int(($right - $left + 1) * $i / 8 + 0.5);
+	$height = $top - $bottom + 1;
+	$xoff = 0;
+	$yoff = $bottom;
+	set(0x2590 - $i, [$swidth, $dwidth, $width, $height, $xoff, $yoff,
+			  ('X' x ($width * $height))]);
+    }
+    # light shade
+    $bitmap = '';
+    for ($j = 0; $j < $height; $j++) {
+	for ($i = 0; $i < $width; $i++) {
+	    $bitmap .= ((($i+$j/2) & $j) & 1) ? 'X' : '.';
+	}
+    }
+    set(0x2591, [$swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap]);
+    # medium shade
+    $bitmap = '';
+    for ($j = 0; $j < $height; $j++) {
+	for ($i = 0; $i < $width; $i++) {
+	    $bitmap .= (($i + $j) & 1) ? 'X' : '.';
+	}
+    }
+    set(0x2592, [$swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap]);
+    set(0x2580, subtract($char{0x2588}, $char{0x2584}));  # upper half block
+    set(0x2590, subtract($char{0x2588}, $char{0x258c}));  # right half block
+    set(0x2593, subtract($char{0x2588}, $char{0x2591}));  # dark shade
+    set(0x2594, subtract($char{0x2588}, $char{0x2587}));  # upper 1/8 block
+    set(0x2595, subtract($char{0x2588}, $char{0x258a}));  # right 1/8 block
+
+    # box drawings
+    for ($bold = 0; $bold <= 1; $bold ++) {
+	my $thick = $bold ? $thickness*3 : $thickness;
+
+	# line boundaries
+	my $lleft = int(0.5*($left+$right-$thick) + 0.5);
+	my $lright = $lleft + $thick - 1;
+	my $lbottom = int(0.5*($fontdescent+$fontascent-$thick) + 0.5)
+	    - $fontdescent;
+	my $ltop = $lbottom + $thick - 1;
+
+	# left
+	$width = $lright - $left + 1;
+	$height = $thick;
+	$xoff = 0;
+	$yoff = $lbottom;
+	set(0x2574 + 4*$bold, [$swidth, $dwidth, $width, $height, $xoff, $yoff,
+			       ('X' x ($width * $height))]);
+	# up
+	$width = $thick;
+	$height = $top - $lbottom;
+	$xoff = $lleft;
+	$yoff = $lbottom;
+	set(0x2575 + 4*$bold, [$swidth, $dwidth, $width, $height, $xoff, $yoff,
+			       ('X' x ($width * $height))]);
+	# right
+	$width = $right - $lleft + 1;
+	$height = $thick;
+	$xoff = $lleft;
+	$yoff = $lbottom;
+	set(0x2576 + 4*$bold, [$swidth, $dwidth, $width, $height, $xoff, $yoff,
+			       ('X' x ($width * $height))]);
+	# down
+	$width = $thick;
+	$height = $ltop - $bottom + 1;
+	$xoff = $lleft;
+	$yoff = $bottom;
+	set(0x2577 + 4*$bold, [$swidth, $dwidth, $width, $height, $xoff, $yoff,
+			       ('X' x ($width * $height))]);
+    }
+
+    # now combine the remaining box drawings from the above ones
+    my $ll = $char{0x2574}; #  left light
+    my $ul = $char{0x2575}; #    up light
+    my $rl = $char{0x2576}; # right light
+    my $dl = $char{0x2577}; #  down light
+    my $lh = $char{0x2578}; #  left heavy
+    my $uh = $char{0x2579}; #    up heavy
+    my $rh = $char{0x257a}; # right heavy
+    my $dh = $char{0x257b}; #  down heavy
+
+    set(0x2500, overstrike($ll, $rl));  # LIGHT HORIZONTAL
+    set(0x2501, overstrike($lh, $rh));  # HEAVY HORIZONTAL
+    set(0x2502, overstrike($ul, $dl));  # LIGHT VERTICAL
+    set(0x2503, overstrike($uh, $dh));  # HEAVY VERTICAL
+
+    my $hl = $char{0x2500}; #   hor light
+    my $hh = $char{0x2501}; #   hor heavy
+    my $vl = $char{0x2502}; #  vert light
+    my $vh = $char{0x2503}; #  vert heavy
+
+    set(0x250C, overstrike($dl, $rl));           # LIGHT DOWN AND RIGHT
+    set(0x250D, overstrike($dl, $rh));           # DOWN LIGHT AND RIGHT HEAVY
+    set(0x250E, overstrike($dh, $rl));           # DOWN HEAVY AND RIGHT LIGHT
+    set(0x250F, overstrike($dh, $rh));           # HEAVY DOWN AND RIGHT
+    set(0x2510, overstrike($dl, $ll));           # LIGHT DOWN AND LEFT
+    set(0x2511, overstrike($dl, $lh));           # DOWN LIGHT AND LEFT HEAVY
+    set(0x2512, overstrike($dh, $ll));           # DOWN HEAVY AND LEFT LIGHT
+    set(0x2513, overstrike($dh, $lh));           # HEAVY DOWN AND LEFT
+    set(0x2514, overstrike($ul, $rl));           # LIGHT UP AND RIGHT
+    set(0x2515, overstrike($ul, $rh));           # UP LIGHT AND RIGHT HEAVY
+    set(0x2516, overstrike($uh, $rl));           # UP HEAVY AND RIGHT LIGHT
+    set(0x2517, overstrike($uh, $rh));           # HEAVY UP AND RIGHT
+    set(0x2518, overstrike($ul, $ll));           # LIGHT UP AND LEFT
+    set(0x2519, overstrike($ul, $lh));           # UP LIGHT AND LEFT HEAVY
+    set(0x251A, overstrike($uh, $ll));           # UP HEAVY AND LEFT LIGHT
+    set(0x251B, overstrike($uh, $lh));           # HEAVY UP AND LEFT
+    set(0x251C, overstrike($vl, $rl));           # LIGHT VERTICAL AND RIGHT
+    set(0x251D, overstrike($vl, $rh));           # VERTICAL LIGHT AND RIGHT HEAVY
+    set(0x251E, overstrike($uh, $rl, $dl));      # UP HEAVY AND RIGHT DOWN LIGHT
+    set(0x251F, overstrike($dh, $rl, $ul));      # DOWN HEAVY AND RIGHT UP LIGHT
+    set(0x2520, overstrike($vh, $rl));           # VERTICAL HEAVY AND RIGHT LIGHT
+    set(0x2521, overstrike($dl, $rh, $uh));      # DOWN LIGHT AND RIGHT UP HEAVY
+    set(0x2522, overstrike($ul, $rh, $dh));      # UP LIGHT AND RIGHT DOWN HEAVY
+    set(0x2523, overstrike($vh, $rh));           # HEAVY VERTICAL AND RIGHT
+    set(0x2524, overstrike($vl, $ll));           # LIGHT VERTICAL AND LEFT
+    set(0x2525, overstrike($vl, $lh));           # VERTICAL LIGHT AND LEFT HEAVY
+    set(0x2526, overstrike($uh, $ll, $dl));      # UP HEAVY AND LEFT DOWN LIGHT
+    set(0x2527, overstrike($dh, $ll, $ul));      # DOWN HEAVY AND LEFT UP LIGHT
+    set(0x2528, overstrike($vh, $ll));           # VERTICAL HEAVY AND LEFT LIGHT
+    set(0x2529, overstrike($dl, $lh, $uh));      # DOWN LIGHT AND LEFT UP HEAVY
+    set(0x252A, overstrike($ul, $lh, $dh));      # UP LIGHT AND LEFT DOWN HEAVY
+    set(0x252B, overstrike($vh, $lh));           # HEAVY VERTICAL AND LEFT
+    set(0x252C, overstrike($dl, $hl));           # LIGHT DOWN AND HORIZONTAL
+    set(0x252D, overstrike($lh, $rl, $dl));      # LEFT HEAVY AND RIGHT DOWN LIGHT
+    set(0x252E, overstrike($rh, $ll, $dl));      # RIGHT HEAVY AND LEFT DOWN LIGHT
+    set(0x252F, overstrike($dl, $hh));           # DOWN LIGHT AND HORIZONTAL HEAVY
+    set(0x2530, overstrike($dh, $hl));           # DOWN HEAVY AND HORIZONTAL LIGHT
+    set(0x2531, overstrike($rl, $lh, $dh));      # RIGHT LIGHT AND LEFT DOWN HEAVY
+    set(0x2532, overstrike($ll, $rh, $dh));      # LEFT LIGHT AND RIGHT DOWN HEAVY
+    set(0x2533, overstrike($dh, $hh));           # HEAVY DOWN AND HORIZONTAL
+    set(0x2534, overstrike($ul, $hl));           # LIGHT UP AND HORIZONTAL
+    set(0x2535, overstrike($lh, $rl, $ul));      # LEFT HEAVY AND RIGHT UP LIGHT
+    set(0x2536, overstrike($rh, $ll, $ul));      # RIGHT HEAVY AND LEFT UP LIGHT
+    set(0x2537, overstrike($ul, $hh));           # UP LIGHT AND HORIZONTAL HEAVY
+    set(0x2538, overstrike($uh, $hl));           # UP HEAVY AND HORIZONTAL LIGHT
+    set(0x2539, overstrike($rl, $lh, $uh));      # RIGHT LIGHT AND LEFT UP HEAVY
+    set(0x253A, overstrike($ll, $rh, $uh));      # LEFT LIGHT AND RIGHT UP HEAVY
+    set(0x253B, overstrike($uh, $hh));           # HEAVY UP AND HORIZONTAL
+    set(0x253C, overstrike($vl, $hl));           # LIGHT VERTICAL AND HORIZONTAL
+    set(0x253D, overstrike($lh, $rl, $vl));      # LEFT HEAVY AND RIGHT VERTICAL LIGHT
+    set(0x253E, overstrike($rh, $ll, $vl));      # RIGHT HEAVY AND LEFT VERTICAL LIGHT
+    set(0x253F, overstrike($vl, $hh));           # VERTICAL LIGHT AND HORIZONTAL HEAVY
+    set(0x2540, overstrike($uh, $dl, $hl));      # UP HEAVY AND DOWN HORIZONTAL LIGHT
+    set(0x2541, overstrike($dh, $ul, $hl));      # DOWN HEAVY AND UP HORIZONTAL LIGHT
+    set(0x2542, overstrike($vh, $hl));           # VERTICAL HEAVY AND HORIZONTAL LIGHT
+    set(0x2543, overstrike($lh, $uh, $rl, $dl)); # LEFT UP HEAVY AND RIGHT DOWN LIGHT
+    set(0x2544, overstrike($rh, $uh, $ll, $dl)); # RIGHT UP HEAVY AND LEFT DOWN LIGHT
+    set(0x2545, overstrike($lh, $dh, $rl, $ul)); # LEFT DOWN HEAVY AND RIGHT UP LIGHT
+    set(0x2546, overstrike($rh, $dh, $ll, $ul)); # RIGHT DOWN HEAVY AND LEFT UP LIGHT
+    set(0x2547, overstrike($dl, $uh, $hh));      # DOWN LIGHT AND UP HORIZONTAL HEAVY
+    set(0x2548, overstrike($ul, $dh, $hh));      # UP LIGHT AND DOWN HORIZONTAL HEAVY
+    set(0x2549, overstrike($rl, $lh, $vh));      # RIGHT LIGHT AND LEFT VERTICAL HEAVY
+    set(0x254A, overstrike($ll, $rh, $vh));      # LEFT LIGHT AND RIGHT VERTICAL HEAVY
+    set(0x254B, overstrike($vh, $hh));           # HEAVY VERTICAL AND HORIZONTAL
+
+    set(0x254c, subtract($hl, $vl));             # LIGHT DOUBLE DASH HORIZONTAL
+    set(0x254d, subtract($hh, $vl));             # HEAVY DOUBLE DASH HORIZONTAL
+    set(0x254e, subtract($vl, $hl));             # LIGHT DOUBLE DASH VERTICAL
+    set(0x254f, subtract($vh, $hl));             # HEAVY DOUBLE DASH VERTICAL
+
+    set(0x2550, subtract($hh, $hl));             # DOUBLE HORIZONTAL
+    set(0x2551, subtract($vh, $vl));             # DOUBLE VERTICAL
+    set(0x2554, subtract($char{0x250f}, $char{0x250c}));
+    set(0x2557, subtract($char{0x2513}, $char{0x2510}));
+    set(0x255a, subtract($char{0x2517}, $char{0x2514}));
+    set(0x255d, subtract($char{0x251b}, $char{0x2518}));
+    set(0x2560, subtract($char{0x2523}, $char{0x251c}));
+    set(0x2563, subtract($char{0x252b}, $char{0x2524}));
+    set(0x2566, subtract($char{0x2533}, $char{0x252c}));
+    set(0x2569, subtract($char{0x253b}, $char{0x2534}));
+    set(0x256c, subtract($char{0x254b}, $char{0x253c}));
+    set(0x256A, overstrike($vl, $char{0x2550})); # VERTICAL SINGLE AND HORIZONTAL DOUBLE
+    set(0x256B, overstrike($hl, $char{0x2551})); # VERTICAL DOUBLE AND HORIZONTAL SINGLE
+
+    set(0x257C, overstrike($ll, $rh));           # LIGHT LEFT AND HEAVY RIGHT
+    set(0x257D, overstrike($ul, $dh));           # LIGHT UP AND HEAVY DOWN
+    set(0x257E, overstrike($lh, $rl));           # HEAVY LEFT AND LIGHT RIGHT
+    set(0x257F, overstrike($uh, $dl));           # HEAVY UP AND LIGHT DOWN
+
+}
+
+# delete a property from font
+sub delete_property {
+    my ($property) = @_;
+
+    return unless defined($propnum);
+    if ($properties =~ s/\n$property\s.*\n/\n/i) {
+	$propnum--;
+    }
+    die("propnum = $propnum after removing $property\n") if $propnum < 0;
+}
+
+# set a property for font
+sub set_property {
+    my ($property, $value) = @_;
+
+    if (!defined($propnum)) {
+	$properties = "\n";
+	$propnum = 0;
+    }
+    if (!($properties =~ s/\n$property(\s.*)?\n/\n$property $value\n/i)) {
+	$properties .= "$property $value\n";
+	$propnum++;
+    }
+}
+
+
+# Main program starts here
+
+print <<End if $#ARGV < 0;
+
+Usage: precompose [-f] { <bdf-file> }
+
+where
+
+   -f                   fix FONT_ASCENT, FONT_DESCENT, CAP_HEIGHT,
+                        and X_HEIGHT properties by substituting with
+                        measures from selected Latin-1 bounding boxes
+
+   <source-name>        is the name of an ISO10646-1 encoded BDF file
+                        that will be extended
+
+End
+
+exit if $#ARGV < 0;
+
+# check options
+if ($ARGV[0] eq '-f') {
+    shift @ARGV;
+    $fix_properties = 1;
+}
+
+# Load Unicode database
+if (!open(UDATA, $unicodedata) && !open(UDATA, "$datadir/$unicodedata")) {
+    die ("Can't open Unicode database '$unicodedata':\n$!\n\n" .
+	 "Please make sure that you have downloaded the file\n" .
+	 "ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData-Latest.txt\n");
+}
+while (<UDATA>) {
+    if (/^([0-9,A-F]{4,8});([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)$/) {
+        next if length($1) > 4 || $2 =~ /^</;
+	$ucs = hex($1);
+	$ucsname{$ucs} = $2;
+	$equiv_orig{$ucs} = [map(hex, split(/ /, $6))] if $6;
+    } else {
+	die("Syntax error in line '$_' in file '$unicodedata'");
+    }
+}
+close(UDATA);
+
+# Load Adobe glyphname <-> ISO 10646 mapping data
+$adobedata = "glyphlist.txt";
+if (!open(TABLE, "$adobedata") &&
+    !open(TABLE, "/homes/mgk25/proj/font/tools/$adobedata")) {
+    die ("Can't open name database '$adobedata':\n$!\n\n" .
+         "Please make sure that you have downloaded the file\n" .
+         "http://partners.adobe.com/supportservice/devrelations/typeforum/glyphlist.txt\n");
+}
+while (<TABLE>) {
+    if (/^([0-9A-F]{4});([0-9A-Za-z._]+);/) {
+	$adobename{hex($1)} = $2;
+    } elsif (!/^\#/) {
+	die("Syntax error in $adobedata line:\n$_");
+    }
+}
+
+while ($fin = shift @ARGV) {
+    $fout = $fin;
+    #$fout =~ s/.bdf/-pre.bdf/;
+    print "$fin -> $fout\n";
+    open(FIN,  "<$fin")  || die ("Can't read from '$fin': $!\n");
+
+    # Read header
+    undef $spacing;
+    undef $slant;
+    undef $pointsize;
+    undef $capheight;
+    undef $xheight;
+    undef $fontascent;
+    undef $fontdescent;
+    undef $resolution_x;
+    undef $properties;
+    undef $propnum;
+    undef $thickness;
+    undef $serifheight;
+    $header = "";
+    while (<FIN>) {
+	if (/^STARTPROPERTIES\s+(\d+)\s*$/i) {
+	    $propnum = $1;
+	    $properties = "\n";
+	    last;
+	};
+	last if /^CHARS\s+/i;
+	$header .= $_;
+    }
+    if ($propnum) {
+	while (<FIN>) {
+	    last if /^ENDPROPERTIES\s*$/i;
+	    $spacing = lc($1)    if /^SPACING\s+\"?([cpmCPM])\"?\s*$/i;
+	    $slant = lc($1)      if /^SLANT\s+\"?([rioRIO])\"?\s*$/i;
+	    $pointsize = $1 / 10 if /^POINT_SIZE (\d+)$/i;
+	    $capheight = $1      if /^CAP_HEIGHT (\d+)$/i;
+	    $xheight = $1        if /^X_HEIGHT (\d+)$/i;
+	    $fontascent = $1     if /^FONT_ASCENT (\d+)$/i;
+	    $fontdescent = $1    if /^FONT_DESCENT (\d+)$/i;
+	    $resolution_x = $1   if /^RESOLUTION_X (\d+)$/i;
+	    $properties .= $_;
+	}
+    }
+    $_ = <FIN> unless /^CHARS\s+/i;
+    die("Expected CHARS, but got:\n$_") unless /^CHARS\s+/i;
+
+    # patch decomposed equivalent information to represent preferred style
+    # use commas instead of cedilla (for Baltic countries)
+    %equiv = %equiv_orig;
+    $equiv{0x0122} = [$equiv{0x0122}->[0], 0x326];
+    $equiv{0x0123} = [$equiv{0x0123}->[0], 0x312];
+    $equiv{0x0136} = [$equiv{0x0136}->[0], 0x326];
+    $equiv{0x0137} = [$equiv{0x0137}->[0], 0x326];
+    $equiv{0x013b} = [$equiv{0x013b}->[0], 0x326];
+    $equiv{0x013c} = [$equiv{0x013c}->[0], 0x326];
+    $equiv{0x0145} = [$equiv{0x0145}->[0], 0x326];
+    $equiv{0x0146} = [$equiv{0x0146}->[0], 0x326];
+    $equiv{0x0156} = [$equiv{0x0156}->[0], 0x326];
+    $equiv{0x0157} = [$equiv{0x0157}->[0], 0x326];
+    if ($spacing eq "p") {
+	# use right apostrophe instead of caron (Czeck, Slovak)
+	$equiv{0x010F} = [$equiv{0x010F}->[0], 0x315];
+	$equiv{0x013d} = [$equiv{0x013d}->[0], 0x315];
+	$equiv{0x013e} = [$equiv{0x013e}->[0], 0x315];
+	$equiv{0x0165} = [$equiv{0x0165}->[0], 0x315];
+    }
+
+    # Read characters
+    undef %char;
+    while (<FIN>) {
+	if (/^STARTCHAR\s+(.*)/) {
+	    $name = $1;
+	} elsif (/^ENCODING\s+(-?\d+)/) {
+	    $ucs = $1;
+	    if ($ucs < 0) {
+		printf("Warning: Unencoded character '$name' found!\n");
+	    } elsif ($char{$ucs}) {
+		printf("Warning: Doublecoded character $ucs found!\n"); 
+	    }
+	    $bitmap = "";
+	} elsif (/^SWIDTH\s+(\d+)\s+0$/) {
+	    $swidth = $1;
+	} elsif (/^DWIDTH\s+(\d+)\s+0$/) {
+	    $dwidth = $1;
+	} elsif (/^BBX\s+(\d+)\s+(\d+)\s+(-?\d+)\s+(-?\d+)$/) {
+	    $width  = $1;
+	    $height = $2;
+	    $xoff   = $3;
+	    $yoff   = $4;
+	} elsif (/^ENDCHAR$/ || /^ENDFONT\s+/) {
+	    $char{$ucs} =
+		[$swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap];
+	    $ucs = -1;
+	} elsif (/^[0-9A-Fa-f]+$/) {
+	    $l = $width;
+	    for ($i = 0; $i < length($_)-1; $i++) {
+		$k = hex(substr($_, $i, 1));
+		for ($j = 0; $j < 4 && $l > 0; $j++, $l--) {
+		    $bitmap .= ($k & (1 << (3 - $j))) ? 'X' : '.';
+		}
+	    }
+	} elsif (!/^BITMAP$/) {
+	    die("Unexpected line:\n$_");
+	}
+    }
+
+    close FIN;
+
+    # some tests of font metrics
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{tightenbox($char{ord'x'})};
+    if (!defined($xheight) || 
+	($xheight != $yoff+$height && $fix_properties)) {
+	set_property("X_HEIGHT", $yoff+$height);
+	print "Setting X_HEIGHT " . ($yoff+$height);
+	print " (was '$xheight')" if defined($xheight);
+	print "\n";
+	$xheight = $yoff+$height;
+    }
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{tightenbox($char{ord'H'})};
+    if (!defined($capheight) ||
+	($capheight != $yoff+$height && $fix_properties)) {
+	set_property("CAP_HEIGHT", $yoff+$height);
+	print "Setting CAP_HEIGHT " . ($yoff+$height);
+	print " (was '$capheight')" if defined($capheight);
+	print "\n";
+	$capheight = $yoff+$height;
+    }
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{tightenbox($char{ord'p'})};
+    if (!defined($fontdescent) ||
+	$fontdescent != -$yoff && $fix_properties) {
+	set_property("FONT_DESCENT", -$yoff);
+	print "Setting FONT_DESCENT " . (-$yoff);
+	print " (was '$fontdescent')" if defined($fontdescent);
+	print "\n";
+	$fontdescent = -$yoff;
+    }
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{tightenbox($char{ord'Å'})};
+    if (!defined($fontascent) ||
+	$fontascent != $yoff + $height && $fix_properties) {
+	set_property("FONT_ASCENT", $yoff+$height);
+	print "Setting FONT_ASCENT " . ($yoff+$height);
+	print " (was '$fontascent')" if defined($fontascent);
+	print "\n";
+	$fontascent = $yoff+$height;
+    }
+    ($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	@{tightenbox($char{ord '_'})};
+    $thickness = $height;
+    $thickness = 1 unless $thickness > 1;
+
+    # Add precomposed characters
+
+    # Process additional characters
+    create_blockgraphics() if ($slant eq 'r' &&
+			       ($spacing eq 'c' || $spacing eq 'm'));
+    create_tempglyphs();
+    set(0x2212, $char{0x2013});
+    set(0x2212, $char{ord('-')});
+    if (width($char{ord 'I'}) > 2) {
+	$stroke = dash_char($char{ord 'I'});
+    } else {
+	$stroke = dash_char($char{ord 't'});
+    }
+    set(0, $default_char);
+    set(0x138, $kra);
+    set(0x14a, combine($char{ord 'N'}, $descender_j, 'rightstemcogbelow', ''));
+    set(0x14b, combine(serifkill('right', $char{ord 'n'}), $descender_j,
+		       'rightstemcogbelow', ''));
+    set(0x110, $char{0xd0});
+    set(0x111, combine($char{ord 'd'}, $stroke,
+		       'rightcenter-0.2', 'centerx+0.05'));
+    set(0x126, combine($char{ord 'H'}, dash_char($char{ord 'H'}),
+		       'center', 'centerx'));
+    set(0x127, combine($char{ord 'h'}, $stroke,
+		       'leftcenter+0.25', 'centerx+0.05'));
+    set(0x166, combine($char{ord 'T'}, $stroke, 'center', 'center'));
+    set(0x167, combine($char{ord 't'}, $stroke, 'center', 'centerx-0.4'));
+    set(0x186, rotate(180, $char{ord 'C'}));
+    set(0x18e, rotate(180, $char{ord 'E'}));
+    set(0x189, $char{0xd0});
+    set(0x197, combine($char{ord 'I'}, $stroke, 'center', 'center'));
+    set(0x19a, combine($char{ord 'l'}, $stroke, 'center', 'center'));
+    set(0x19d, combine(serifkill('left', $char{ord 'N'}),
+		       $descender_j, 'leftstemcogbelow', ''));
+    set(0x19f, combine($char{ord 'O'}, dash_char($char{ord 'O'}),
+		       'center', 'center'));
+    set(0x275, combine($char{ord 'o'}, dash_char($char{ord 'o'}),
+		       'center', 'center'));
+    set(0x1a9, $char{0x3a3});
+    set(0x1ae, combine(serifkill('both', $char{ord 'T'}), $descender_hook,
+		       'rightstemcogbelow', ''));
+    set(0x1b5, combine($char{ord 'Z'}, $stroke, 'center', 'center'));
+    set(0x1b6, combine($char{ord 'z'}, $stroke, 'center', 'center'));
+    set(0x1bb, combine($char{ord '2'}, dash_char($char{ord '2'}),
+		       'center', 'center'));
+    set(0x1bc,  $char{ord '5'});
+    set(0x1c0, $char{ord '|'});
+    set(0x1c2, combine($char{ord '='}, $char{ord '|'}, 'center', 'center'));
+    set(0x1c3, $char{0x21});
+    set(0x1e4, combine($char{ord 'G'}, $stroke,
+		       'rightcenter-0.1', 'centerx-0.5'));
+    set(0x1e5, combine($char{ord 'g'}, dash_char($char{ord 'g'}),
+		       'center', 'bottom+0.2'));
+    if ($slant eq 'r') {
+	set(0x1a7,  hmirror($char{ord 'S'}));
+	set(0x1a8,  hmirror($char{ord 's'}));
+	set(0x1b1,  vmirror($char{0x3a9}));
+	set(0x2127, vmirror($char{0x3a9}));
+	set(0x254,  hmirror($char{ord 'c'}));
+	set(0x258,  hmirror($char{ord 'e'}));
+	set(0x2200, vmirror($char{ord 'A'}));
+	set(0x2203, hmirror($char{ord 'E'}));
+	set(0x220a, hmirror($char{0x220d}));
+	set(0x220b, hmirror($char{0x2208}));
+	set(0x2235, vmirror($char{0x2234}));
+    }
+    set(0x259, rotate(180, $char{ord 'e'}));
+    set(0x288, combine(serifkill('both', $char{ord 't'}), $descender_hook,
+		       'rightstemcogbelow', ''));
+    set(0x289, combine($char{ord 'u'}, dash_char($char{ord 'u'}),
+		       'center', 'center'));
+    set(0x1dd, $char{0x259});
+    set(0x250, rotate(180, $char{ord 'a'}));
+    set(0x25f, valign('top=xheight', rotate(180, $char{ord 'f'})));
+    set(0x265, valign('top=xheight', rotate(180, $char{ord 'h'})));
+    set(0x29e, valign('top=xheight', rotate(180, $char{ord 'k'})));
+    set(0x279, rotate(180, $char{ord 'r'}));
+    set(0x287, rotate(180, $char{ord 't'}));
+    set(0x28c, rotate(180, $char{ord 'v'}));
+    set(0x28d, rotate(180, $char{ord 'w'}));
+    set(0x28e, valign('bottom=baseline', rotate(180, $char{ord 'y'})));
+    set(0x201b, hmirror($char{0x2019}));
+    set(0x201f, hmirror($char{0x201d}));
+    set(0x2b9,  $char{0x2032});
+    set(0x2ba,  $char{0x2033});
+    set(0x2bb,  $char{0x2018});
+    set(0x2bc,  $char{0x2019});
+    set(0x2bd,  $char{0x201b});
+    set(0x2c8,  $char{0x27});
+    set(0x2ca,  $char{0xb4});
+    set(0x2cb,  $char{0x60});
+    set(0x2cd,  valign('below', $char{0xaf}));
+    set(0x2ce,  valign('below', $char{0x60}));
+    set(0x2cf,  valign('below', $char{0xb4}));
+    set(0x2ee,  $char{0x201d});
+    set(0x384,  $char{0xb4});
+    set(0x375,  valign('below', rotate(180, $char{0x2b9})));
+    set(0x2010, $char{0xad});
+    set(0x2010, $char{ord '-'});
+    set(0x2011, $char{0x2010});
+    set(0x2013, $char{0x2212});
+    set(0x2012, $char{0x2013});
+    set(0x2015, $char{0x2014});
+    set(0x2081, valign('subscript', $char{0x00b9}));
+    set(0x2082, valign('subscript', $char{0x00b2}));
+    set(0x2083, valign('subscript', $char{0x00b3}));
+    set(0x20a5, combine($char{ord 'm'}, $char{ord '/'}, 'center', 'center'));
+    set(0x20a6, combine($char{ord 'N'}, $char{ord '='}, 'center', 'center'));
+    set(0x20a9, combine($char{ord 'W'}, $char{ord '='}, 'center', 'center'));
+    set(0x20ac, combine($char{ord 'C'}, $char{ord '='},
+			'leftcenter+.2', 'center'));
+    set(0x20ad, combine($char{ord 'K'}, dash_char($char{ord 'K'}),
+			'center', 'center'));
+    set(0x2132, rotate(180, $char{ord 'F'}));
+    set(0x2236, $char{0x3a});
+    set(0x2261,
+	valign('operator',
+	       combine(combine(dash_char($char{ord '='}),
+			       dash_char($char{ord '='}),
+			       'center', 'above'),
+		       dash_char($char{ord '='}), 'center', 'below')));
+    set(0x2259, combine($char{ord '='}, $char{0x2c6}, 'center', 'above'));
+    set(0x225a, combine($char{ord '='}, $char{0x2c7}, 'center', 'above'));
+    set(0x2264,
+	combine($char{ord '<'}, dash_char($char{ord '<'}), 'center', 'below'));
+    set(0x2265,
+	combine($char{ord '>'}, dash_char($char{ord '>'}), 'center', 'below'));
+    set(0x22a4, vmirror($char{0x22a5}));
+    if ($spacing eq "p") {
+	set(0x132, combine_right($char{ord 'I'}, $char{ord 'J'}));
+	set(0x133, combine_right($char{ord 'i'}, $char{ord 'j'}));
+	set(0x13f, combine_right($char{ord 'L'}, $char{0xb7}));
+	set(0x140, combine_right($char{ord 'l'}, $char{0xb7}));
+	set(0x149, combine_right($char{0x2019},  $char{ord 'n'}));
+	set(0x2002, space_em(0.5));
+	set(0x2003, space_em(1));
+	set(0x2004, space_em(1/3));
+	set(0x2005, space_em(1/4));
+	set(0x2006, space_em(1/6));
+	set(0x2007, space_char($char{ord '0'}));
+	set(0x2008, space_char($char{ord '.'}));
+	set(0x2009, space_em(1/5));
+	set(0x200a, space_em(1/10));
+	set(0x200b, space_em(0));
+	set(0x2103, combine_right($char{0xb0},  $char{ord 'C'}));
+	set(0x2109, combine_right($char{0xb0},  $char{ord 'F'}));
+    } else {
+	set(0x132, combine($char{ord 'I'}, $char{ord 'J'}, 'center+0.4', ''));
+	set(0x133, combine($char{ord 'i'}, $char{ord 'j'}, 'center+0.3', ''));
+	set(0x13f, combine($char{ord 'L'}, $char{0xb7}, 'center+0.1', ''));
+	set(0x140, combine($char{ord 'l'}, $char{0xb7}, 'center+0.35d', ''));
+	set(0x149, combine($char{ord 'n'}, $char{0x2019}, 'center-0.6', ''));
+	for ($i = 0x2000; $i < 0x200b; $i++) {
+	    set($i, $char{ord ' '});
+	}
+	set(0x203d, combine($char{ord '?'}, $char{ord '!'}, 'center', ''));
+    }
+    
+    # Process remaining chars from Unicode database
+    for ($i = 0; $i < 2; $i++) {
+	for $ucs (keys(%equiv)) {
+	    next if $ucs >= 0x1f00 && $ucs <= 0x1fff; # no Greek polytonic
+	    if (@{$equiv{$ucs}} == 1) {
+		set($ucs, $char{$equiv{$ucs}->[0]});
+	    } elsif (@{$equiv{$ucs}} == 2) {
+		$base   = $equiv{$ucs}->[0];
+		$accent = $equiv{$ucs}->[1];
+		$accentglyph = accent($accent);
+		if (exists $char{$base} && !exists $char{$ucs} &&
+		    defined $accentglyph) {
+		    if ((($base >= 0x391 && $base <= 0x3a9) ||
+			 ($base & ~0x77) == 0x1f88) &&
+			($accent == 0x300 || $accent == 0x301 ||
+			 $accent == 0x313 || $accent == 0x314)) {
+			# Greek tonos on capital
+			set($ucs,
+			    combine($char{$base}, $accentglyph,
+				    'leftcontact', 'top'));
+		    } elsif ($accent >= 0x300 && $accent <= 0x314 ||
+			     $accent >= 0x342 && $accent <= 0x344) {
+			# accents that go on top of the base character
+			if ($base == ord 'i') {
+			    $base = $char{0x131};
+			} elsif ($base == ord 'j') {
+			    $base = $dotless_j;
+			} else {
+			    $base = $char{$base};
+			}
+			set($ucs,
+			    combine($base, $accentglyph,
+				    'cogabove', 'above'));
+		    } elsif ($accent >= 0x334 && $accent <= 0x338) {
+			# overstriking accents (slash, etc.)
+			set($ucs,
+			    combine($char{$base}, $accentglyph,
+				    'center', 'center'));
+		    } elsif ($accent >= 0x327 && $accent <= 0x328) {
+			# contact accents below (ogonek, cedila)
+			set($ucs,
+			    combine($char{$base}, $accentglyph,
+				    'cogbelow', ''));
+		    } elsif ($accent >= 0x323 && $accent <= 0x333) {
+			# accents that go below the base character
+			set($ucs,
+			    combine($char{$base}, $accentglyph,
+				    'cogbelow', 'below'));
+		    } elsif ($accent == 0x315) {
+			# accents that go right of the base character
+			if ($spacing eq "p") {
+			    set($ucs, combine_right($char{$base},
+						    $accentglyph));
+			} else {
+			    set($ucs, combine($char{$base}, $accentglyph,
+					      'center+0.4', ''));
+			}
+		    } elsif ($accent == 0x31b) {
+			# attach horn
+			set($ucs, combine($char{$base}, $accentglyph,
+					  'rightcontact', 'top'));
+		    } elsif ($accent == 0x340) {
+			# left accent
+			set($ucs, combine($char{$base}, $accentglyph,
+					  'leftcenter', 'above'));
+		    } elsif ($accent == 0x341) {
+			# right accent
+			set($ucs, combine($char{$base}, $accentglyph,
+					  'rightcenter', 'above'));
+		    }
+		}
+	    }
+	}
+    }
+    
+    # eliminate surplus characters
+    for $ucs (keys(%char)) {
+	delete $char{$ucs} unless $ucs >= 0;
+    }
+
+    # determine new font bounding box
+    ($fwidth, $fheight, $fxoff, $fyoff) = (0, 0, 0, 0);
+    for $ucs (keys(%char)) {
+	($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	    @{$char{$ucs}};
+	($fwidth, $fheight, $fxoff, $fyoff) =
+	    combine_bbx($fwidth, $fheight, $fxoff, $fyoff,
+			$width,  $height,  $xoff,  $yoff);
+    }
+    if (!($header =~ s/\nFONTBOUNDINGBOX \d+ \d+ -?\d+ -?\d+\n/\nFONTBOUNDINGBOX $fwidth $fheight $fxoff $fyoff\n/)) {
+	die("Failed to find FONTBOUNDINGBOX for substitution!\n");
+    }
+
+    # some more header modifications
+    $header =~
+	s/(\nCOMMENT\s+\$)XConsortium: [^\$]*\$\n/$1Xorg: \$\n$notice/;
+    $header .= "COMMENT \$Xorg: \$\n" unless $header =~ /\$Xorg:/;
+    $header .= $notice unless $header =~ /$notice/;
+    # remove obsolete information
+    delete_property("_DEC_PRODUCTINFO");
+    delete_property("_ADOBE_XFONT");
+    delete_property("CHARSET_COLLECTIONS");
+    # add or overwrite default character
+    set_property("DEFAULT_CHAR", 0);
+    
+    # Write output
+    open(FOUT, ">$fout") || die ("Can't write to '$fout': $!\n");
+    print FOUT $header;
+    print FOUT "STARTPROPERTIES $propnum${properties}ENDPROPERTIES\n";
+
+    # Count characters
+    $count = 0;
+    for $ucs (keys(%char)) {
+	$count++;
+    }
+    print FOUT "CHARS $count\n";
+
+    # Write characters
+    for $ucs (sort({ $a <=> $b } keys(%char))) {
+	# determine adobe name
+	$name = $adobename{$ucs};
+	if (!$name) {
+	    if ($ucs < 32) {
+		$name = sprintf("char%d", $ucs);
+	    } else {
+		$name = sprintf("uni%04X", $ucs);
+	    }
+	}
+	print FOUT "STARTCHAR $name\n";
+	# determine encoding
+	if ($ucs >= $truncate) {
+	    # do not encode those few characters (e.g. ff and fi) with
+	    # very high code values, because these would cause for
+	    # non-monospaced fonts 2**16 sized data structured to be
+	    # created by the X server.
+	    print FOUT "ENCODING -1\n";
+	} else {
+	    print FOUT "ENCODING $ucs\n";
+	}
+	# write character
+	($swidth, $dwidth, $width, $height, $xoff, $yoff, $bitmap) =
+	    @{$char{$ucs}};
+	#$dwidth = int($swidth * $pointsize * $resolution_x / 72000 + 0.5);
+	print FOUT "SWIDTH $swidth 0\nDWIDTH $dwidth 0\n";
+	print FOUT "BBX $width $height $xoff $yoff\n";
+	print FOUT "BITMAP\n";
+	$p = 0;
+	for ($i = 0; $i < $height; $i++) {
+	    for ($j = 0; $j < $width; $j += 8) {
+		$b = 0;
+		for ($k = 0; $k < 8 && $k + $j < $width; $k++, $p++) {
+		    $b |= substr($bitmap, $p, 1) eq 'X' ? (1 << (7-$k)) : 0; 
+		}
+		printf FOUT "%02X", $b;
+	    }
+	    print FOUT "\n";
+	}
+	print FOUT "ENDCHAR\n";
+	die("wrong length: bitmap='$bitmap', width=$width, height=$height\n")
+	    if length($bitmap) != $width * $height;
+    }
+    print FOUT "ENDFONT\n";
+    close FOUT;
+}

@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# Generate a number of useful 8-bit fonts from the ISO 10646-1 master fonts
+# and write them into subdirectories 75dpi/ and 100dpi/
+# $Id: map_fonts,v 1.4 2001-04-08 10:23:04+01 mgk25 Exp $
+#
+MAPPINGS="../MAPPINGS"
+UCS2ANY="../ucs2any.pl"
+# construct list of encodings and ucs2any.pl command line spec
+ENCODINGS=""
+SPEC=""
+for i in 8859-1 8859-2 ; do
+        #8859-3 8859-9 8859-13 8859-14 8859-15 ; do
+    ENCODINGS="$ENCODINGS ISO$i"
+    SPEC="$SPEC $MAPPINGS/$i.TXT ISO$i"
+done
+# get a fresh subdirectory and fill in mapping results
+for d in 75dpi 100dpi ; do
+    rm -rf $d-derived
+    mkdir $d-derived/
+    cd $d-derived/
+    echo "recoding ..."
+    for f in ../$d/*.bdf ; do
+	$UCS2ANY $f $SPEC
+    done
+    echo "generating compressed PCFs ..."
+    for f in *.bdf ; do
+	bdftopcf $f | gzip -9c >${f%.bdf}.pcf.gz
+    done
+    cd ..
+done

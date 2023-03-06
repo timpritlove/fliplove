@@ -1,0 +1,28 @@
+#!/bin/bash
+# call the necessary perl scripts to convert the old B&H fonts to
+# ISO10646-1 and to add precomposed characters
+# Markus Kuhn <mkuhn@acm.org> -- 2000-12-14
+dpi=$1
+for i in *.bdf ; do
+  echo "Recoding $dpi/$i ..."
+  SECOND_SRC=""
+  OPTION=""
+  case $i in
+     timR*.bdf)
+       SECOND_SRC="../orig/R6.4/xc/fonts/bdf/$dpi/symb${i#timR}" ;;
+     lut?S*.bdf)
+       SECOND_SRC="../orig/R4/mit/fonts/bdf/$dpi/$i"
+       OPTION="-m" ;;
+     ncenR18.bdf|ncenR24.bdf)
+       case $dpi in
+	   75dpi)
+           SECOND_SRC="../orig/R3/X.V11R3/fonts/bdf/$dpi/$i" ;;
+	 esac ;;
+     lu[RB]S19.bdf|lu[RB]S24.bdf)
+       SECOND_SRC="00CC-00CF 00EC-00EF" ;;
+  esac
+echo make_ucs $OPTION $i $SECOND_SRC
+{ ../make_ucs $OPTION $i $SECOND_SRC } || rm $i
+done
+echo precompose *.bdf
+../precompose *.bdf

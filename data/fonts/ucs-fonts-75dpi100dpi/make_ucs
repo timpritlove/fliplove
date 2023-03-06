@@ -1,0 +1,234 @@
+#!/usr/bin/perl
+# Turn any BDF font with Postscript glyph names into one with ISO10646-1
+# encoding.
+# Markus Kuhn <mkuhn@acm.org> -- 1999-06-19
+
+use strict 'subs';
+
+#$truncate = 0x3200;      # first non-encoded character (see bdftruncate)
+$truncate = 0x10000;      # first non-encoded character (see bdftruncate)
+
+# check options
+if ($ARGV[0] eq '+m') {
+    shift @ARGV;
+    $hyphenminus = 0;
+} elsif ($ARGV[0] eq '-m') {
+    shift @ARGV;
+    $hyphenminus = 1;
+}
+
+print <<End if $#ARGV < 0;
+
+Usage: make_ucs [-m|+m] <source-file> {<source-file> ...}
+
+   -m                   use 'minus' for U+002D (instead of 'hyphen')
+   +m                   use 'hyphen' for U+002D (default)
+   <source-file>        BDF file with Adobe glyph names
+
+End
+
+exit if $#ARGV < 0;
+
+# Load Adobe glyphname <-> ISO 10646 mapping data
+$adobedata = "glyphlist.txt";
+if (!open(TABLE, "$adobedata") &&
+    !open(TABLE, "/homes/mgk25/proj/font/tools/$adobedata")) {
+    die ("Can't open name database '$adobedata':\n$!\n\n" .
+         "Please make sure that you have downloaded the file\n" .
+         "http://partners.adobe.com/supportservice/devrelations/typeforum/glyphlist.txt\n");
+}
+while (<TABLE>) {
+    if (/^([0-9A-F]{4});([0-9A-Za-z._]+);/) {
+	$adobename{$1} = $2;
+	$code{$2} = $1;
+    } elsif (!/^\#/) {
+	die("Syntax error in $adobedata line:\n$_");
+    }
+}
+
+# patch adobe table
+delete $adobename{$code{'suchthat'}};
+$adobename{'220D'} = 'suchthat';
+$code{'suchthat'} = '220D';
+$adobename{'2010'} = 'hyphen';
+if ($hyphenminus) {
+    $adobename{'002D'} = 'minus';
+}
+
+# Open input and output file
+$fin  = shift @ARGV;
+$fout = $fin;
+#$fout =~ s/.bdf/-ucs.bdf/;
+open(FIN,  "<$fin")  || die ("make_ucs: can't read from '$fin': $!\n");
+
+# Read and modify header
+$header = "";
+while (<FIN>) {
+    last if /^CHARS\s+/;
+    if (/^CHARSET_REGISTRY /) {
+	$header .= "CHARSET_REGISTRY \"ISO10646\"\n";
+    } elsif (/^CHARSET_ENCODING /) {
+	$header .= "CHARSET_ENCODING \"1\"\n";
+    } elsif (/^(FONT\s+.*)-[^-]+-[^-]$/) {
+	$header .= "$1-ISO10646-1\n";
+    } else {
+	if (/SPACING\s+\"?([cpmCPM])\"?\s*$/) {
+	    $spacing = lc($1);
+	}
+	$header .= $_;
+    }
+}
+
+# Read characters
+while (<FIN>) {
+    if (/^STARTCHAR/) {
+	if (/^STARTCHAR\s+([0-9A-Za-z._]+)$/) {
+	    $name = $1;
+	    $char{$name} = "";
+	} else {
+	    die("make_ucs: STARTCHAR syntax error:\n$_");
+	}
+    } elsif (/^ENCODING\s+(-?\d+)/) {
+	if (!$code{$name}) {
+	    print STDERR  "Warning: Unknown character name " .
+		"'$name' with code $1 in '$fin'.\n";
+	}
+	$l1usage{sprintf("%04X", $1)} = $name;
+    } elsif (/^ENDFONT\s+/) {
+	$name = "-";
+    } else {
+	$char{$name} .= $_;
+	if (/^ENDCHAR$/) {
+	    $name = "-";
+	}
+    }
+}
+
+close FIN;
+
+# read additional files
+while ($fin = shift @ARGV) {
+    if ($fin =~ /^([0-9A-Fa-f]{4})-([0-9A-Fa-f]{4})$/) {
+	# delete some already loaded character range
+	for ($i = hex($1); $i <= hex($2); $i++) {
+	    delete $char{$adobename{sprintf("%04X", $i)}};
+	}
+	next;
+    }
+
+    open(FIN,  "<$fin")  || die ("make_ucs: can't read from '$fin': $!\n");
+    
+    # skip header
+    while (<FIN>) {
+	last if /^CHARS\s+/;
+    }
+
+    my $name = "-";
+    # Read additional characters
+    while (<FIN>) {
+	if (/^STARTCHAR/) {
+	    if (/^STARTCHAR\s+([0-9A-Za-z._]+)$/) {
+		$name = $1;
+		# patch Greek mixup in symbols font
+		if ($name eq 'phi') {
+		    $name = 'phi1';
+		} elsif ($name eq 'phi1') {
+		    $name = 'phi';
+		}
+		if ($char{$name}) {
+		    #print STDERR "Skipping '$name' in '$fin' (occupied).\n";
+		    $name = "-";
+		}
+		$ucs = hex($code{$name});
+		if ($ucs >= 0xe000 && $ucs <= 0xf8ff) {
+		    #print STDERR "Skipping '$name' in '$fin' (private).\n";
+		    $name = "-";
+		}
+		$char{$name} = "";
+	    } else {
+		die("make_ucs: STARTCHAR syntax error:\n$_");
+	    }
+	} elsif (/^ENCODING\s+(-?\d+)/) {
+	    if (!$code{$name} && $name ne "-") {
+		print STDERR  "Warning: Unknown character name " .
+		    "'$name' with code $1 in '$fin'.\n"
+			unless $name eq "apple";
+	    }
+	    $l1usage{sprintf("%04X", $1)} = $name;
+	} elsif (/^ENDFONT\s+/) {
+	    $name = "-";
+	} else {
+	    $char{$name} .= $_;
+	    if (/^ENDCHAR$/) {
+		$name = "-";
+	    }
+	}
+    }
+    close FIN;
+}
+
+# Check for presence of Adobe standard encoding characters
+foreach $i ("quotesingle", "grave", "dotlessi", "Lslash", "lslash", "OE", "oe",
+"florin", "circumflex", "caron", "macron", "breve", "dotaccent",
+"ring", "ogonek", "tilde", "hungarumlaut", "endash", "emdash",
+"quoteleft", "quoteright", "quotesinglbase", "quotedblleft",
+"quotedblright", "quotedblbase", "dagger", "daggerdbl", "bullet",
+"ellipsis", "perthousand", "guilsinglleft", "guilsinglright",
+"fraction", "periodcentered", "fi", "fl") {
+    if (!$char{$i}) {
+	$incomplete = 1;
+	print STDERR  "Warning: Adobe standard encoding not covered " .
+	    "(e.g., $i missing)!\n";
+	last;
+    }
+}
+
+# check for Latin-1 completeness
+for ($ucs = "0020"; hex($ucs) <= 0xff; $ucs = sprintf("%04X", hex($ucs)+1)) {
+    next if (hex($ucs) >= 0x7f && hex($ucs) <= 0x9f);
+    if (!$char{$adobename{$ucs}}) {
+	if ($ucs ne "0027" && $ucs ne "0060") {
+	    print STDERR "Warning: U+$ucs ($adobename{$ucs}) missing -> " .
+		"U+$code{$l1usage{$ucs}} ($l1usage{$ucs}) in " .
+		    "$fout.\n";
+	}
+	if ($l1usage{$ucs}) {
+	    $char{$adobename{$ucs}} = $char{$l1usage{$ucs}};
+	}
+    }
+}
+
+# Write output
+open(FOUT, ">$fout") || die ("make_ucs: can't write to '$fout': $!\n");
+
+print FOUT $header;
+
+# Count characters
+$count = 0;
+for $ucs (keys(%adobename)) {
+    $count++ if ($char{$adobename{$ucs}});
+}
+print FOUT "CHARS $count\n";
+
+# Write characters
+for $ucs (sort(keys(%adobename))) {
+    my $name = $adobename{$ucs};
+    if ($char{$name}) {
+	print FOUT "STARTCHAR $name\n";
+	if (hex($ucs) >= $truncate) {
+	    # do not encode those few characters (e.g. ff and fi) with
+	    # very high code values, because these would cause for
+	    # non-monospaced fonts 2**16 sized data structures to be
+	    # created by the X server.
+	    print FOUT "ENCODING -1\n";
+	} else {
+	    $encoding = hex($ucs);
+	    print FOUT "ENCODING $encoding\n";
+	}
+	print FOUT $char{$name};
+    }
+}
+print FOUT "ENDFONT\n";
+close FOUT;
+
+exit $incomplete;
