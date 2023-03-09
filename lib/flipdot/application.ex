@@ -9,7 +9,7 @@ defmodule Flipdot.Application do
   @impl true
   def start(_type, _args) do
     space_invaders =
-      defbitmap([
+      defbitmap [
         "                                                                                                                   ",
         "                                                                                                                   ",
         "                                                                                                                   ",
@@ -26,7 +26,7 @@ defmodule Flipdot.Application do
         "                                                                                                                   ",
         "                                                                                                                   ",
         "                                                                                                                   "
-      ])
+      ]
 
     children = [
       # Start the Telemetry supervisor
