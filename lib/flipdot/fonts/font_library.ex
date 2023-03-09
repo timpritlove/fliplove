@@ -6,7 +6,7 @@ defmodule Flipdot.FontLibrary do
   use GenServer
 
   @topic "font_library_update"
-  defstruct fonts: [], font_index: nil
+  defstruct fonts: []
 
   def start_link(_state) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -35,10 +35,7 @@ defmodule Flipdot.FontLibrary do
 
     fonts = [Flipdot.Fonts.SpaceInvaders.get() | fonts]
 
-    #    IO.inspect(font_index, label: "index", pretty: true, limit: :infinity)
     Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, :font_library_update)
-
-    #  {:noreply, %{state | fonts: fonts, font_index: font_index}}
     {:noreply, %{state | fonts: fonts}}
   end
 

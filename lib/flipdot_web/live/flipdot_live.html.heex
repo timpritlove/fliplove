@@ -76,8 +76,11 @@
       autocomplete="off"
       phx-debounce="500"
     />
-    <select :if={@font_index} name="font" id="font-select">
-      <option :for={font <- Enum.sort(@font_index)} value={elem(font, 0)}>
+    <select :if={@font_select} name="font" id="font-select">
+      <option
+        :for={font <- Enum.sort_by(@font_select, fn font_entry -> elem(font_entry, 1) end)}
+        value={elem(font, 0)}
+      >
         <%= elem(font, 1) %>
       </option>
     </select>

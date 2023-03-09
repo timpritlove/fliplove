@@ -22,7 +22,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:bitmap, DisplayState.get())
       |> assign(:clock, clock())
       |> assign(:text, "")
-      |> assign(:font_index, FontLibrary.get_fonts() |> build_font_index())
+      |> assign(:font_select, FontLibrary.get_fonts() |> build_font_select())
 
     {:ok, socket}
   end
@@ -34,11 +34,11 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_info(:font_library_update, socket) do
-    font_index = FontLibrary.get_fonts() |> build_font_index()
+    font_select = FontLibrary.get_fonts() |> build_font_select()
 
     {:noreply,
      socket
-     |> assign(:font_index, font_index)}
+     |> assign(:font_select, font_select)}
   end
 
   def handle_info(:tick, socket) do
@@ -123,7 +123,7 @@ defmodule FlipdotWeb.FlipdotLive do
     |> Calendar.strftime("%c", preferred_datetime: "%d.%m.%Y %H:%M:%S")
   end
 
-  def build_font_index(fonts) do
+  def build_font_select(fonts) do
     for font <- fonts do
       {
         font.name,
@@ -133,7 +133,12 @@ defmodule FlipdotWeb.FlipdotLive do
           "-" <>
           Map.get(font.properties, :weight_name, "") <>
           "-" <>
-          Map.get(font.properties, :slant, "") <>
+          case Map.get(font.properties, :slant) do
+            nil -> "Regular"
+            "R" -> "Regular"
+            "I" -> "Italic"
+            "O" -> "Oblique"
+          end <>
           case Map.get(font.properties, :pixel_size) do
             nil -> "-unknown"
             pixel_size -> "-" <> Integer.to_string(pixel_size)

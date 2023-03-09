@@ -8,7 +8,7 @@ defmodule Flipdot.Fonts.SpaceInvaders do
     properties: %{
       copyright: "Public domain font. Share and enjoy.",
       family_name: "Space Invaders",
-      foundry: "Taito",
+      foundry: "AAA",
       weight_name: "Normal",
       slant: "R",
       pixel_size: 7
