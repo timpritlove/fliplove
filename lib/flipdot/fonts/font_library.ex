@@ -6,7 +6,7 @@ defmodule Flipdot.FontLibrary do
   use GenServer
 
   @topic "font_library_update"
-  defstruct fonts: nil, font_index: nil
+  defstruct fonts: [], font_index: nil
 
   def start_link(_state) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -21,49 +21,43 @@ defmodule Flipdot.FontLibrary do
   def handle_continue(:read_fonts, state) do
     font_dir = Flipdot.static_dir() <> "fonts/"
 
-    parsed_fonts =
+    font_files =
       File.ls!(font_dir)
       |> Enum.filter(fn file_name -> String.ends_with?(file_name, ".bdf") end)
+
+    parse_tasks =
+      font_files
       |> Enum.map(fn font_file ->
-        parse_font(font_dir <> font_file)
+        Task.async(__MODULE__, :parse_font, [font_dir <> font_file])
       end)
 
-    fonts =
-      for font <- parsed_fonts, into: %{} do
-        {font.name, font}
-      end
+    fonts = Task.await_many(parse_tasks, 10_000)
 
-    font_index =
-      for font <- parsed_fonts do
-        {
-          font.name,
-          Map.get(font.properties, :foundry, ""),
-          Map.get(font.properties, :family_name, ""),
-          Map.get(font.properties, :weight_name, ""),
-          Map.get(font.properties, :slant, ""),
-          Map.get(font.properties, :pixel_size, "")
-        }
-      end
+    fonts = [Flipdot.Fonts.SpaceInvaders.get() | fonts]
 
-    Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:font_library_update, font_index})
+    #    IO.inspect(font_index, label: "index", pretty: true, limit: :infinity)
+    Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, :font_library_update)
 
-    {:noreply, %{state | fonts: fonts, font_index: font_index}}
+    #  {:noreply, %{state | fonts: fonts, font_index: font_index}}
+    {:noreply, %{state | fonts: fonts}}
   end
 
-  def get_font_index() do
-    GenServer.call(__MODULE__, :get_font_index)
+  def get_fonts() do
+    GenServer.call(__MODULE__, :get_fonts)
   end
 
-  def get_font(font_name) do
-    GenServer.call(__MODULE__, {:get_font, font_name})
+  def get_font_by_name(font_name) do
+    GenServer.call(__MODULE__, {:get_font_by_name, font_name})
   end
 
-  def handle_call(:get_font_index, _, state) do
-    {:reply, state.font_index, state}
+  # server functions
+
+  def handle_call(:get_fonts, _, state) do
+    {:reply, state.fonts, state}
   end
 
-  def handle_call({:get_font, font_name}, _, state) do
-    font = Map.get(state.fonts, font_name, nil)
+  def handle_call({:get_font_by_name, font_name}, _, state) do
+    [font] = state.fonts |> Enum.filter(fn font -> font.name == font_name end)
     {:reply, font, state}
   end
 

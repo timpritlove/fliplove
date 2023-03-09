@@ -22,7 +22,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:bitmap, DisplayState.get())
       |> assign(:clock, clock())
       |> assign(:text, "")
-      |> assign(:font_index, FontLibrary.get_font_index())
+      |> assign(:font_index, FontLibrary.get_fonts() |> build_font_index())
 
     {:ok, socket}
   end
@@ -33,7 +33,9 @@ defmodule FlipdotWeb.FlipdotLive do
      |> assign(:bitmap, bitmap)}
   end
 
-  def handle_info({:font_library_update, font_index}, socket) do
+  def handle_info(:font_library_update, socket) do
+    font_index = FontLibrary.get_fonts() |> build_font_index()
+
     {:noreply,
      socket
      |> assign(:font_index, font_index)}
@@ -107,16 +109,36 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, assign(socket, :bitmap, DisplayState.get())}
   end
 
-  def handle_event("render", %{"text" => text, "font" => font}, socket) do
+  def handle_event("render", %{"text" => text, "font" => font_name}, socket) do
     DisplayState.clear()
-    |> FontRenderer.render_text({0, 2}, Flipdot.FontLibrary.get_font(font), text)
+    |> FontRenderer.render_text({0, 2}, Flipdot.FontLibrary.get_font_by_name(font_name), text)
     |> DisplayState.set()
 
     {:noreply, assign(socket, :text, text)}
   end
 
+  # helper functions
   def clock do
     DateTime.now!("Europe/Berlin", Tz.TimeZoneDatabase)
     |> Calendar.strftime("%c", preferred_datetime: "%d.%m.%Y %H:%M:%S")
+  end
+
+  def build_font_index(fonts) do
+    for font <- fonts do
+      {
+        font.name,
+        Map.get(font.properties, :foundry, "") <>
+          "-" <>
+          Map.get(font.properties, :family_name, "") <>
+          "-" <>
+          Map.get(font.properties, :weight_name, "") <>
+          "-" <>
+          Map.get(font.properties, :slant, "") <>
+          case Map.get(font.properties, :pixel_size) do
+            nil -> "-unknown"
+            pixel_size -> "-" <> Integer.to_string(pixel_size)
+          end
+      }
+    end
   end
 end

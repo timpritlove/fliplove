@@ -78,7 +78,7 @@
     />
     <select :if={@font_index} name="font" id="font-select">
       <option :for={font <- Enum.sort(@font_index)} value={elem(font, 0)}>
-        <%= IO.inspect(elem(font, 0)) %>
+        <%= elem(font, 1) %>
       </option>
     </select>
     <button class="rounded-full">Render</button>
