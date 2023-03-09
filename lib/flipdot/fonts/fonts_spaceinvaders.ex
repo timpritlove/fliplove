@@ -363,7 +363,6 @@ defmodule Flipdot.Fonts.SpaceInvaders do
         encoding: ?:,
         bitmap:
           defbitmap([
-            "     ",
             "  X  ",
             "     ",
             "     ",
@@ -388,6 +387,7 @@ defmodule Flipdot.Fonts.SpaceInvaders do
       },
       ?< => %{
         encoding: ?<,
+        name: "less-than sign",
         bitmap:
           defbitmap([
             "   X ",
@@ -867,15 +867,6 @@ defmodule Flipdot.Fonts.SpaceInvaders do
             "     "
           ])
       },
-      ?´ => %{
-        encoding: ?´,
-        bb_y_off: 5,
-        bitmap:
-          defbitmap([
-            "   X ",
-            "  X  "
-          ])
-      },
       ?a => %{
         encoding: ?a,
         bitmap:
@@ -1266,21 +1257,159 @@ defmodule Flipdot.Fonts.SpaceInvaders do
             "     "
           ])
       },
+
+      # ISO 8859-1 CHARACTERS
+
+      160 => %{
+        encoding: 160,
+        name: "no-break space",
+        bitmap:
+          defbitmap([
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   "
+          ])
+      },
+      ?¡ => %{
+        encoding: ?¡,
+        name: "inverted exclamation mark",
+        bitmap:
+          defbitmap([
+            "  X  ",
+            "     ",
+            "  X  ",
+            "  X  ",
+            "  X  ",
+            "  X  ",
+            "  X  "
+          ])
+      },
+      ?¢ => %{
+        encoding: ?¢,
+        name: "cent sign",
+        bitmap:
+          defbitmap([
+            "     ",
+            "  XXX",
+            " X   ",
+            "XXXX ",
+            " X   ",
+            "  XXX",
+            "     "
+          ])
+      },
+      ?£ => %{
+        encoding: ?£,
+        name: "pound sign",
+        bitmap:
+          defbitmap([
+            "  XXX",
+            " X   ",
+            " X   ",
+            "XXXX ",
+            " X   ",
+            " X   ",
+            "XXXXX"
+          ])
+      },
+      ?¤ => %{
+        encoding: ?¤,
+        name: "currency sign",
+        bitmap:
+          defbitmap([
+            "     ",
+            "X   X",
+            " XXX ",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX ",
+            "X   X"
+          ])
+      },
+      ?¥ => %{
+        encoding: ?¥,
+        name: "yen sign",
+        bitmap:
+          defbitmap([
+            "X   X",
+            " X X ",
+            "XXXXX",
+            "  X  ",
+            "XXXXX",
+            "  X  ",
+            "  X  "
+          ])
+      },
+      ?¦ => %{
+        encoding: ?¦,
+        name: "broken bar",
+        bitmap:
+          defbitmap([
+            "  X  ",
+            "  X  ",
+            "  X  ",
+            "     ",
+            "  X  ",
+            "  X  ",
+            "  X  "
+          ])
+      },
       ?§ => %{
         encoding: ?§,
+        name: "section sign",
+        bb_y_off: -1,
+        bitmap:
+          defbitmap([
+            " XXX ",
+            "X    ",
+            " X   ",
+            " XXX ",
+            "X   X",
+            " XXX ",
+            "   X ",
+            "    X",
+            " XXX "
+          ])
+      },
+      ?¨ => %{
+        encoding: ?¨,
+        name: "diaresis",
+        bitmap:
+          defbitmap([
+            " X X ",
+            "     ",
+            "     ",
+            "     ",
+            "     ",
+            "     ",
+            "     "
+          ])
+      },
+      ?© => %{
+        encoding: ?©,
+        name: "copyright sign",
+        bb_y_off: -1,
         bitmap:
           defbitmap([
             " XXX ",
             "X   X",
-            " XX  ",
+            "  X  ",
             " X X ",
-            "  XX ",
+            " X   ",
+            " X X ",
+            "  X  ",
             "X   X",
             " XXX "
           ])
       },
       ?€ => %{
         encoding: ?€,
+        name: "euro sign",
         bitmap:
           defbitmap([
             "  XXX",
@@ -1292,8 +1421,23 @@ defmodule Flipdot.Fonts.SpaceInvaders do
             "  XXX"
           ])
       },
+      ?¯ => %{
+        encoding: ?¯,
+        name: "macron",
+        bitmap:
+          defbitmap([
+            "XXXXX",
+            "     ",
+            "     ",
+            "     ",
+            "     ",
+            "     ",
+            "     "
+          ])
+      },
       ?° => %{
         encoding: ?°,
+        name: "degree sign",
         bitmap:
           defbitmap([
             "  X  ",
@@ -1303,6 +1447,228 @@ defmodule Flipdot.Fonts.SpaceInvaders do
             "     ",
             "     ",
             "     "
+          ])
+      },
+      ?± => %{
+        encoding: ?±,
+        name: "plus-minus sign",
+        bitmap:
+          defbitmap([
+            "  X  ",
+            "  X  ",
+            "XXXXX",
+            "  X  ",
+            "  X  ",
+            "     ",
+            "XXXXX"
+          ])
+      },
+      ?² => %{
+        encoding: ?²,
+        name: "superscript two",
+        bitmap:
+          defbitmap([
+            " XX  ",
+            "   X ",
+            "  X  ",
+            " X   ",
+            " XXX ",
+            "     ",
+            "     "
+          ])
+      },
+      ?³ => %{
+        encoding: ?³,
+        name: "superscript three",
+        bitmap:
+          defbitmap([
+            " XX  ",
+            "   X ",
+            "  X  ",
+            "   X ",
+            " XX  ",
+            "     ",
+            "     "
+          ])
+      },
+      ?´ => %{
+        encoding: ?´,
+        name: "acute accent",
+        bb_y_off: 5,
+        bitmap:
+          defbitmap([
+            "   X ",
+            "  X  "
+          ])
+      },
+      ?µ => %{
+        encoding: ?µ,
+        name: "micro sign",
+        bb_y_off: -1,
+        bitmap:
+          defbitmap([
+            "     ",
+            "     ",
+            "     ",
+            "    X",
+            " X  X",
+            " X  X",
+            " XXX ",
+            " X   ",
+            " X   "
+          ])
+      },
+      ?· => %{
+        encoding: ?·,
+        name: "middle dot",
+        bitmap:
+          defbitmap([
+            "     ",
+            "     ",
+            "     ",
+            "  X  ",
+            "     ",
+            "     ",
+            "     "
+          ])
+      },
+      ?¹ => %{
+        encoding: ?¹,
+        name: "superscript one",
+        bitmap:
+          defbitmap([
+            "  X  ",
+            " XX  ",
+            "  X  ",
+            "  X  ",
+            " XXX ",
+            "     ",
+            "     "
+          ])
+      },
+      ?ª => %{
+        encoding: ?ª,
+        name: "feminine ordinal indicator",
+        bitmap:
+          defbitmap([
+            "  X  ",
+            " X X ",
+            " XXX ",
+            " X X ",
+            "     ",
+            "     ",
+            "     "
+          ])
+      },
+      ?º => %{
+        encoding: ?º,
+        name: "masculine ordinal indicator",
+        bitmap:
+          defbitmap([
+            "  X  ",
+            " X X ",
+            " X X ",
+            "  X  ",
+            "     ",
+            "     ",
+            "     "
+          ])
+      },
+      ?« => %{
+        encoding: ?«,
+        name: "left-pointing double angle quotation mark",
+        bitmap:
+          defbitmap([
+            "     ",
+            "  X X",
+            " X X ",
+            "X X  ",
+            " X X ",
+            "  X X",
+            "     "
+          ])
+      },
+      ?¬ => %{
+        encoding: ?¬,
+        name: "not sign",
+        bitmap:
+          defbitmap([
+            "     ",
+            "     ",
+            "     ",
+            "XXXXX",
+            "    X",
+            "     ",
+            "     "
+          ])
+      },
+      ?» => %{
+        encoding: ?»,
+        name: "right-pointing double angle quotation mark",
+        bitmap:
+          defbitmap([
+            "     ",
+            "X X  ",
+            " X X ",
+            "  X X",
+            " X X ",
+            "X X  ",
+            "     "
+          ])
+      },
+      ?¼ => %{
+        encoding: ?¼,
+        name: "vulgar fraction one quarter",
+        bitmap:
+          defbitmap([
+            "  X  ",
+            "  X  ",
+            "  X  ",
+            "     ",
+            " X X ",
+            " XXX ",
+            "   X "
+          ])
+      },
+      ?½ => %{
+        encoding: ?½,
+        name: "vulgar fraction one half",
+        bitmap:
+          defbitmap([
+            "  X  ",
+            "  X  ",
+            "  X  ",
+            "     ",
+            " XX  ",
+            "  X  ",
+            "  XX "
+          ])
+      },
+      ?¾ => %{
+        encoding: ?¾,
+        name: "vulgar fraction three quarters",
+        bitmap:
+          defbitmap([
+            " XX  ",
+            "  XX ",
+            " XX  ",
+            "     ",
+            " X X ",
+            " XXX ",
+            "   X "
+          ])
+      },
+      ?¿ => %{
+        encoding: ?¿,
+        bitmap:
+          defbitmap([
+            "  X  ",
+            "     ",
+            "  X  ",
+            "  X  ",
+            "   X ",
+            "X   X",
+            " XXX "
           ])
       },
 
