@@ -6,7 +6,12 @@ defmodule Flipdot.Fonts.SpaceInvaders do
     name: "space-invaders",
     size: 8,
     properties: %{
-      copyright: "Public domain font. Share and enjoy."
+      copyright: "Public domain font. Share and enjoy.",
+      family_name: "Space Invaders",
+      foundry: "Taito",
+      weight_name: "Normal",
+      slant: "R",
+      pixel_size: 7
     },
     characters: %{
       0 => %{
@@ -117,13 +122,17 @@ defmodule Flipdot.Fonts.SpaceInvaders do
             " XXXX"
           ])
       },
-      ?´ => %{
-        encoding: ?´,
-        bb_y_off: 5,
+      ?' => %{
+        encoding: ?',
         bitmap:
           defbitmap([
-            "   X ",
-            "  X  "
+            "  X  ",
+            "  X  ",
+            "     ",
+            "     ",
+            "     ",
+            "     ",
+            "     "
           ])
       },
       ?( => %{
@@ -856,6 +865,15 @@ defmodule Flipdot.Fonts.SpaceInvaders do
             "     ",
             "     ",
             "     "
+          ])
+      },
+      ?´ => %{
+        encoding: ?´,
+        bb_y_off: 5,
+        bitmap:
+          defbitmap([
+            "   X ",
+            "  X  "
           ])
       },
       ?a => %{
