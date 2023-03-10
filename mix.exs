@@ -50,7 +50,8 @@ defmodule Flipdot.MixProject do
       {:bandit, ">= 0.6.9"},
       {:httpoison, "~> 2.0"},
       {:tz, "~> 0.24.0"},
-      {:gen_icmp, git: "https://github.com/hauleth/gen_icmp.git"}
+      {:gen_icmp, git: "https://github.com/hauleth/gen_icmp.git"},
+      {:ex_fontawesome, "~> 0.7.2"}
     ]
   end
 
