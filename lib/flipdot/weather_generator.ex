@@ -22,7 +22,7 @@ defmodule Flipdot.WeatherGenerator do
 
   @impl true
   def init(state) do
-    font = (Flipdot.static_dir() <> "fonts/" <> @font_file) |> FontLibrary.parse_font()
+    font = Path.join([Flipdot.static_dir(), "fonts", @font_file]) |> FontLibrary.parse_font()
     api_key = File.read!(@api_key)
 
     {:ok, %{state | font: font, api_key: api_key}}

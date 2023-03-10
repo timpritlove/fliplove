@@ -19,7 +19,7 @@ defmodule Flipdot.FontLibrary do
   end
 
   def handle_continue(:read_fonts, state) do
-    font_dir = Flipdot.static_dir() <> "fonts/"
+    font_dir = Path.join([Flipdot.static_dir(), "fonts"])
 
     font_files =
       File.ls!(font_dir)
@@ -28,7 +28,8 @@ defmodule Flipdot.FontLibrary do
     parse_tasks =
       font_files
       |> Enum.map(fn font_file ->
-        Task.async(__MODULE__, :parse_font, [font_dir <> font_file])
+        path = Path.join([font_dir, font_file])
+        Task.async(__MODULE__, :parse_font, [path])
       end)
 
     fonts = Task.await_many(parse_tasks, 10_000)

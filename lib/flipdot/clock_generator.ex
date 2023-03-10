@@ -17,7 +17,7 @@ defmodule Flipdot.ClockGenerator do
 
   @impl true
   def init(state) do
-    font = (Flipdot.static_dir() <> "fonts/" <> @font_file) |> FontLibrary.parse_font()
+    font = Path.join([Flipdot.static_dir(), "fonts", @font_file]) |> FontLibrary.parse_font()
 
     {:ok, %{state | font: font}}
   end

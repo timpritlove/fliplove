@@ -7,10 +7,10 @@ defmodule Flipdot do
   if it comes from the database, an external API or others.
   """
   def priv_dir do
-    :code.priv_dir(:flipdot) |> List.to_string()
+    Path.join([:code.priv_dir(:flipdot)])
   end
 
   def static_dir do
-    priv_dir() <> "/static/"
+    Path.join([priv_dir(), "static"])
   end
 end
