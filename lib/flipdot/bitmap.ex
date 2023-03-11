@@ -329,7 +329,9 @@ defmodule Bitmap do
   """
   def game_of_life(bitmap) do
     matrix =
-      for x <- 0..(bitmap.meta.width - 1), y <- 0..(bitmap.meta.height - 1), into: %{} do
+      for x <- 0..(bitmap.meta.width - 1),
+          y <- 0..(bitmap.meta.height - 1),
+          into: %{} do
         number_of_neighbors =
           for dx <- [x - 1, x, x + 1],
               dy <- [y - 1, y, y + 1],
@@ -377,6 +379,37 @@ defmodule Bitmap do
     }
   end
 
+  # draw a line using bresenham algorithm
+
+  def line(bitmap, {x1, y1}, {x2, y2}) do
+    delta_x = abs(x2 - x1)
+    sign_x = if x1 < x2, do: 1, else: -1
+    delta_y = -abs(y2 - y1)
+    sign_y = if y1 < y2, do: 1, else: -1
+
+    threshold = delta_x + delta_y
+    count = max(abs(delta_x), abs(delta_y))
+
+    do_line(bitmap, {x1, y1}, {delta_x, sign_x, delta_y, sign_y}, threshold, count)
+  end
+
+  defp do_line(bitmap, _, _, _, count) when count < 0 do
+    bitmap
+  end
+
+  defp do_line(bitmap, {x, y}, {delta_x, sign_x, delta_y, sign_y}, threshold, count) do
+    {offset_x, thres_offset_x} = if threshold * 2 > delta_y, do: {sign_x, delta_y}, else: {0, 0}
+    {offset_y, thres_offset_y} = if threshold * 2 < delta_x, do: {sign_y, delta_x}, else: {0, 0}
+
+    set_pixel(bitmap, {x, y}, 1)
+    |> do_line(
+      {x + offset_x, y + offset_y},
+      {delta_x, sign_x, delta_y, sign_y},
+      threshold + thres_offset_x + thres_offset_y,
+      count - 1
+    )
+  end
+
   @doc """
   Parse a Bitmap from a text file with multiline strings delimited by newline
   """
@@ -403,7 +436,10 @@ defmodule Bitmap do
     off = Keyword.get(options, :off) || ?\s
 
     # convert lines provided as strings to charlist
-    lines = Enum.map(lines, fn line -> if is_binary(line), do: to_charlist(line), else: line end)
+    lines =
+      Enum.map(lines, fn line ->
+        if is_binary(line), do: to_charlist(line), else: line
+      end)
 
     width = length(List.first(lines))
 
@@ -503,10 +539,7 @@ defmodule Bitmap do
 
   def from_binary(data, width, height) do
     if byte_size(data) != div(width * height, 8),
-      do:
-        raise(
-          "Packet size (#{byte_size(data)}) does not match dimensions (width: #{width}, height: #{height})"
-        )
+      do: raise("Packet size (#{byte_size(data)}) does not match dimensions (width: #{width}, height: #{height})")
 
     pixels = for <<pixel::1 <- data>>, do: pixel
     columns = Enum.chunk_every(pixels, height)
@@ -533,6 +566,7 @@ defmodule Bitmap do
       do: raise("maze dimensions must be odd numbers")
 
     {start_x, start_y} = {Enum.random(1..(width - 1)//2), Enum.random(1..(height - 1)//2)}
+
     {entry_x, entry_y} = {0, Enum.random(1..(height - 1)//2)}
     {exit_x, exit_y} = {width - 1, Enum.random(1..(height - 1)//2)}
 
