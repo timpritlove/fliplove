@@ -112,27 +112,6 @@ defmodule Bitmap do
     }
   end
 
-  def new(width, height, matrix) do
-    %Bitmap{
-      meta: %{height: height, width: width},
-      matrix: matrix
-    }
-  end
-
-  def fill(width, height, value) do
-    matrix =
-      for x <- 0..(width - 1),
-          y <- 0..(height - 1),
-          into: %{} do
-        {{x, y}, value}
-      end
-
-    %Bitmap{
-      meta: %{height: height, width: width},
-      matrix: matrix
-    }
-  end
-
   def invert(bitmap) do
     width = bitmap.meta.width
     height = bitmap.meta.height
@@ -197,6 +176,43 @@ defmodule Bitmap do
 
   def toggle_pixel(bitmap, {x, y} = _coordinate) do
     set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
+  end
+
+  #
+  # fill image beginning at a certain coordinate.
+  # stop when hitting a set pixel
+  #
+
+  def fill(bitmap, {x, y}) do
+    do_fill(bitmap, [{x, y}])
+  end
+
+  defp do_fill(bitmap, []) do
+    bitmap
+  end
+
+  defp do_fill(bitmap, [{x, y} | rest]) do
+    case get_pixel(bitmap, {x, y}) do
+      1 ->
+        bitmap
+
+      0 ->
+        bitmap = set_pixel(bitmap, {x, y}, 1)
+
+        # look for clear neighbors
+
+        empty_neighbors =
+          for {nx, ny} <- [{x - 1, y}, {x + 1, y}, {x, y + 1}, {x, y - 1}],
+              nx >= 0,
+              ny >= 0,
+              nx < bitmap.meta.width,
+              ny < bitmap.meta.height,
+              get_pixel(bitmap, {nx, ny}) == 0 do
+            {nx, ny}
+          end
+
+        do_fill(bitmap, Enum.uniq(rest ++ empty_neighbors))
+    end
   end
 
   # overlay one bitmap on another
