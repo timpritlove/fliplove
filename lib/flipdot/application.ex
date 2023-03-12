@@ -43,7 +43,7 @@ defmodule Flipdot.Application do
       Flipdot.ClockGenerator,
       Flipdot.WeatherGenerator,
       Flipdot.DisplayPusher,
-      Flipdot.FontLibrary
+      Flipdot.Font.Library
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

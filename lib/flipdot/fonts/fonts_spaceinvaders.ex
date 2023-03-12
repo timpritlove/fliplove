@@ -1,10 +1,9 @@
-defmodule Flipdot.Fonts.SpaceInvaders do
+defmodule Flipdot.Font.Fonts.SpaceInvaders do
   import Bitmap
+  import Flipdot.Font
 
   @space_invaders %{
-    version: "2.1",
     name: "space-invaders",
-    size: 8,
     properties: %{
       copyright: "Public domain font. Share and enjoy.",
       family_name: "Space Invaders",

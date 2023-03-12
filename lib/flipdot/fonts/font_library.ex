@@ -1,9 +1,10 @@
-defmodule Flipdot.FontLibrary do
+defmodule Flipdot.Font.Library do
   @moduledoc """
   Font library process. Read and parse all avaiable fonts from disk and
   make them available.
   """
   use GenServer
+  alias Flipdot.Font.Parser
 
   @topic "font_library_update"
   defstruct fonts: []
@@ -34,7 +35,7 @@ defmodule Flipdot.FontLibrary do
 
     fonts = Task.await_many(parse_tasks, 10_000)
 
-    fonts = [Flipdot.Fonts.SpaceInvaders.get() | fonts]
+    fonts = [Flipdot.Font.Fonts.SpaceInvaders.get() | fonts]
 
     Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, :font_library_update)
     {:noreply, %{state | fonts: fonts}}
@@ -60,7 +61,7 @@ defmodule Flipdot.FontLibrary do
   end
 
   def parse_font(path) do
-    {:ok, [font], _, _, _, _} = path |> File.read!() |> FontParser.parse_bdf()
+    {:ok, [font], _, _, _, _} = path |> File.read!() |> Parser.parse_bdf()
     font
   end
 end

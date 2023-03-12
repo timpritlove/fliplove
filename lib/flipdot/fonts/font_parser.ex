@@ -1,4 +1,4 @@
-defmodule FontParser do
+defmodule Flipdot.Font.Parser do
   import NimbleParsec
 
   @moduledoc """
@@ -292,8 +292,7 @@ defmodule FontParser do
     |> String.pad_leading(Enum.count(hexstring) * 4, "0")
   end
 
-  bdf_char_bitmap_line =
-    times(hexbyte, min: 1) |> concat(eol) |> wrap() |> reduce({:hex_to_bin, []})
+  bdf_char_bitmap_line = times(hexbyte, min: 1) |> concat(eol) |> wrap() |> reduce({:hex_to_bin, []})
 
   bdf_char_bitmap_lines = repeat(bdf_char_bitmap_line) |> wrap()
 

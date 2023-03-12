@@ -1,4 +1,4 @@
-defmodule Flipdot.FontRenderer do
+defmodule Flipdot.Font.Renderer do
   alias Flipdot.FontRenderer.Kerning
 
   def render_text(bitmap, cursor, font, text) when is_binary(text) do
@@ -34,8 +34,7 @@ defmodule Flipdot.FontRenderer do
           opaque: false
         )
         |> render_text(
-          {cursor_x + Map.get(char, :dwx0, char.bitmap.meta.width + 1) + kerning,
-           cursor_y + Map.get(char, :dwy0, 0)},
+          {cursor_x + Map.get(char, :dwx0, char.bitmap.meta.width + 1) + kerning, cursor_y + Map.get(char, :dwy0, 0)},
           font,
           tail
         )

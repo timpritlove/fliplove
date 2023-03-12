@@ -4,8 +4,8 @@ defmodule Flipdot.WeatherGenerator do
   """
   use GenServer
   alias Flipdot.DisplayState
-  alias Flipdot.FontRenderer
-  alias Flipdot.FontLibrary
+  alias Flipdot.Font.Renderer
+  alias Flipdot.Font.Library
 
   require HTTPoison
 
@@ -22,7 +22,7 @@ defmodule Flipdot.WeatherGenerator do
 
   @impl true
   def init(state) do
-    font = Path.join([Flipdot.static_dir(), "fonts", @font_file]) |> FontLibrary.parse_font()
+    font = Path.join([Flipdot.static_dir(), "fonts", @font_file]) |> Library.parse_font()
     api_key = File.read!(@api_key)
 
     {:ok, %{state | font: font, api_key: api_key}}
@@ -83,7 +83,7 @@ defmodule Flipdot.WeatherGenerator do
   def render_text(bitmap, font, text) do
     rendered_text =
       Bitmap.new(1000, 1000)
-      |> FontRenderer.render_text({10, 10}, font, text)
+      |> Renderer.render_text({10, 10}, font, text)
       |> Bitmap.clip()
 
     Bitmap.new(bitmap.meta.width, bitmap.meta.height)
