@@ -33,7 +33,7 @@ defmodule Flipdot.Font.Library do
         Task.async(__MODULE__, :parse_font, [path])
       end)
 
-    fonts = Task.await_many(parse_tasks, 10_000)
+    fonts = Task.await_many(parse_tasks, 30_000)
 
     fonts = [Flipdot.Font.Fonts.SpaceInvaders.get() | fonts]
 
