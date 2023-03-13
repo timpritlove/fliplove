@@ -1,11 +1,11 @@
 defmodule FlipdotWeb.FlipdotLive do
   use FlipdotWeb, :live_view
 
-  alias Flipdot.FontLibrary
   alias Flipdot.ClockGenerator
   alias Flipdot.WeatherGenerator
   alias Flipdot.DisplayState
-  alias Flipdot.FontRenderer
+  alias Flipdot.Font.Renderer
+  alias Flipdot.Font.Library
 
   require Integer
 
@@ -13,7 +13,7 @@ defmodule FlipdotWeb.FlipdotLive do
     if connected?(socket) do
       :timer.send_interval(250, self(), :tick)
       Phoenix.PubSub.subscribe(Flipdot.PubSub, DisplayState.topic())
-      Phoenix.PubSub.subscribe(Flipdot.PubSub, FontLibrary.topic())
+      Phoenix.PubSub.subscribe(Flipdot.PubSub, Library.topic())
     end
 
     socket =
@@ -22,7 +22,9 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:bitmap, DisplayState.get())
       |> assign(:clock, clock())
       |> assign(:text, "")
-      |> assign(:font_select, FontLibrary.get_fonts() |> build_font_select())
+      |> assign(:tool_selection, nil)
+      |> assign(:font_select, Library.get_fonts() |> build_font_select())
+      |> allow_upload(:frame, accept: ~w(.txt), max_entries: 1, max_file_size: 5_000)
 
     {:ok, socket}
   end
@@ -34,7 +36,7 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_info(:font_library_update, socket) do
-    font_select = FontLibrary.get_fonts() |> build_font_select()
+    font_select = Library.get_fonts() |> build_font_select()
 
     {:noreply,
      socket
@@ -109,12 +111,23 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, assign(socket, :bitmap, DisplayState.get())}
   end
 
-  def handle_event("render", %{"text" => text, "font" => font_name}, socket) do
+  def handle_event("render", %{"text" => text, "font" => font_name} = _params, socket) do
     DisplayState.clear()
-    |> FontRenderer.render_text({0, 2}, Flipdot.FontLibrary.get_font_by_name(font_name), text)
+    |> Renderer.render_text({0, 2}, Library.get_font_by_name(font_name), text)
     |> DisplayState.set()
 
     {:noreply, assign(socket, :text, text)}
+  end
+
+  def handle_event("upload", _params, socket) do
+    frame =
+      consume_uploaded_entries(socket, :frame, fn %{path: path} = _meta, _entry ->
+        IO.inspect(path, label: "path")
+        Bitmap.from_file(path)
+      end)
+
+    IO.inspect(frame, label: "frame")
+    {:noreply, socket}
   end
 
   # helper functions

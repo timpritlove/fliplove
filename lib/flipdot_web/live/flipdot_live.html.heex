@@ -65,6 +65,13 @@
     Game of Life
   </button>
 </div>
+<form phx-submit="upload">
+  <div class="container m-4" phx-drop-target={@uploads.frame.ref}>
+    <FontAwesome.LiveView.icon name="file-arrow-up" type="solid" class="h-8 w-8" />
+    <.live_file_input upload={@uploads.frame} />
+  </div>
+  <input type="submit" value="Upload File" class="rounded-full" />
+</form>
 <div id="text">
   <form phx-change="render" phx-submit="render">
     <input
@@ -84,7 +91,7 @@
         <%= elem(font, 1) %>
       </option>
     </select>
-    <button class="rounded-full">Render</button>
+    <input type="submit" value="Render Text" class="rounded-full" />
   </form>
 </div>
 <div class="mt-20 w-10/12 bg-black m-4 p-8">
