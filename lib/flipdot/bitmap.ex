@@ -25,7 +25,7 @@ defmodule Bitmap do
       height = bitmap.meta.height
 
       # traverse pixels left to right, top to bottom
-      delimiter = "+" <> String.duplicate("–", width) <> "+\n"
+      delimiter = "+" <> String.duplicate("-", width) <> "+\n"
 
       lines =
         for y <- (height - 1)..0 do
