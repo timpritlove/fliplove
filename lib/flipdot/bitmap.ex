@@ -573,6 +573,32 @@ defmodule Bitmap do
     }
   end
 
+  def gradient_h(width, height) do
+    matrix =
+      for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
+        value = if Enum.random(0..(width - 1)) <= x, do: 0, else: 1
+        {{x, y}, value}
+      end
+
+    %Bitmap{
+      meta: %{width: width, height: height},
+      matrix: matrix
+    }
+  end
+
+  def gradient_v(width, height) do
+    matrix =
+      for y <- 0..(height - 1), x <- 0..(width - 1), into: %{} do
+        value = if Enum.random(0..(height - 1)) <= y, do: 0, else: 1
+        {{x, y}, value}
+      end
+
+    %Bitmap{
+      meta: %{width: width, height: height},
+      matrix: matrix
+    }
+  end
+
   @doc """
   Generate a maze. Both width and height must be odd numbers
   """
