@@ -1,9 +1,8 @@
 defmodule FlipdotWeb.FlipdotLive do
   use FlipdotWeb, :live_view
 
-  alias Flipdot.ClockGenerator
-  alias Flipdot.WeatherGenerator
   alias Flipdot.DisplayState
+  alias Flipdot.Dashboard
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
 
@@ -49,28 +48,54 @@ defmodule FlipdotWeb.FlipdotLive do
      |> assign(:clock, clock())}
   end
 
-  def handle_event("start-weather", _params, socket) do
-    ClockGenerator.stop_generator()
-    WeatherGenerator.start_generator()
+  def handle_event("translate-up", _params, socket) do
+    DisplayState.get() |> Bitmap.translate({0, 1}) |> DisplayState.set()
+    {:noreply, socket}
+  end
+
+  def handle_event("translate-down", _params, socket) do
+    DisplayState.get() |> Bitmap.translate({0, -1}) |> DisplayState.set()
+    {:noreply, socket}
+  end
+
+  def handle_event("translate-right", _params, socket) do
+    DisplayState.get() |> Bitmap.translate({1, 0}) |> DisplayState.set()
+    {:noreply, socket}
+  end
+
+  def handle_event("translate-left", _params, socket) do
+    DisplayState.get() |> Bitmap.translate({-1, 0}) |> DisplayState.set()
+    {:noreply, socket}
+  end
+
+  def handle_event("flip-horizontally", _params, socket) do
+    DisplayState.get() |> Bitmap.flip_horizontally() |> DisplayState.set()
+    {:noreply, socket}
+  end
+
+  def handle_event("flip-vertically", _params, socket) do
+    DisplayState.get() |> Bitmap.flip_vertically() |> DisplayState.set()
+    {:noreply, socket}
+  end
+
+  def handle_event("invert", _params, socket) do
+    DisplayState.get() |> Bitmap.invert() |> DisplayState.set()
+    {:noreply, socket}
+  end
+
+  def handle_event("download", _params, socket) do
+    DisplayState.get() |> Bitmap.invert() |> DisplayState.set()
+    {:noreply, socket}
+  end
+
+  def handle_event("start-dashboard", _params, socket) do
+    Dashboard.stop_dashboard()
 
     {:noreply, socket}
   end
 
-  def handle_event("stop-weather", _params, socket) do
-    WeatherGenerator.stop_generator()
-
-    {:noreply, socket}
-  end
-
-  def handle_event("start-clock", _params, socket) do
-    WeatherGenerator.stop_generator()
-    ClockGenerator.start_generator()
-
-    {:noreply, socket}
-  end
-
-  def handle_event("stop-clock", _params, socket) do
-    ClockGenerator.stop_generator()
+  def handle_event("stop-dashboard", _params, socket) do
+    Dashboard.stop_dashboard()
 
     {:noreply, socket}
   end

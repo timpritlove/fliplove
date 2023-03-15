@@ -22,47 +22,65 @@
   <% end %>
 </div>
 <div class="mt-4">
-  <button
-    class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
-    phx-click="start-clock"
-  >
-    Start Clock
+  <button class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="start-dashboard">
+    Start Dashboard
   </button>
-  <button
-    class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
-    phx-click="stop-clock"
-  >
-    Stop Clock
+  <button class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="stop-dashboard">
+    Stop Dashboard
   </button>
-  <button
-    class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
-    phx-click="start-weather"
-  >
-    Start Weather
-  </button>
-  <button
-    class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
-    phx-click="stop-weather"
-  >
-    Stop Weather
-  </button>
-  <button
-    class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
-    phx-click="random"
-  >
+  <button class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="random">
     Random
   </button>
-  <button
-    class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
-    phx-click="maze"
-  >
+  <button class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="maze">
     Maze
   </button>
-  <button
-    class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
-    phx-click="game-of-life"
-  >
+  <button class="text-white text-xl bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="game-of-life">
     Game of Life
+  </button>
+</div>
+<div class="fill-white text-l mt-4">
+  <button title="Translate UP" class="bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="translate-up">
+    <FontAwesome.LiveView.icon name="arrow-up" type="solid" class="h-8 w-8" />
+  </button>
+
+  <button title="Translate DOWN" class="bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="translate-down">
+    <FontAwesome.LiveView.icon name="arrow-down" type="solid" class="h-8 w-8" />
+  </button>
+  <button title="Translate LEFT" class="bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="translate-left">
+    <FontAwesome.LiveView.icon name="arrow-left" type="solid" class="h-8 w-8" />
+  </button>
+  <button
+    title="Translate RIGHT"
+    class="bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
+    phx-click="translate-right"
+  >
+    <FontAwesome.LiveView.icon name="arrow-right" type="solid" class="h-8 w-8" />
+  </button>
+  <button
+    title="Flip vertically"
+    class="bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
+    phx-click="flip-vertically"
+  >
+    <FontAwesome.LiveView.icon name="arrow-down-up-across-line" type="solid" class="h-8 w-8" />
+  </button>
+  <button
+    title="Flip horizontally"
+    class="bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
+    phx-click="flip-horizontally"
+  >
+    <FontAwesome.LiveView.icon name="arrow-right-arrow-left" type="solid" class="h-8 w-8" />
+  </button>
+  <button title="Invert" class="bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900" phx-click="invert">
+    <FontAwesome.LiveView.icon name="image" type="regular" class="h-8 w-8" />
+    <FontAwesome.LiveView.icon name="arrow-right" type="solid" class="h-8 w-8" />
+    <FontAwesome.LiveView.icon name="image" type="solid" class="h-8 w-8" />
+  </button>
+  <button
+    title="Download display as text file"
+    class="bg-indigo-600 px-6 py-4 rounded hover:bg-indigo-900"
+    phx-click="download"
+  >
+    <FontAwesome.LiveView.icon name="file-arrow-down" type="solid" class="h-8 w-8" />
   </button>
 </div>
 <form phx-submit="upload">
@@ -84,10 +102,7 @@
       phx-debounce="500"
     />
     <select :if={@font_select} name="font" id="font-select">
-      <option
-        :for={font <- Enum.sort_by(@font_select, fn font_entry -> elem(font_entry, 1) end)}
-        value={elem(font, 0)}
-      >
+      <option :for={font <- Enum.sort_by(@font_select, fn font_entry -> elem(font_entry, 1) end)} value={elem(font, 0)}>
         <%= elem(font, 1) %>
       </option>
     </select>
