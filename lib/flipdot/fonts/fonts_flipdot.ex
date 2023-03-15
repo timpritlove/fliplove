@@ -1,12 +1,12 @@
-defmodule Flipdot.Font.Fonts.SpaceInvaders do
+defmodule Flipdot.Font.Fonts.Flipdot do
   import Bitmap
   import Flipdot.Font
 
   @space_invaders %{
-    name: "space-invaders",
+    name: "flipdot",
     properties: %{
       copyright: "Public domain font. Share and enjoy.",
-      family_name: "Space Invaders",
+      family_name: "Flipdot",
       foundry: "AAA",
       weight_name: "Normal",
       slant: "R",
@@ -31,39 +31,39 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?\s,
         bitmap:
           defbitmap [
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   "
           ]
       },
       ?! => %{
         encoding: ?!,
         bitmap:
           defbitmap [
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "     ",
-            "  X  "
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            " ",
+            "X"
           ]
       },
       ?" => %{
         encoding: ?",
         bitmap:
           defbitmap [
-            " X X ",
-            " X X ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            "X X",
+            "X X",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   "
           ]
       },
       ?# => %{
@@ -125,39 +125,39 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?',
         bitmap:
           defbitmap [
-            "  X  ",
-            "  X  ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            "X",
+            "X",
+            " ",
+            " ",
+            " ",
+            " ",
+            " "
           ]
       },
       ?( => %{
         encoding: ?(,
         bitmap:
           defbitmap [
-            "   X ",
-            "  X  ",
-            " X   ",
-            " X   ",
-            " X   ",
-            "  X  ",
-            "   X "
+            "  X",
+            " X ",
+            "X  ",
+            "X  ",
+            "X  ",
+            " X ",
+            "  X"
           ]
       },
       ?) => %{
         encoding: ?),
         bitmap:
           defbitmap [
-            " X   ",
-            "  X  ",
-            "   X ",
-            "   X ",
-            "   X ",
-            "  X  ",
-            " X   "
+            "X  ",
+            " X ",
+            "  X",
+            "  X",
+            "  X",
+            " X ",
+            "X  "
           ]
       },
       ?* => %{
@@ -191,8 +191,8 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         bb_y_off: -1,
         bitmap:
           defbitmap [
-            "  X  ",
-            "  X  "
+            "X",
+            "X"
           ]
       },
       ?- => %{
@@ -212,20 +212,20 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?.,
         bitmap:
           defbitmap [
-            "  X  "
+            "X"
           ]
       },
       ?/ => %{
         encoding: ?/,
         bitmap:
           defbitmap [
-            "   X ",
-            "   X ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            " X   ",
-            " X   "
+            "  X",
+            "  X",
+            " X ",
+            " X ",
+            " X ",
+            "X  ",
+            "X  "
           ]
       },
       ?0 => %{
@@ -245,13 +245,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?1,
         bitmap:
           defbitmap [
-            "  X  ",
-            " XX  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            " XXX "
+            " X ",
+            "XX ",
+            " X ",
+            " X ",
+            " X ",
+            " X ",
+            "XXX"
           ]
       },
       ?2 => %{
@@ -362,26 +362,25 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?:,
         bitmap:
           defbitmap [
-            "  X  ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "  X  "
+            " ",
+            "X",
+            " ",
+            "X",
+            " ",
+            " "
           ]
       },
       ?; => %{
         encoding: ?;,
-        bb_y_off: -1,
+        bb_y_off: 0,
         bitmap:
           defbitmap [
-            "  X  ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "  X  ",
-            "  X  "
+            " ",
+            " ",
+            "X",
+            " ",
+            "X",
+            "X"
           ]
       },
       ?< => %{
@@ -389,13 +388,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "less-than sign",
         bitmap:
           defbitmap [
-            "   X ",
-            "  X  ",
-            " X   ",
-            "X    ",
-            " X   ",
-            "  X  ",
-            "   X "
+            "   X",
+            "  X ",
+            " X  ",
+            "X   ",
+            " X  ",
+            "  X ",
+            "   X"
           ]
       },
       ?= => %{
@@ -415,13 +414,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?>,
         bitmap:
           defbitmap [
-            " X   ",
-            "  X  ",
-            "   X ",
-            "    X",
-            "   X ",
-            "  X  ",
-            " X   "
+            "X   ",
+            " X  ",
+            "  X ",
+            "   X",
+            "  X ",
+            " X  ",
+            "X   "
           ]
       },
       ?? => %{
@@ -558,13 +557,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?I,
         bitmap:
           defbitmap [
-            " XXX ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            " XXX "
+            "XXX",
+            " X ",
+            " X ",
+            " X ",
+            " X ",
+            " X ",
+            "XXX"
           ]
       },
       ?J => %{
@@ -792,39 +791,39 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?[,
         bitmap:
           defbitmap [
-            "  XX ",
-            " X   ",
-            " X   ",
-            " X   ",
-            " X   ",
-            " X   ",
-            "  XX "
+            " XX",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            " XX"
           ]
       },
       ?\\ => %{
         encoding: ?\\,
         bitmap:
           defbitmap [
-            " X   ",
-            " X   ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "   X ",
-            "   X "
+            "X  ",
+            "X  ",
+            " X ",
+            " X ",
+            " X ",
+            "  X",
+            "  X"
           ]
       },
       ?] => %{
         encoding: ?],
         bitmap:
           defbitmap [
-            " XX  ",
-            "   X ",
-            "   X ",
-            "   X ",
-            "   X ",
-            "   X ",
-            " XX  "
+            "XX ",
+            "  X",
+            "  X",
+            "  X",
+            "  X",
+            "  X",
+            "XX "
           ]
       },
       ?^ => %{
@@ -857,36 +856,36 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?`,
         bitmap:
           defbitmap [
-            "  X  ",
-            "   X ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            "X ",
+            " X",
+            "  ",
+            "  ",
+            "  ",
+            "  ",
+            "  "
           ]
       },
       ?a => %{
         encoding: ?a,
         bitmap:
           defbitmap [
-            "  X  ",
-            " X X ",
+            "     ",
+            "     ",
+            " XXX ",
+            "    X",
+            " XXXX",
             "X   X",
-            "X   X",
-            "XXXXX",
-            "X   X",
-            "X   X"
+            " XXXX"
           ]
       },
       ?b => %{
         encoding: ?b,
         bitmap:
           defbitmap [
+            "X    ",
+            "X    ",
             "XXXX ",
             "X   X",
-            "X   X",
-            "XXXX ",
             "X   X",
             "X   X",
             "XXXX "
@@ -896,64 +895,66 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?c,
         bitmap:
           defbitmap [
-            " XXX ",
-            "X   X",
+            "     ",
+            "     ",
+            " XXXX",
             "X    ",
             "X    ",
             "X    ",
-            "X   X",
-            " XXX "
+            " XXXX"
           ]
       },
       ?d => %{
         encoding: ?d,
         bitmap:
           defbitmap [
-            "XXXX ",
+            "    X",
+            "    X",
+            " XXXX",
             "X   X",
             "X   X",
             "X   X",
-            "X   X",
-            "X   X",
-            "XXXX "
+            " XXXX"
           ]
       },
       ?e => %{
         encoding: ?e,
         bitmap:
           defbitmap [
+            "     ",
+            "     ",
+            " XXX ",
+            "X   X",
             "XXXXX",
             "X    ",
-            "X    ",
-            "XXXX ",
-            "X    ",
-            "X    ",
-            "XXXXX"
+            " XXX "
           ]
       },
       ?f => %{
         encoding: ?f,
         bitmap:
           defbitmap [
-            "XXXXX",
-            "X    ",
-            "X    ",
-            "XXXX ",
-            "X    ",
-            "X    ",
-            "X    "
+            " XX",
+            "X  ",
+            "X  ",
+            "XX ",
+            "X  ",
+            "X  ",
+            "X  "
           ]
       },
       ?g => %{
         encoding: ?g,
+        bb_y_off: -2,
         bitmap:
           defbitmap [
+            "     ",
             " XXX ",
             "X   X",
-            "X    ",
-            "X XXX",
             "X   X",
             "X   X",
+            " XXXX",
+            "    X",
             " XXX "
           ]
       },
@@ -961,10 +962,10 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?h,
         bitmap:
           defbitmap [
+            "X    ",
+            "X    ",
+            "XXXX ",
             "X   X",
-            "X   X",
-            "X   X",
-            "XXXXX",
             "X   X",
             "X   X",
             "X   X"
@@ -974,87 +975,89 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?i,
         bitmap:
           defbitmap [
-            " XXX ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            " XXX "
+            "X",
+            " ",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
           ]
       },
       ?j => %{
         encoding: ?j,
+        bb_y_off: -2,
         bitmap:
           defbitmap [
-            "    X",
-            "    X",
-            "    X",
-            "    X",
-            "    X",
-            "X   X",
-            " XXX "
+            "  X",
+            "   ",
+            "  X",
+            "  X",
+            "  X",
+            "  X",
+            "  X",
+            "XX "
           ]
       },
       ?k => %{
         encoding: ?k,
         bitmap:
           defbitmap [
-            "X   X",
-            "X  X ",
-            "X X  ",
-            "XX   ",
-            "X X  ",
-            "X  X ",
-            "X   X"
+            "X   ",
+            "X   ",
+            "X  X",
+            "X X ",
+            "XX  ",
+            "X X ",
+            "X  X"
           ]
       },
       ?l => %{
         encoding: ?l,
         bitmap:
           defbitmap [
-            "X    ",
-            "X    ",
-            "X    ",
-            "X    ",
-            "X    ",
-            "X    ",
-            "XXXXX"
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            " XX"
           ]
       },
       ?m => %{
         encoding: ?m,
         bitmap:
           defbitmap [
-            "X   X",
-            "XX XX",
+            "     ",
+            "     ",
+            "XX X ",
             "X X X",
             "X X X",
-            "X   X",
-            "X   X",
-            "X   X"
+            "X X X",
+            "X X X"
           ]
       },
       ?n => %{
         encoding: ?n,
         bitmap:
           defbitmap [
-            "X   X",
-            "X   X",
-            "XX  X",
-            "X X X",
-            "X  XX",
-            "X   X",
-            "X   X"
+            "    ",
+            "    ",
+            "X X ",
+            "XX X",
+            "X  X",
+            "X  X",
+            "X  X"
           ]
       },
       ?o => %{
         encoding: ?o,
         bitmap:
           defbitmap [
+            "     ",
+            "     ",
             " XXX ",
-            "X   X",
-            "X   X",
             "X   X",
             "X   X",
             "X   X",
@@ -1063,75 +1066,77 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
       },
       ?p => %{
         encoding: ?p,
+        bb_y_off: -2,
         bitmap:
           defbitmap [
             "XXXX ",
             "X   X",
             "X   X",
+            "X   X",
             "XXXX ",
-            "X    ",
             "X    ",
             "X    "
           ]
       },
       ?q => %{
         encoding: ?q,
+        bb_y_off: -2,
         bitmap:
           defbitmap [
             " XXX ",
             "X   X",
             "X   X",
             "X   X",
-            "X X X",
-            "X  XX",
-            " XXXX"
+            " XXXX",
+            "    X",
+            "    X"
           ]
       },
       ?r => %{
         encoding: ?r,
         bitmap:
           defbitmap [
-            "XXXX ",
-            "X   X",
-            "X   X",
-            "XXXX ",
-            "X X  ",
-            "X  X ",
-            "X   X"
+            "    ",
+            "    ",
+            " XXX",
+            "X   ",
+            "X   ",
+            "X   ",
+            "X   "
           ]
       },
       ?s => %{
         encoding: ?s,
         bitmap:
           defbitmap [
-            " XXX ",
-            "X   X",
+            "     ",
+            "     ",
+            " XXXX",
             "X    ",
             " XXX ",
             "    X",
-            "X   X",
-            " XXX "
+            "XXXX "
           ]
       },
       ?t => %{
         encoding: ?t,
         bitmap:
           defbitmap [
-            "XXXXX",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  "
+            " X ",
+            " X ",
+            "XXX",
+            " X ",
+            " X ",
+            " X ",
+            "  X"
           ]
       },
       ?u => %{
         encoding: ?u,
         bitmap:
           defbitmap [
-            "X   X",
-            "X   X",
+            "     ",
+            "     ",
             "X   X",
             "X   X",
             "X   X",
@@ -1143,8 +1148,8 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?v,
         bitmap:
           defbitmap [
-            "X   X",
-            "X   X",
+            "     ",
+            "     ",
             "X   X",
             "X   X",
             "X   X",
@@ -1156,8 +1161,8 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?w,
         bitmap:
           defbitmap [
-            "X   X",
-            "X   X",
+            "     ",
+            "     ",
             "X   X",
             "X X X",
             "X X X",
@@ -1169,23 +1174,24 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?x,
         bitmap:
           defbitmap [
-            "X   X",
+            "     ",
+            "     ",
             "X   X",
             " X X ",
             "  X  ",
             " X X ",
-            "X   X",
             "X   X"
           ]
       },
       ?y => %{
         encoding: ?y,
+        bb_y_off: -2,
         bitmap:
           defbitmap [
             "X   X",
             "X   X",
+            "X   X",
             " X X ",
-            "  X  ",
             "  X  ",
             "  X  ",
             "  X  "
@@ -1195,12 +1201,12 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?z,
         bitmap:
           defbitmap [
+            "     ",
+            "     ",
             "XXXXX",
-            "    X",
             "   X ",
             "  X  ",
             " X   ",
-            "X    ",
             "XXXXX"
           ]
       },
@@ -1208,52 +1214,52 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         encoding: ?{,
         bitmap:
           defbitmap [
-            "   X ",
-            "  X  ",
-            "  X  ",
-            " X   ",
-            "  X  ",
-            "  X  ",
-            "   X "
+            "  X",
+            " X ",
+            " X ",
+            "X  ",
+            " X ",
+            " X ",
+            "  X"
           ]
       },
       ?| => %{
         encoding: ?|,
         bitmap:
           defbitmap [
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  "
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
           ]
       },
       ?} => %{
         encoding: ?},
         bitmap:
           defbitmap [
-            " X   ",
-            "  X  ",
-            "  X  ",
-            "   X ",
-            "  X  ",
-            "  X  ",
-            " X   "
+            "X  ",
+            " X ",
+            " X ",
+            "  X",
+            " X ",
+            " X ",
+            "X  "
           ]
       },
       ?~ => %{
         encoding: ?~,
         bitmap:
           defbitmap [
-            "     ",
-            "     ",
-            "  X X",
-            " X X ",
-            "     ",
-            "     ",
-            "     "
+            "    ",
+            "    ",
+            " X X",
+            "X X ",
+            "    ",
+            "    ",
+            "    "
           ]
       },
 
@@ -1264,13 +1270,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "no-break space",
         bitmap:
           defbitmap [
-            "   ",
-            "   ",
-            "   ",
-            "   ",
-            "   ",
-            "   ",
-            "   "
+            " ",
+            " ",
+            " ",
+            " ",
+            " ",
+            " ",
+            " "
           ]
       },
       ?¡ => %{
@@ -1278,13 +1284,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "inverted exclamation mark",
         bitmap:
           defbitmap [
-            "  X  ",
-            "     ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  "
+            "X",
+            " ",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
           ]
       },
       ?¢ => %{
@@ -1349,13 +1355,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "broken bar",
         bitmap:
           defbitmap [
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "     ",
-            "  X  ",
-            "  X  ",
-            "  X  "
+            "X",
+            "X",
+            "X",
+            " ",
+            "X",
+            "X",
+            "X"
           ]
       },
       ?§ => %{
@@ -1375,18 +1381,114 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
             " XXX "
           ]
       },
+      ?ß => %{
+        encoding: ?ß,
+        bb_y_off: -1,
+        bitmap:
+          defbitmap [
+            " XXX ",
+            "X   X",
+            "X  X ",
+            "X X  ",
+            "X  X ",
+            "X   X",
+            "X XX ",
+            "X    "
+          ]
+      },
+      ?Ä => %{
+        encoding: ?Ä,
+        bitmap:
+          defbitmap [
+            "X   X",
+            "  X  ",
+            " X X ",
+            "X   X",
+            "X   X",
+            "XXXXX",
+            "X   X",
+            "X   X"
+          ]
+      },
+      ?ä => %{
+        encoding: ?ä,
+        bitmap:
+          defbitmap [
+            " X X ",
+            "     ",
+            " XXX ",
+            "    X",
+            " XXXX",
+            "X   X",
+            " XXXX"
+          ]
+      },
+      ?Ö => %{
+        encoding: ?Ö,
+        bitmap:
+          defbitmap [
+            "X   X",
+            " XXX ",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
+          ]
+      },
+      ?ö => %{
+        encoding: ?ö,
+        bitmap:
+          defbitmap [
+            " X X ",
+            "     ",
+            " XXX ",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
+          ]
+      },
+      ?Ü => %{
+        encoding: ?Ü,
+        bitmap:
+          defbitmap [
+            "X   X",
+            "     ",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
+          ]
+      },
+      ?ü => %{
+        encoding: ?ü,
+        bitmap:
+          defbitmap [
+            " X X ",
+            "     ",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
+          ]
+      },
       ?¨ => %{
         encoding: ?¨,
         name: "diaresis",
         bitmap:
           defbitmap [
-            " X X ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            "X X",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   "
           ]
       },
       ?© => %{
@@ -1439,13 +1541,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "degree sign",
         bitmap:
           defbitmap [
-            "  X  ",
-            " X X ",
-            "  X  ",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            " X ",
+            "X X",
+            " X ",
+            "   ",
+            "   ",
+            "   ",
+            "   "
           ]
       },
       ?± => %{
@@ -1467,13 +1569,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "superscript two",
         bitmap:
           defbitmap [
-            " XX  ",
-            "   X ",
-            "  X  ",
-            " X   ",
-            " XXX ",
-            "     ",
-            "     "
+            "XX ",
+            "  X",
+            " X ",
+            "X  ",
+            "XXX",
+            "   ",
+            "   "
           ]
       },
       ?³ => %{
@@ -1481,13 +1583,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "superscript three",
         bitmap:
           defbitmap [
-            " XX  ",
-            "   X ",
-            "  X  ",
-            "   X ",
-            " XX  ",
-            "     ",
-            "     "
+            "XX ",
+            "  X",
+            " X ",
+            "  X",
+            "XX ",
+            "   ",
+            "   "
           ]
       },
       ?´ => %{
@@ -1496,8 +1598,8 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         bb_y_off: 5,
         bitmap:
           defbitmap [
-            "   X ",
-            "  X  "
+            " X",
+            "X "
           ]
       },
       ?µ => %{
@@ -1506,15 +1608,15 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         bb_y_off: -1,
         bitmap:
           defbitmap [
-            "     ",
-            "     ",
-            "     ",
-            "    X",
-            " X  X",
-            " X  X",
-            " XXX ",
-            " X   ",
-            " X   "
+            "    ",
+            "    ",
+            "    ",
+            "   X",
+            "X  X",
+            "X  X",
+            "XXX ",
+            "X   ",
+            "X   "
           ]
       },
       ?· => %{
@@ -1522,13 +1624,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "middle dot",
         bitmap:
           defbitmap [
-            "     ",
-            "     ",
-            "     ",
-            "  X  ",
-            "     ",
-            "     ",
-            "     "
+            " ",
+            " ",
+            " ",
+            "X",
+            " ",
+            " ",
+            " "
           ]
       },
       ?¹ => %{
@@ -1536,13 +1638,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "superscript one",
         bitmap:
           defbitmap [
-            "  X  ",
-            " XX  ",
-            "  X  ",
-            "  X  ",
-            " XXX ",
-            "     ",
-            "     "
+            " X ",
+            "XX ",
+            " X ",
+            " X ",
+            "XXX",
+            "   ",
+            "   "
           ]
       },
       ?ª => %{
@@ -1550,13 +1652,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "feminine ordinal indicator",
         bitmap:
           defbitmap [
-            "  X  ",
-            " X X ",
-            " XXX ",
-            " X X ",
-            "     ",
-            "     ",
-            "     "
+            " X ",
+            "X X",
+            "XXX",
+            "X X",
+            "   ",
+            "   ",
+            "   "
           ]
       },
       ?º => %{
@@ -1564,13 +1666,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "masculine ordinal indicator",
         bitmap:
           defbitmap [
-            "  X  ",
-            " X X ",
-            " X X ",
-            "  X  ",
-            "     ",
-            "     ",
-            "     "
+            " X ",
+            "X X",
+            "X X",
+            " X ",
+            "   ",
+            "   ",
+            "   "
           ]
       },
       ?« => %{
@@ -1620,13 +1722,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "vulgar fraction one quarter",
         bitmap:
           defbitmap [
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "     ",
-            " X X ",
-            " XXX ",
-            "   X "
+            " X ",
+            " X ",
+            " X ",
+            "   ",
+            "X X",
+            "XXX",
+            "  X"
           ]
       },
       ?½ => %{
@@ -1634,13 +1736,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "vulgar fraction one half",
         bitmap:
           defbitmap [
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "     ",
-            " XX  ",
-            "  X  ",
-            "  XX "
+            " X ",
+            " X ",
+            " X ",
+            "   ",
+            "XX ",
+            " X ",
+            " XX"
           ]
       },
       ?¾ => %{
@@ -1648,13 +1750,13 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
         name: "vulgar fraction three quarters",
         bitmap:
           defbitmap [
-            " XX  ",
-            "  XX ",
-            " XX  ",
-            "     ",
-            " X X ",
-            " XXX ",
-            "   X "
+            "XX ",
+            " XX",
+            "XX ",
+            "   ",
+            "X X",
+            "XXX",
+            "  X"
           ]
       },
       ?¿ => %{
@@ -1775,6 +1877,40 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
             "XXXXXXXXXXXXXXXX",
             "  XXX  XX   XXX ",
             "   X         X  "
+          ]
+      },
+      0xF72E => %{
+        encoding: 0xF72E,
+        bb_y_off: -1,
+        name: "wind",
+        bitmap:
+          defbitmap [
+            "     XX   ",
+            "       X  ",
+            "XXXXXXX   ",
+            "          ",
+            "XXXXXXXXX ",
+            "         X",
+            "XXXX   XX ",
+            "    X     ",
+            "  XX      "
+          ]
+      },
+      0xF73D => %{
+        encoding: 0xF73D,
+        name: "rain",
+        bb_y_off: -1,
+        bitmap:
+          defbitmap [
+            "  XX     ",
+            " XXXX XX ",
+            "XXXXXXXXX",
+            "XXXXXXXXX",
+            "XXXXXXXXX",
+            " XXXXXXX ",
+            "         ",
+            " X  X  X ",
+            "  X  X  X"
           ]
       }
     }
