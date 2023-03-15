@@ -36,6 +36,7 @@ defmodule Flipdot.Font.Library do
     fonts = Task.await_many(parse_tasks, 30_000)
 
     fonts = [Flipdot.Font.Fonts.SpaceInvaders.get() | fonts]
+    fonts = [Flipdot.Font.Fonts.Flipdot.get() | fonts]
 
     Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, :font_library_update)
     {:noreply, %{state | fonts: fonts}}
