@@ -489,6 +489,10 @@ defmodule Bitmap do
     }
   end
 
+  def to_file(bitmap, file, options \\ []) do
+    File.write!(file, to_text(bitmap, options))
+  end
+
   @doc """
   Create text representation of the bitmap by rendering the pixels
   left to right, top to bottom in lines
