@@ -54,6 +54,36 @@ defmodule Flipdot.Weather do
     {rainfall_rate, rainfall_intensity}
   end
 
+  def bitmap_48(weather, height) do
+    list_48 = get_48_hour_temperature(weather, height)
+
+    matrix =
+      for {{_, y}, x} <- Enum.with_index(list_48), into: %{} do
+        {{x, y}, 1}
+      end
+
+    %Bitmap{
+      meta: %{width: 48, height: height},
+      matrix: matrix
+    }
+  end
+
+  def get_48_hour_temperature(weather, spread) when is_integer(spread) do
+    temperatures =
+      for hourly <- weather["hourly"],
+          temperature = hourly["temp"] / 1 do
+        temperature
+      end
+
+    min_temp = Enum.min(temperatures)
+    max_temp = Enum.max(temperatures)
+    range = (max_temp - min_temp) / spread
+
+    Enum.map(temperatures, fn temperature ->
+      {temperature, trunc((temperature - min_temp) / range)}
+    end)
+  end
+
   # server functions
 
   @impl true
