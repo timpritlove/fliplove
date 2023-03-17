@@ -105,6 +105,9 @@ defmodule Flipdot.Dashboard do
     # bitmap = place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed, decimals: 1), :bottom, :left)
     bitmap = place_text(bitmap, state.font, "#{[0xF72E, ?\s]}" <> Integer.to_string(wind_force), :bottom, :left)
 
+    bitmap =
+      Bitmap.overlay(bitmap, Weather.bitmap_48(16) |> Bitmap.crop_relative(115, 16, rel_x: :center, rel_y: :middle))
+
     # plot temperature hours
 
     # render time
