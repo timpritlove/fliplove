@@ -13,6 +13,8 @@ defmodule Flipdot.Dashboard do
   defstruct font: nil, timer: nil, time: nil, weather: nil, bitmap: nil
 
   @font "flipdot"
+  @clock_symbol 0xF017
+  @wind_symbol 0xF72E
 
   def start_link(_state) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -87,7 +89,7 @@ defmodule Flipdot.Dashboard do
     # render temperature
     temperature = Weather.get_temperature()
     # pretty_dump(temperature, "temperature")
-    temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°"
+    temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°C"
     bitmap = place_text(bitmap, state.font, temp_string, :bottom, :right)
 
     # render rain
@@ -103,7 +105,7 @@ defmodule Flipdot.Dashboard do
     {_wind_speed, wind_force} = Weather.get_wind()
 
     # bitmap = place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed, decimals: 1), :bottom, :left)
-    bitmap = place_text(bitmap, state.font, "#{[0xF72E, ?\s]}" <> Integer.to_string(wind_force), :bottom, :left)
+    bitmap = place_text(bitmap, state.font, "#{[@wind_symbol]}" <> Integer.to_string(wind_force), :bottom, :left)
 
     bitmap =
       Bitmap.overlay(bitmap, Weather.bitmap_48(16) |> Bitmap.crop_relative(115, 16, rel_x: :center, rel_y: :middle))
@@ -111,7 +113,7 @@ defmodule Flipdot.Dashboard do
     # plot temperature hours
 
     # render time
-    bitmap = place_text(bitmap, state.font, time_string, :top, :right)
+    bitmap = place_text(bitmap, state.font, "#{[@clock_symbol]}" <> time_string, :top, :right)
 
     if bitmap != state.bitmap do
       DisplayState.set(bitmap)
