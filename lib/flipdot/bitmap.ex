@@ -11,7 +11,7 @@ defmodule Bitmap do
   as keys. Only 0 and 1 are allowed as values (no greyscaling or color).
   """
 
-  defstruct meta: %{}, matrix: %{}
+  defstruct width: nil, height: nil, matrix: %{}
 
   defmacro defbitmap(lines) do
     quote do
@@ -21,8 +21,7 @@ defmodule Bitmap do
 
   defimpl Inspect, for: Bitmap do
     def inspect(bitmap, _opts) do
-      width = bitmap.meta.width
-      height = bitmap.meta.height
+      {width, height} = Bitmap.dimensions(bitmap)
 
       # traverse pixels left to right, top to bottom
       delimiter = "+" <> String.duplicate("-", width) <> "+\n"
@@ -55,7 +54,8 @@ defmodule Bitmap do
   def new(width, height, matrix) when is_integer(width) and is_integer(height) and is_map(matrix) do
     if valid_matrix?(matrix) do
       %Bitmap{
-        meta: %{height: height, width: width},
+        width: width,
+        height: height,
         matrix: matrix
       }
     else
@@ -93,7 +93,7 @@ defmodule Bitmap do
   """
 
   def width(bitmap) do
-    bitmap.meta.width
+    bitmap.width
   end
 
   @doc """
@@ -101,14 +101,14 @@ defmodule Bitmap do
   """
 
   def height(bitmap) do
-    bitmap.meta.height
+    bitmap.height
   end
 
   @doc """
   retrieves both width and height of bitmap in a tuple
   """
   def dimensions(bitmap) do
-    {bitmap.meta.width, bitmap.meta.height}
+    {bitmap.width, bitmap.height}
   end
 
   @doc """

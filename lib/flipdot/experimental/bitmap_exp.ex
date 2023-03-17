@@ -15,10 +15,7 @@ defmodule BitmapExp do
         {{x, y}, Map.get(bitmap.matrix, {min_x + x, min_y + y}, 0)}
       end
 
-    %Bitmap{
-      meta: %{width: range_x + 1, height: range_y + 1},
-      matrix: normalised_matrix
-    }
+    Bitmap.new(range_x + 1, range_y + 1, normalised_matrix)
   end
 
   def overlay_alt(background, overlay, options \\ []) do
@@ -30,8 +27,8 @@ defmodule BitmapExp do
       Keyword.validate!(options,
         cursor_x: 0,
         cursor_y: 0,
-        bb_width: overlay.meta.width,
-        bb_height: overlay.meta.height,
+        bb_width: Bitmap.width(overlay),
+        bb_height: Bitmap.height(overlay),
         bb_x_off: 0,
         bb_y_off: 0,
         opaque: false,
@@ -47,8 +44,8 @@ defmodule BitmapExp do
           bg_y = options[:cursor_y] + options[:bb_y_off] + y,
           options[:infinite] or bg_x >= 0,
           options[:infinite] or bg_y >= 0,
-          options[:infinite] or bg_x < background.meta.width,
-          options[:infinite] or bg_y < background.meta.height,
+          options[:infinite] or bg_x < Bitmap.width(background),
+          options[:infinite] or bg_y < Bitmap.height(background),
           into: %{} do
         pixel = Map.get(overlay.matrix, {x, y}, 0)
 
@@ -64,22 +61,19 @@ defmodule BitmapExp do
         end
       end
 
-    {width, height} =
+    {new_width, new_height} =
       if options[:infinite] do
         Enum.reduce(
           Map.filter(overlay_matrix, fn {_, value} -> value == 1 end) |> Map.keys(),
-          {background.meta.width, background.meta.height},
+          {Bitmap.width(background), Bitmap.height(background)},
           fn {x, y}, {max_width, max_height} ->
             {max(x + 1, max_width), max(y + 1, max_height)}
           end
         )
       else
-        {background.meta.width, background.meta.height}
+        {Bitmap.width(background), Bitmap.height(background)}
       end
 
-    %Bitmap{
-      meta: %{background.meta | width: width, height: height},
-      matrix: Map.merge(background.matrix, overlay_matrix)
-    }
+    Bitmap.new(new_width, new_height, Map.merge(background.matrix, overlay_matrix))
   end
 end
