@@ -5,6 +5,7 @@ defmodule Flipdot.Weather do
   use GenServer
 
   require HTTPoison
+  import Flipdot.PrettyDump
 
   defstruct timer: nil, api_key: nil, weather: nil
 
@@ -38,18 +39,21 @@ defmodule Flipdot.Weather do
   def stop_weather_service(), do: GenServer.call(__MODULE__, :stop_weather_service)
   def get_weather(), do: GenServer.call(__MODULE__, :get_weather)
 
-  def get_temperature(weather) do
-    weather["current"]["temperature"]
+  def get_temperature() do
+    weather = get_weather()
+    weather["current"]["temp"]
   end
 
-  def get_wind(weather) do
-    wind_speed = weather["current"]["wind_speed"] |> String.to_float()
+  def get_wind() do
+    weather = get_weather()
+    wind_speed = weather["current"]["wind_speed"]
     wind_force = wind_force(wind_speed)
     {wind_speed, wind_force}
   end
 
-  def get_rain(weather) do
-    rainfall_rate = weather["current"]["rain"] |> String.to_float()
+  def get_rain() do
+    weather = get_weather()
+    rainfall_rate = weather["current"]["rain"]
     rainfall_intensity = rainfall_intensity(rainfall_rate)
     {rainfall_rate, rainfall_intensity}
   end
@@ -105,7 +109,13 @@ defmodule Flipdot.Weather do
 
   @impl true
   def handle_call(:get_weather, _, state) do
-    {:reply, state.weather, state}
+    weather =
+      case state.weather do
+        nil -> call_openweathermap(state.api_key)
+        weather -> weather
+      end
+
+    {:reply, weather, %{state | weather: weather}}
   end
 
   @impl true
@@ -181,12 +191,15 @@ defmodule Flipdot.Weather do
       {"appid", api_key}
     ]
 
-    case HTTPoison.get(url, [], params: params) do
-      {:ok, %{status_code: 200, body: body}} ->
-        Jason.decode!(body)
+    weather =
+      case HTTPoison.get(url, [], params: params) do
+        {:ok, %{status_code: 200, body: body}} ->
+          Jason.decode!(body)
 
-      {:ok, %{status_code: status_code}} ->
-        raise("OpenWeatherMap API call failed (#{status_code})")
-    end
+        {:ok, %{status_code: status_code}} ->
+          raise("OpenWeatherMap API call failed (#{status_code})")
+      end
+
+    pretty_dump(weather, "weather")
   end
 end
