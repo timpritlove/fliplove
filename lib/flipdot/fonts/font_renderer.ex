@@ -27,14 +27,15 @@ defmodule Flipdot.Font.Renderer do
         Bitmap.overlay(bitmap, char.bitmap,
           cursor_x: cursor_x,
           cursor_y: cursor_y,
-          bb_width: Map.get(char, :bb_width, char.bitmap.meta.width),
-          bb_height: Map.get(char, :bb_height, char.bitmap.meta.height),
+          bb_width: Map.get(char, :bb_width, Bitmap.width(char.bitmap)),
+          bb_height: Map.get(char, :bb_height, Bitmap.height(char.bitmap)),
           bb_x_off: Map.get(char, :bb_x_off, 0),
           bb_y_off: Map.get(char, :bb_y_off, 0),
           opaque: false
         )
         |> render_text(
-          {cursor_x + Map.get(char, :dwx0, char.bitmap.meta.width + 1) + kerning, cursor_y + Map.get(char, :dwy0, 0)},
+          {cursor_x + Map.get(char, :dwx0, Bitmap.width(char.bitmap) + 1) + kerning,
+           cursor_y + Map.get(char, :dwy0, 0)},
           font,
           tail
         )

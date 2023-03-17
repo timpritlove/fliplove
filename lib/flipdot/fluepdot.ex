@@ -12,8 +12,8 @@ defmodule Flipdot.Fluepdot do
   end
 
   def send_bitmap_via_udp(bitmap) do
-    if bitmap.meta.width != DisplayState.width(), do: raise("Bitmap has the wrong width")
-    if bitmap.meta.height != DisplayState.height(), do: raise("Bitmap has the wrong height")
+    if Bitmap.width(bitmap) != DisplayState.width(), do: raise("Bitmap has the wrong width")
+    if Bitmap.height(bitmap) != DisplayState.height(), do: raise("Bitmap has the wrong height")
 
     frame = Bitmap.to_binary(bitmap)
 

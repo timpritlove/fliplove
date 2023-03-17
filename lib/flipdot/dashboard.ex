@@ -129,14 +129,14 @@ defmodule Flipdot.Dashboard do
     cursor_x =
       case align_horizontally do
         :left -> 0
-        :center -> div(bitmap.meta.width - rendered_text.meta.width, 2)
-        :right -> bitmap.meta.width - rendered_text.meta.width
+        :center -> div(Bitmap.width(bitmap) - Bitmap.width(rendered_text), 2)
+        :right -> Bitmap.width(bitmap) - Bitmap.width(rendered_text)
       end
 
     cursor_y =
       case align_vertically do
-        :top -> bitmap.meta.height - rendered_text.meta.height
-        :middle -> div(bitmap.meta.height - rendered_text.meta.height, 2)
+        :top -> Bitmap.height(bitmap) - Bitmap.height(rendered_text)
+        :middle -> div(Bitmap.height(bitmap) - Bitmap.height(rendered_text), 2)
         :bottom -> 0
       end
 
