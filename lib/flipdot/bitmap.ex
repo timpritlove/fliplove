@@ -53,10 +53,32 @@ defmodule Bitmap do
   of 0 or 1.
   """
   def new(width, height, matrix) when is_integer(width) and is_integer(height) and is_map(matrix) do
-    %Bitmap{
-      meta: %{height: height, width: width},
-      matrix: matrix
-    }
+    if valid_matrix?(matrix) do
+      %Bitmap{
+        meta: %{height: height, width: width},
+        matrix: matrix
+      }
+    else
+      raise "Invalid matrix"
+    end
+  end
+
+  defp valid_matrix?(matrix) do
+    matrix
+    |> Map.keys()
+    |> Enum.all?(fn key ->
+      case key do
+        {x, y} when is_integer(x) and is_integer(y) and x >= 0 and y >= 0 ->
+          case Map.get(matrix, key) do
+            0 -> true
+            1 -> true
+            _ -> false
+          end
+
+        _ ->
+          false
+      end
+    end)
   end
 
   @doc """
