@@ -167,6 +167,9 @@ defmodule Bitmap do
     new(width, height, matrix)
   end
 
+  @doc """
+  Invert the bitmap
+  """
   def invert(bitmap) do
     {width, height} = dimensions(bitmap)
 
@@ -178,6 +181,9 @@ defmodule Bitmap do
     new(width, height, matrix)
   end
 
+  @doc """
+  Flip the bitmap horizontally
+  """
   def flip_horizontally(bitmap) do
     {width, height} = dimensions(bitmap)
 
@@ -188,6 +194,10 @@ defmodule Bitmap do
 
     new(width, height, matrix)
   end
+
+  @doc """
+  Flip the bitmap vertically
+  """
 
   def flip_vertically(bitmap) do
     {width, height} = dimensions(bitmap)
@@ -366,6 +376,31 @@ defmodule Bitmap do
       end
 
     crop(bitmap, {pos_x, pos_y}, crop_width, crop_height)
+  end
+
+  @doc """
+  Rotate the bitmap by 90 degrees
+  direction is either :cw (90 degress, default) or :ccw (-90 degress)
+  """
+
+  def rotate(bitmap, options \\ []) do
+    options = Keyword.validate!(options, direction: :cw)
+
+    {width, height} = dimensions(bitmap)
+
+    matrix =
+      for x <- 0..(height - 1), y <- 0..(width - 1), into: %{} do
+        {{x, y},
+         get_pixel(
+           bitmap,
+           case options[:direction] do
+             :cw -> {width - 1 - y, x}
+             :ccw -> {y, height - 1 - x}
+           end
+         )}
+      end
+
+    new(height, width, matrix)
   end
 
   @doc """
