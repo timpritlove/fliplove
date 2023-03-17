@@ -7,6 +7,8 @@ defmodule Flipdot.Dashboard do
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
   alias Flipdot.Weather
+  import Flipdot.PrettyDump
+  require Logger
 
   defstruct font: nil, timer: nil, time: nil, weather: nil, bitmap: nil
 
@@ -19,10 +21,8 @@ defmodule Flipdot.Dashboard do
   @impl true
   def init(state) do
     font = Library.get_font_by_name(@font)
-    time = get_time_string()
-    bitmap = compose_dashboard()
 
-    {:ok, %{state | bitmap: bitmap, font: font, time: time}}
+    {:ok, %{state | font: font}, {:continue, :update_dashboard}}
   end
 
   def start_dashboard() do
@@ -39,14 +39,18 @@ defmodule Flipdot.Dashboard do
   def handle_call(:start_dashboard, _, state) do
     {:ok, timer} = :timer.send_interval(250, self(), :update_dashboard)
 
+    Logger.info("Dashboard has been started.")
     {:reply, :ok, %{state | timer: timer}}
   end
 
   @impl true
   def handle_call(:stop_dashboard, _, state) do
+    Logger.info("Shutting down Dashboard.")
+
     state =
       if state.timer do
         {:ok, :cancel} = :timer.cancel(state.timer)
+        Logger.info("Timer canceled.")
         %{state | timer: nil}
       else
         state
@@ -56,14 +60,15 @@ defmodule Flipdot.Dashboard do
   end
 
   @impl true
+  def handle_continue(:update_dashboard, state) do
+    state = update_dashboard(state)
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info(:update_dashboard, state) do
-    time = get_time_string()
-
-    if time != state.time do
-      DisplayState.get() |> render_text(state.font, time) |> DisplayState.set()
-    end
-
-    {:noreply, %{state | time: time}}
+    state = update_dashboard(state)
+    {:noreply, state}
   end
 
   # helper functions
@@ -73,27 +78,72 @@ defmodule Flipdot.Dashboard do
     |> Calendar.strftime("%c", preferred_datetime: "%H:%M")
   end
 
-  defp compose_dashboard do
-    Bitmap.new(DisplayState.width(), DisplayState.height())
+  defp update_dashboard(state) do
+    time_string = get_time_string()
+    weather = Weather.get_weather()
+
+    bitmap = Bitmap.new(DisplayState.width(), DisplayState.height())
+
+    # render temperature
+    temperature = Weather.get_temperature()
+    # pretty_dump(temperature, "temperature")
+    temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°"
+    bitmap = place_text(bitmap, state.font, temp_string, :top, :left)
+
+    # render rain
+    # {rainfall_rate, rainfall_intensity} = Weather.get_rain()
+
+    # bitmap =
+    #   place_text(bitmap, state.font, "R #{rainfall_rate}  I #{rainfall_intensity}",
+    #     align_vertically: :top,
+    #     align_horizontally: :left
+    #   )
+
+    # render wind
+    {_wind_speed, wind_force} = Weather.get_wind()
+
+    # bitmap = place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed, decimals: 1), :bottom, :left)
+    bitmap = place_text(bitmap, state.font, "#{[0xF72E, ?\s]}" <> Integer.to_string(wind_force), :bottom, :left)
+
+    # plot temperature hours
+
+    # render time
+    bitmap = place_text(bitmap, state.font, time_string, :top, :right)
+
+    if bitmap != state.bitmap do
+      DisplayState.set(bitmap)
+    end
+
+    %{state | time: time_string, weather: weather}
   end
 
-  defp render_text(bitmap, font, text) do
+  # TODO: Umschreiben, so dass man eine Orientierung angeben kann {:left, :right, :center}, {:top, :middle, :bottom}
+
+  defp place_text(bitmap, font, text, align_vertically, align_horizontally) do
     rendered_text =
       Bitmap.new(1000, 1000)
       |> Renderer.render_text({10, 10}, font, text)
       |> Bitmap.clip()
 
-    Bitmap.new(bitmap.meta.width, bitmap.meta.height)
+    cursor_x =
+      case align_horizontally do
+        :left -> 0
+        :center -> div(bitmap.meta.width - rendered_text.meta.width, 2)
+        :right -> bitmap.meta.width - rendered_text.meta.width
+      end
+
+    cursor_y =
+      case align_vertically do
+        :top -> bitmap.meta.height - rendered_text.meta.height
+        :middle -> div(bitmap.meta.height - rendered_text.meta.height, 2)
+        :bottom -> 0
+      end
+
+    bitmap
     |> Bitmap.overlay(
       rendered_text,
-      cursor_x: div(bitmap.meta.width - rendered_text.meta.width, 2),
-      cursor_y: div(bitmap.meta.height - rendered_text.meta.height, 2)
-    )
-    |> Bitmap.overlay(
-      Bitmap.frame(
-        DisplayState.width(),
-        DisplayState.height()
-      )
+      cursor_x: cursor_x,
+      cursor_y: cursor_y
     )
   end
 end
