@@ -89,7 +89,7 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_event("start-dashboard", _params, socket) do
-    Dashboard.stop_dashboard()
+    Dashboard.start_dashboard()
 
     {:noreply, socket}
   end
