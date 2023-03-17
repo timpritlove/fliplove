@@ -316,7 +316,7 @@ defmodule Bitmap do
     pos_y =
       case options[:rel_y] do
         :top -> bitmap.meta.height - crop_height
-        :center -> div(bitmap.meta.height - crop_height, 2)
+        :middle -> div(bitmap.meta.height - crop_height, 2)
         :bottom -> 0
         rel_position -> raise("unkown relative position #{rel_position}")
       end
