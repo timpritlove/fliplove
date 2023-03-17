@@ -18,6 +18,7 @@ defmodule FlipdotWeb.Router do
     pipe_through :browser
 
     live "/", FlipdotLive
+    get "/download/:bitmap", DownloadController, :download
   end
 
   # Other scopes may use custom stacks.
