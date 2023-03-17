@@ -45,6 +45,50 @@ defmodule Bitmap do
     end
   end
 
+  # basic operations
+
+  @doc """
+  Create a bitmap with given width and height and initialized by a matrix of pixels.
+  The matrix must be a map with coordinates as keys given as a tuple {x,y} and a value
+  of 0 or 1.
+  """
+  def new(width, height, matrix) when is_integer(width) and is_integer(height) and is_map(matrix) do
+    %Bitmap{
+      meta: %{height: height, width: width},
+      matrix: matrix
+    }
+  end
+
+  @doc """
+  Create a new empty bitmap with given width and height
+  """
+  def new(width, height) when is_integer(width) and is_integer(height) do
+    new(width, height, %{})
+  end
+
+  @doc """
+  retrieves stored width of bitmap
+  """
+
+  def width(bitmap) do
+    bitmap.meta.width
+  end
+
+  @doc """
+  retrieves stored height of bitmap
+  """
+
+  def height(bitmap) do
+    bitmap.meta.height
+  end
+
+  @doc """
+  retrieves both width and height of bitmap in a tuple
+  """
+  def dimensions(bitmap) do
+    {bitmap.meta.width, bitmap.meta.height}
+  end
+
   @doc """
   Determine the effective bounding box of the bitmap
   """
@@ -76,112 +120,82 @@ defmodule Bitmap do
         {{x - min_x, y - min_y}, get_pixel(bitmap, {x, y})}
       end
 
-    %Bitmap{
-      meta: %{width: max_x - min_x + 1, height: max_y - min_y + 1},
-      matrix: matrix
-    }
+    new(max_x - min_x + 1, max_y - min_y + 1, matrix)
   end
 
   @doc """
   Translate bitmap to new position.
   """
   def translate(bitmap, {dx, dy} = _transformation) do
+    {width, height} = dimensions(bitmap)
+
     matrix =
-      for x <- 0..(bitmap.meta.width - 1),
-          y <- 0..(bitmap.meta.height - 1),
+      for x <- 0..(width - 1),
+          y <- 0..(height - 1),
           pos_x = x + dx,
           pos_y = y + dy,
           pos_x >= 0,
           pos_y >= 0,
-          pos_x < bitmap.meta.width,
-          pos_y < bitmap.meta.height,
+          pos_x < width,
+          pos_y < height,
           into: %{} do
         {{pos_x, pos_y}, get_pixel(bitmap, {x, y})}
       end
 
-    %Bitmap{
-      meta: bitmap.meta,
-      matrix: matrix
-    }
-  end
-
-  def new(width, height) do
-    %Bitmap{
-      meta: %{height: height, width: width},
-      matrix: %{}
-    }
+    new(width, height, matrix)
   end
 
   def invert(bitmap) do
-    width = bitmap.meta.width
-    height = bitmap.meta.height
+    {width, height} = dimensions(bitmap)
 
     matrix =
       for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
         {{x, y}, 1 - get_pixel(bitmap, {x, y})}
       end
 
-    %Bitmap{
-      meta: bitmap.meta,
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
   def flip_horizontally(bitmap) do
-    width = bitmap.meta.width
-    height = bitmap.meta.height
+    {width, height} = dimensions(bitmap)
 
     matrix =
       for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
         {{x, y}, get_pixel(bitmap, {width - 1 - x, y})}
       end
 
-    %Bitmap{
-      meta: bitmap.meta,
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
   def flip_vertically(bitmap) do
-    width = bitmap.meta.width
-    height = bitmap.meta.height
+    {width, height} = dimensions(bitmap)
 
     matrix =
       for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
         {{x, y}, get_pixel(bitmap, {x, height - 1 - y})}
       end
 
-    %Bitmap{
-      meta: bitmap.meta,
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
-  def dimensions(bitmap) do
-    {bitmap.meta.width, bitmap.meta.height}
-  end
+  # individual pixel manipulation
 
   def get_pixel(bitmap, {x, y} = _coordinate) do
     Map.get(bitmap.matrix, {x, y}, 0)
   end
 
   def set_pixel(bitmap, {x, y} = _coordinate, value) do
-    matrix = Map.put(bitmap.matrix, {x, y}, value)
-
-    %Bitmap{
-      meta: bitmap.meta,
-      matrix: matrix
-    }
+    new(width(bitmap), height(bitmap), Map.put(bitmap.matrix, {x, y}, value))
   end
 
   def toggle_pixel(bitmap, {x, y} = _coordinate) do
     set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
   end
 
-  #
-  # fill image beginning at a certain coordinate.
-  # stop when hitting a set pixel
-  #
+  @doc """
+    fill image beginning at a certain coordinate.
+    stop when hitting a set pixel
+  """
 
   def fill(bitmap, {x, y}) do
     do_fill(bitmap, [{x, y}])
@@ -192,6 +206,8 @@ defmodule Bitmap do
   end
 
   defp do_fill(bitmap, [{x, y} | rest]) do
+    {width, height} = dimensions(bitmap)
+
     case get_pixel(bitmap, {x, y}) do
       1 ->
         bitmap
@@ -205,8 +221,8 @@ defmodule Bitmap do
           for {nx, ny} <- [{x - 1, y}, {x + 1, y}, {x, y + 1}, {x, y - 1}],
               nx >= 0,
               ny >= 0,
-              nx < bitmap.meta.width,
-              ny < bitmap.meta.height,
+              nx < width,
+              ny < height,
               get_pixel(bitmap, {nx, ny}) == 0 do
             {nx, ny}
           end
@@ -225,17 +241,18 @@ defmodule Bitmap do
   # - support opaque: false option
   #
 
-  def overlay(background, overlay, options \\ []) do
-    # Allow cursor position in background and bounding box in bitmap
+  def overlay(bitmap, overlay, options \\ []) do
+    # Allow cursor position and bounding box in bitmap
     # to be passed as parameters.
     # default to unshifted positions with all pixels included.
+    {width, height} = dimensions(bitmap)
 
     options =
       Keyword.validate!(options,
         cursor_x: 0,
         cursor_y: 0,
-        bb_width: overlay.meta.width,
-        bb_height: overlay.meta.height,
+        bb_width: width(overlay),
+        bb_height: height(overlay),
         bb_x_off: 0,
         bb_y_off: 0,
         opaque: false
@@ -249,9 +266,9 @@ defmodule Bitmap do
           bg_x = options[:cursor_x] + options[:bb_x_off] + x,
           bg_y = options[:cursor_y] + options[:bb_y_off] + y,
           bg_x >= 0,
-          bg_x < background.meta.width,
+          bg_x < width,
           bg_y >= 0,
-          bg_y < background.meta.height,
+          bg_y < height,
           into: %{} do
         pixel = get_pixel(overlay, {x, y})
 
@@ -263,14 +280,11 @@ defmodule Bitmap do
             {{bg_x, bg_y}, 0}
 
           pixel == 0 and not options[:opaque] ->
-            {{bg_x, bg_y}, get_pixel(background, {bg_x, bg_y})}
+            {{bg_x, bg_y}, get_pixel(bitmap, {bg_x, bg_y})}
         end
       end
 
-    %Bitmap{
-      meta: background.meta,
-      matrix: Map.merge(background.matrix, overlay_matrix)
-    }
+    new(width, height, Map.merge(bitmap.matrix, overlay_matrix))
   end
 
   @doc """
@@ -278,6 +292,8 @@ defmodule Bitmap do
   """
   def crop(bitmap, {start_x, start_y} = _coordinate, crop_width, crop_height)
       when crop_width > 0 and crop_height > 0 do
+    {width, height} = dimensions(bitmap)
+
     cropped_matrix =
       for x <- 0..(crop_width - 1),
           y <- 0..(crop_height - 1),
@@ -285,44 +301,54 @@ defmodule Bitmap do
           pos_y = start_y + y,
           pos_x >= 0,
           pos_y >= 0,
-          pos_x < bitmap.meta.width,
-          pos_y < bitmap.meta.height,
+          pos_x < width,
+          pos_y < height,
           into: %{} do
         {{x, y}, get_pixel(bitmap, {pos_x, pos_y})}
       end
 
-    %Bitmap{
-      meta: %{width: crop_width, height: crop_height},
-      matrix: cropped_matrix
-    }
+    new(crop_width, crop_height, cropped_matrix)
   end
+
+  @doc """
+  Crop bitmap relative to given bitmap.
+
+  Relative position in horizontal direction: :left, :center, :right
+  Relative position in vertical direction: :top, :middle, :bottom
+  """
 
   def crop_relative(bitmap, crop_width, crop_height, options \\ [])
       when crop_width > 0 and crop_height > 0 do
+    {width, height} = dimensions(bitmap)
+
     options =
       Keyword.validate!(options,
-        rel_y: :bottom,
-        rel_x: :left
+        rel_x: :left,
+        rel_y: :bottom
       )
 
     pos_x =
       case options[:rel_x] do
         :left -> 0
-        :center -> div(bitmap.meta.width - crop_width, 2)
-        :right -> bitmap.meta.width - crop_width
+        :center -> div(width - crop_width, 2)
+        :right -> width - crop_width
         rel_position -> raise("unkown relative position #{rel_position}")
       end
 
     pos_y =
       case options[:rel_y] do
-        :top -> bitmap.meta.height - crop_height
-        :middle -> div(bitmap.meta.height - crop_height, 2)
+        :top -> height - crop_height
+        :middle -> div(height - crop_height, 2)
         :bottom -> 0
         rel_position -> raise("unkown relative position #{rel_position}")
       end
 
     crop(bitmap, {pos_x, pos_y}, crop_width, crop_height)
   end
+
+  @doc """
+  Create a bitmap with randomly set pixels
+  """
 
   def random(width, height) do
     matrix =
@@ -331,10 +357,7 @@ defmodule Bitmap do
           into: %{},
           do: {{x, y}, Enum.random(0..1)}
 
-    %Bitmap{
-      meta: %{width: width, height: height},
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
   @doc """
@@ -344,17 +367,19 @@ defmodule Bitmap do
   - a dead cell surrounded by 3 living cells will be reborn.
   """
   def game_of_life(bitmap) do
+    {width, height} = dimensions(bitmap)
+
     matrix =
-      for x <- 0..(bitmap.meta.width - 1),
-          y <- 0..(bitmap.meta.height - 1),
+      for x <- 0..(width - 1),
+          y <- 0..(height - 1),
           into: %{} do
         number_of_neighbors =
           for dx <- [x - 1, x, x + 1],
               dy <- [y - 1, y, y + 1],
               dx >= 0,
               dy >= 0,
-              dx < bitmap.meta.width,
-              dy < bitmap.meta.height,
+              dx < width,
+              dy < height,
               not (dx == x and dy == y),
               get_pixel(bitmap, {dx, dy}) == 1,
               reduce: 0 do
@@ -374,12 +399,12 @@ defmodule Bitmap do
         {{x, y}, new_cell}
       end
 
-    %Bitmap{
-      meta: %{width: bitmap.meta.width, height: bitmap.meta.height},
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
+  @doc """
+  Create a bitmap surrounded by a frame
+  """
   def frame(width, height) do
     h =
       for x <- 0..(width - 1),
@@ -389,10 +414,7 @@ defmodule Bitmap do
     v = for(y <- 0..(height - 1), x <- [0, width - 1], do: {x, y})
     matrix = for {x, y} <- Enum.uniq(h ++ v), into: %{}, do: {{x, y}, 1}
 
-    %Bitmap{
-      meta: %{width: width, height: height},
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
   # draw a line using bresenham algorithm
@@ -483,10 +505,7 @@ defmodule Bitmap do
         {{x, height - dy}, value}
       end
 
-    %Bitmap{
-      meta: %{width: width, height: height},
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
   def to_file(bitmap, file, options \\ []) do
@@ -505,8 +524,7 @@ defmodule Bitmap do
   Bounding box information is ignored.
   """
   def to_text(bitmap, options \\ []) do
-    width = bitmap.meta.width
-    height = bitmap.meta.height
+    {width, height} = dimensions(bitmap)
 
     options =
       Keyword.validate!(options,
@@ -538,8 +556,7 @@ defmodule Bitmap do
   #
 
   def to_binary(bitmap) do
-    width = bitmap.meta.width
-    height = bitmap.meta.height
+    {width, height} = dimensions(bitmap)
 
     if rem(height, 8) != 0 do
       raise "height (#{height}) is not a multiple of 8 and therefore the bitmap can't be turned into a binary"
@@ -571,10 +588,7 @@ defmodule Bitmap do
         {{x, y}, pixel}
       end
 
-    %Bitmap{
-      meta: %{width: width, height: height},
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
   def gradient_h(width, height) do
@@ -584,12 +598,13 @@ defmodule Bitmap do
         {{x, y}, value}
       end
 
-    %Bitmap{
-      meta: %{width: width, height: height},
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
+  @doc """
+  Draw a gradient from left to right using randomized dithering
+  TODO: allow for other directions (use rotate for now)
+  """
   def gradient_v(width, height) do
     matrix =
       for y <- 0..(height - 1), x <- 0..(width - 1), into: %{} do
@@ -597,10 +612,7 @@ defmodule Bitmap do
         {{x, y}, value}
       end
 
-    %Bitmap{
-      meta: %{width: width, height: height},
-      matrix: matrix
-    }
+    new(width, height, matrix)
   end
 
   @doc """
@@ -629,6 +641,8 @@ defmodule Bitmap do
   end
 
   defp maze_gen(bitmap, visited_cells) do
+    {width, height} = dimensions(bitmap)
+
     {cur_x, cur_y} = hd(visited_cells)
 
     unvisited_neighbors =
@@ -640,8 +654,8 @@ defmodule Bitmap do
           ],
           nx >= 0,
           ny >= 0,
-          nx < bitmap.meta.width,
-          ny < bitmap.meta.height,
+          nx < width,
+          ny < height,
           get_pixel(bitmap, {nx, ny}) == 1 do
         {nx, ny, wx, wy}
       end
