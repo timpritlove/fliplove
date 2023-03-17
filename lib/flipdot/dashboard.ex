@@ -7,8 +7,8 @@ defmodule Flipdot.Dashboard do
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
   alias Flipdot.Weather
-  import Flipdot.PrettyDump
   require Logger
+  # import Flipdot.PrettyDump
 
   defstruct font: nil, timer: nil, time: nil, weather: nil, bitmap: nil
 
