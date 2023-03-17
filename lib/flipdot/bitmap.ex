@@ -651,6 +651,10 @@ defmodule Bitmap do
   @doc """
   Draw a gradient from left to right using randomized dithering
   """
+  def gradient_h(bitmap) do
+    gradient_h(bitmap.width, bitmap.height)
+  end
+
   def gradient_h(width, height) do
     matrix =
       for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
@@ -664,6 +668,10 @@ defmodule Bitmap do
   @doc """
   Draw a gradient from top to bottom using randomized dithering
   """
+  def gradient_v(bitmap) do
+    gradient_v(bitmap.width, bitmap.height)
+  end
+
   def gradient_v(width, height) do
     matrix =
       for y <- 0..(height - 1), x <- 0..(width - 1), into: %{} do

@@ -112,6 +112,18 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  def handle_event("gradient-h", _params, socket) do
+    DisplayState.get() |> Bitmap.gradient_h() |> DisplayState.set()
+
+    {:noreply, socket}
+  end
+
+  def handle_event("gradient-v", _params, socket) do
+    DisplayState.get() |> Bitmap.gradient_v() |> DisplayState.set()
+
+    {:noreply, socket}
+  end
+
   def handle_event("maze", _params, socket) do
     display_width = DisplayState.width()
     display_height = DisplayState.height()
