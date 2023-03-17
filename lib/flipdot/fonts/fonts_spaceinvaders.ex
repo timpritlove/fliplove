@@ -1,8 +1,8 @@
 defmodule Flipdot.Font.Fonts.SpaceInvaders do
   import Bitmap
-  import Flipdot.Font
+  alias Flipdot.Font
 
-  @font %{
+  @font %Font{
     name: "space-invaders",
     properties: %{
       copyright: "Public domain font. Share and enjoy.",

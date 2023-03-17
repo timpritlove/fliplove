@@ -1,8 +1,8 @@
 defmodule Flipdot.Font.Fonts.Flipdot do
   import Bitmap
-  import Flipdot.Font
+  alias Flipdot.Font
 
-  @font %{
+  @font %Font{
     name: "flipdot",
     properties: %{
       copyright: "Public domain font. Share and enjoy.",
