@@ -88,7 +88,7 @@ defmodule Flipdot.Dashboard do
     temperature = Weather.get_temperature()
     # pretty_dump(temperature, "temperature")
     temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°"
-    bitmap = place_text(bitmap, state.font, temp_string, :top, :left)
+    bitmap = place_text(bitmap, state.font, temp_string, :bottom, :right)
 
     # render rain
     # {rainfall_rate, rainfall_intensity} = Weather.get_rain()
@@ -119,8 +119,6 @@ defmodule Flipdot.Dashboard do
 
     %{state | time: time_string, weather: weather}
   end
-
-  # TODO: Umschreiben, so dass man eine Orientierung angeben kann {:left, :right, :center}, {:top, :middle, :bottom}
 
   defp place_text(bitmap, font, text, align_vertically, align_horizontally) do
     rendered_text =
