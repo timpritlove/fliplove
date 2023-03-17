@@ -66,10 +66,7 @@ defmodule Flipdot.Weather do
         {{x, y}, 1}
       end
 
-    %Bitmap{
-      meta: %{width: 48, height: height},
-      matrix: matrix
-    }
+    Bitmap.new(48, height, matrix)
   end
 
   def get_48_hour_temperature(spread) when is_integer(spread) do
