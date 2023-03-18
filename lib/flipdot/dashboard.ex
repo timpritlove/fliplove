@@ -90,7 +90,7 @@ defmodule Flipdot.Dashboard do
     temperature = Weather.get_temperature()
     # pretty_dump(temperature, "temperature")
     temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°C"
-    bitmap = place_text(bitmap, state.font, temp_string, :bottom, :right)
+    bitmap = place_text(bitmap, state.font, temp_string, :top, :left)
 
     # render rain
     # {rainfall_rate, rainfall_intensity} = Weather.get_rain()
@@ -105,7 +105,7 @@ defmodule Flipdot.Dashboard do
     {_wind_speed, wind_force} = Weather.get_wind()
 
     # bitmap = place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed, decimals: 1), :bottom, :left)
-    bitmap = place_text(bitmap, state.font, "#{[@wind_symbol]}" <> Integer.to_string(wind_force), :bottom, :left)
+    bitmap = place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
 
     bitmap =
       Bitmap.overlay(bitmap, Weather.bitmap_48(16) |> Bitmap.crop_relative(115, 16, rel_x: :center, rel_y: :middle))
@@ -113,7 +113,9 @@ defmodule Flipdot.Dashboard do
     # plot temperature hours
 
     # render time
-    bitmap = place_text(bitmap, state.font, "#{[@clock_symbol]}" <> time_string, :top, :right)
+
+    bitmap = place_text(bitmap, state.font, "#{[@clock_symbol]}", :top, :right)
+    bitmap = place_text(bitmap, state.font, time_string, :bottom, :right)
 
     if bitmap != state.bitmap do
       DisplayState.set(bitmap)
