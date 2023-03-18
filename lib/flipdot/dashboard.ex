@@ -24,7 +24,7 @@ defmodule Flipdot.Dashboard do
   def init(state) do
     font = Library.get_font_by_name(@font)
 
-    {:ok, %{state | font: font}, {:continue, :update_dashboard}}
+    {:ok, %{state | font: font}}
   end
 
   def start_dashboard() do
@@ -59,12 +59,6 @@ defmodule Flipdot.Dashboard do
       end
 
     {:reply, :ok, state}
-  end
-
-  @impl true
-  def handle_continue(:update_dashboard, state) do
-    state = update_dashboard(state)
-    {:noreply, state}
   end
 
   @impl true
