@@ -21,7 +21,8 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:bitmap, DisplayState.get())
       |> assign(:clock, clock())
       |> assign(:text, "")
-      |> assign(:tool_selection, nil)
+      |> assign(:mode, :pencil)
+      |> assign(:prev_xy, nil)
       |> assign(:font_select, Library.get_fonts() |> build_font_select())
       |> allow_upload(:frame, accept: ~w(.txt), max_entries: 1, max_file_size: 5_000)
 
@@ -88,17 +89,7 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
-  def handle_event("start-dashboard", _params, socket) do
-    Dashboard.start_dashboard()
-
-    {:noreply, socket}
-  end
-
-  def handle_event("stop-dashboard", _params, socket) do
-    Dashboard.stop_dashboard()
-
-    {:noreply, socket}
-  end
+  # mode selector
 
   def handle_event("random", _params, socket) do
     Bitmap.random(115, 16) |> DisplayState.set()
@@ -137,17 +128,6 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
-  def handle_event("toggle", params, socket) do
-    x = String.to_integer(params["x"])
-    y = String.to_integer(params["y"])
-
-    DisplayState.get()
-    |> Bitmap.toggle_pixel({x, y})
-    |> DisplayState.set()
-
-    {:noreply, assign(socket, :bitmap, DisplayState.get())}
-  end
-
   def handle_event("render", %{"text" => text, "font" => font_name} = _params, socket) do
     DisplayState.clear()
     |> Renderer.render_text({0, 2}, Library.get_font_by_name(font_name), text)
@@ -167,7 +147,87 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  def handle_event("mode", params, socket) do
+    new_mode = String.to_atom(params["value"])
+
+    socket =
+      case(socket.assigns.mode != new_mode) do
+        false ->
+          socket
+
+        true ->
+          case {socket.assigns.mode, new_mode} do
+            {:dashboard, _} -> Dashboard.stop_dashboard()
+            {_, :dashboard} -> Dashboard.start_dashboard()
+            _ -> true
+          end
+
+          socket
+          |> assign(:prev_xy, nil)
+          |> assign(:mode, new_mode)
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_event("pixel", params, socket) do
+    x = String.to_integer(params["x"])
+    y = String.to_integer(params["y"])
+
+    do_pixel_click(socket.assigns.mode, {x, y}, socket.assigns.prev_xy, DisplayState.get())
+    |> DisplayState.set()
+
+    prev_xy =
+      case Enum.member?([:line, :frame], socket.assigns.mode) do
+        true ->
+          case socket.assigns.prev_xy do
+            nil -> {x, y}
+            _ -> nil
+          end
+
+        false ->
+          nil
+      end
+
+    socket =
+      socket
+      |> assign(:prev_xy, prev_xy)
+      |> assign(:bitmap, DisplayState.get())
+
+    {:noreply, socket}
+  end
+
   # helper functions
+
+  def do_pixel_click(:pencil, {x, y}, _, bitmap) do
+    Bitmap.toggle_pixel(bitmap, {x, y})
+  end
+
+  def do_pixel_click(:fill, {x, y}, _, bitmap) do
+    Bitmap.fill(bitmap, {x, y})
+  end
+
+  def do_pixel_click(:line, {x, y}, prev_xy, bitmap) do
+    case prev_xy do
+      nil -> bitmap
+      {prev_x, prev_y} -> Bitmap.line(bitmap, {prev_x, prev_y}, {x, y})
+    end
+  end
+
+  def do_pixel_click(:frame, {x, y}, prev_xy, bitmap) do
+    case prev_xy do
+      nil ->
+        bitmap
+
+      {prev_x, prev_y} ->
+        bitmap
+        |> Bitmap.line({prev_x, prev_y}, {prev_x, y})
+        |> Bitmap.line({prev_x, y}, {x, y})
+        |> Bitmap.line({x, y}, {x, prev_y})
+        |> Bitmap.line({x, prev_y}, {prev_x, prev_y})
+    end
+  end
+
   def clock do
     DateTime.now!("Europe/Berlin", Tz.TimeZoneDatabase)
     |> Calendar.strftime("%c", preferred_datetime: "%d.%m.%Y %H:%M:%S")
@@ -195,5 +255,125 @@ defmodule FlipdotWeb.FlipdotLive do
           end
       }
     end
+  end
+
+  def render(assigns) do
+    ~H"""
+    <.display width={115} height={16} bitmap={@bitmap} />
+    <div class="fill-white text-l mt-4">
+      <.tool mode={@mode} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
+      <.tool mode={@mode} tooltip="Pencil Tool" value="pencil" self={:pencil} icon="pencil" />
+      <.tool mode={@mode} tooltip="Fill Tool" value="fill" self={:fill} icon="fill" />
+      <.tool mode={@mode} tooltip="Line Tool" value="line" self={:line} icon="draw-polygon" />
+      <.tool mode={@mode} tooltip="Frame Tool" value="frame" self={:frame} icon="vector-square" />
+    </div>
+
+    <div class="mt-4">
+      <.effect target="random">Noise</.effect>
+      <.effect target="gradient-h">Gradient H</.effect>
+      <.effect target="gradient-v">Gradient V</.effect>
+      <.effect target="maze">Maze</.effect>
+      <.effect target="game-of-life">Game of Life</.effect>
+    </div>
+    <div class="fill-white text-l mt-4">
+      <.filter target="translate-up" tooltip="Translate UP" icon="arrow-up" />
+      <.filter target="translate-down" tooltip="Translate DOWN" icon="arrow-down" />
+      <.filter target="translate-left" tooltip="Translate LEFT" icon="arrow-left" />
+      <.filter target="translate-right" tooltip="Translate RIGHT" icon="arrow-right" />
+
+      <.filter target="flip-vertically" tooltip="Flip vertically" icon="arrow-down-up-across-line" />
+      <.filter target="flip-horizontally" tooltip="Flip horizontally" icon="arrow-right-arrow-left" />
+
+      <.filter target="invert" tooltip="Invert" icon="image" />
+
+      <.filter target="download" tooltip="Download display as text file" icon="file-arrow-down" />
+    </div>
+    <hr class="m-4" />
+    <form phx-submit="upload">
+      <div class="container m-4" phx-drop-target={@uploads.frame.ref}>
+        <FontAwesome.LiveView.icon name="file-arrow-up" type="solid" class="h-8 w-8" />
+        <.live_file_input upload={@uploads.frame} />
+      </div>
+      <input type="submit" value="Upload File" class="rounded-full" />
+    </form>
+    <div id="text">
+      <form phx-change="render" phx-submit="render">
+        <input
+          type="text"
+          name="text"
+          value={@text}
+          placeholder="Type some text…"
+          autofocus
+          autocomplete="off"
+          phx-debounce="500"
+        />
+        <select :if={@font_select} name="font" id="font-select">
+          <option :for={font <- Enum.sort_by(@font_select, fn font_entry -> elem(font_entry, 1) end)} value={elem(font, 0)}>
+            <%= elem(font, 1) %>
+          </option>
+        </select>
+        <input type="submit" value="Render Text" class="rounded-full" />
+      </form>
+    </div>
+    <div class="mt-20 w-10/12 bg-black m-4 p-8">
+      <div class="font-mono font-bold text-5xl text-green-500 text-center align-middle">
+        <%= @clock %>
+      </div>
+    </div>
+    """
+  end
+
+  def display(assigns) do
+    ~H"""
+    <div class="p-4 bg-gray-700 mt-0 ml-0">
+      <%= for y <- (@height - 1)..0 do %>
+        <div class="flex">
+          <%= for x <- 0..(@width - 1) do %>
+            <div
+              phx-click="pixel"
+              phx-value-x={x}
+              phx-value-y={y}
+              class={
+                ["shrink-0", "w-[8px]", "h-[8px]", "flex", "items-center", "justify-around"] ++
+                  [
+                    if(Map.get(@bitmap.matrix, {x, y}) == 1,
+                      do: "bg-[url('/images/flipdot/flipdot-pixel-on-8x8.png')]",
+                      else: "bg-[url('/images/flipdot/flipdot-pixel-off-8x8.png')]"
+                    )
+                  ]
+              }
+            >
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  def tool(assigns) do
+    ~H"""
+    <button title={@tooltip} class="bg-indigo-600 px-4 py-4 rounded hover:bg-indigo-900" phx-click="mode" value={@value}>
+      <div class={if @mode == @self, do: "fill-yellow-300"}>
+        <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-8 w-8" />
+      </div>
+    </button>
+    """
+  end
+
+  def filter(assigns) do
+    ~H"""
+    <button title={@tooltip} class="bg-indigo-600 px-4 py-4 rounded hover:bg-indigo-900" phx-click={@target}>
+      <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-8 w-8" />
+    </button>
+    """
+  end
+
+  def effect(assigns) do
+    ~H"""
+    <button class="text-white text-l bg-indigo-600 px-4 py-4 rounded hover:bg-indigo-900" phx-click={@target}>
+      <%= render_slot(@inner_block) %>
+    </button>
+    """
   end
 end
