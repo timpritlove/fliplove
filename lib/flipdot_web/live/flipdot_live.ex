@@ -178,16 +178,21 @@ defmodule FlipdotWeb.FlipdotLive do
     |> DisplayState.set()
 
     prev_xy =
-      case Enum.member?([:line, :frame], socket.assigns.mode) do
-        true ->
+      case socket.assigns.mode do
+        :line ->
+          {x, y}
+
+        :frame ->
           case socket.assigns.prev_xy do
             nil -> {x, y}
             _ -> nil
           end
 
-        false ->
+        _ ->
           nil
       end
+
+    IO.inspect(prev_xy)
 
     socket =
       socket
@@ -261,11 +266,11 @@ defmodule FlipdotWeb.FlipdotLive do
     ~H"""
     <.display width={115} height={16} bitmap={@bitmap} />
     <div class="fill-white text-l mt-4">
-      <.tool mode={@mode} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
       <.tool mode={@mode} tooltip="Pencil Tool" value="pencil" self={:pencil} icon="pencil" />
       <.tool mode={@mode} tooltip="Fill Tool" value="fill" self={:fill} icon="fill" />
       <.tool mode={@mode} tooltip="Line Tool" value="line" self={:line} icon="draw-polygon" />
       <.tool mode={@mode} tooltip="Frame Tool" value="frame" self={:frame} icon="vector-square" />
+      <.tool mode={@mode} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
     </div>
 
     <div class="mt-4">
