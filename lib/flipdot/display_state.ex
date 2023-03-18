@@ -8,6 +8,8 @@ defmodule Flipdot.DisplayState do
   @topic "display_update"
 
   def start_link(bitmap) do
+    bitmap = if bitmap == nil, do: Bitmap.new(width(), height()), else: bitmap
+
     Agent.start_link(fn -> %__MODULE__{bitmap: bitmap} end, name: __MODULE__)
   end
 
