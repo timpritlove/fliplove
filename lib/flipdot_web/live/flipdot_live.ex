@@ -302,6 +302,7 @@ defmodule FlipdotWeb.FlipdotLive do
     </div>
     <div class="mt-4">
       <.image_button tooltip="Space Invaders" image={Flipdot.Images.images()["space-invaders"]} value="space-invaders" />
+      <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["pacman"]} value="pacman" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["metaebene"]} value="metaebene" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
     </div>
