@@ -170,6 +170,13 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  def handle_event("image", params, socket) do
+    image = params["value"]
+    DisplayState.set(Flipdot.Images.images()[image])
+
+    {:noreply, socket}
+  end
+
   def handle_event("pixel", params, socket) do
     x = String.to_integer(params["x"])
     y = String.to_integer(params["y"])
@@ -265,7 +272,7 @@ defmodule FlipdotWeb.FlipdotLive do
   def render(assigns) do
     ~H"""
     <.display width={115} height={16} bitmap={@bitmap} />
-    <div class="fill-white text-l mt-4">
+    <div class="mt-4">
       <.tool mode={@mode} tooltip="Pencil Tool" value="pencil" self={:pencil} icon="pencil" />
       <.tool mode={@mode} tooltip="Fill Tool" value="fill" self={:fill} icon="fill" />
       <.tool mode={@mode} tooltip="Line Tool" value="line" self={:line} icon="draw-polygon" />
@@ -280,7 +287,7 @@ defmodule FlipdotWeb.FlipdotLive do
       <.effect target="maze">Maze</.effect>
       <.effect target="game-of-life">Game of Life</.effect>
     </div>
-    <div class="fill-white text-l mt-4">
+    <div class="mt-4">
       <.filter target="translate-up" tooltip="Translate UP" icon="arrow-up" />
       <.filter target="translate-down" tooltip="Translate DOWN" icon="arrow-down" />
       <.filter target="translate-left" tooltip="Translate LEFT" icon="arrow-left" />
@@ -292,6 +299,11 @@ defmodule FlipdotWeb.FlipdotLive do
       <.filter target="invert" tooltip="Invert" icon="image" />
 
       <.filter target="download" tooltip="Download display as text file" icon="file-arrow-down" />
+    </div>
+    <div class="mt-4">
+      <.image_button tooltip="Space Invaders" image={Flipdot.Images.images()["space-invaders"]} value="space-invaders" />
+      <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["metaebene"]} value="metaebene" />
+      <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
     </div>
     <hr class="m-4" />
     <form phx-submit="upload">
@@ -358,7 +370,12 @@ defmodule FlipdotWeb.FlipdotLive do
 
   def tool(assigns) do
     ~H"""
-    <button title={@tooltip} class="bg-indigo-600 px-4 py-4 rounded hover:bg-indigo-900" phx-click="mode" value={@value}>
+    <button
+      title={@tooltip}
+      class="fill-white bg-indigo-600 text-l px-4 py-4 rounded hover:bg-indigo-900"
+      phx-click="mode"
+      value={@value}
+    >
       <div class={if @mode == @self, do: "fill-yellow-300"}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-8 w-8" />
       </div>
@@ -368,7 +385,7 @@ defmodule FlipdotWeb.FlipdotLive do
 
   def filter(assigns) do
     ~H"""
-    <button title={@tooltip} class="bg-indigo-600 px-4 py-4 rounded hover:bg-indigo-900" phx-click={@target}>
+    <button title={@tooltip} class="rounded fill-white text-l bg-indigo-600 p-4 hover:bg-indigo-900" phx-click={@target}>
       <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-8 w-8" />
     </button>
     """
@@ -376,8 +393,21 @@ defmodule FlipdotWeb.FlipdotLive do
 
   def effect(assigns) do
     ~H"""
-    <button class="text-white text-l bg-indigo-600 px-4 py-4 rounded hover:bg-indigo-900" phx-click={@target}>
+    <button class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" phx-click={@target}>
       <%= render_slot(@inner_block) %>
+    </button>
+    """
+  end
+
+  def image_button(assigns) do
+    ~H"""
+    <button
+      title={@tooltip}
+      class="rounded p-4 fill-white bg-indigo-600 hover:bg-indigo-900"
+      phx-click="image"
+      value={@value}
+    >
+      <%= raw(Bitmap.to_svg(@image)) %>
     </button>
     """
   end

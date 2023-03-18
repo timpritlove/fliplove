@@ -570,6 +570,43 @@ defmodule Bitmap do
   end
 
   @doc """
+  Create SVG representation of the bitmap by rendering the pixels
+  left to right, top to bottom in lines
+  """
+  def to_svg(bitmap) do
+    {width, height} = dimensions(bitmap)
+
+    svg_header = """
+          <svg width=#{width}px height=#{height}px viewBox="0 0 #{width} #{height}"
+           xmlns="http://www.w3.org/2000/svg"
+           xmlns:xlink="http://www.w3.org/1999/xlink">
+           	<defs>
+            <g id="pixel">
+             <rect x="0.1" y="0.1" width="0.8" height="0.8" />
+         	  </g>
+           </defs>
+    """
+
+    svg_footer = """
+        </svg>
+    """
+
+    # traverse pixels left to right, top to bottom
+    svg_pixels =
+      for y <- (height - 1)..0 do
+        for x <- 0..(width - 1),
+            pixel = get_pixel(bitmap, {x, y}),
+            pixel == 1 do
+          """
+          	<use xlink:href="#pixel" x="#{x}" y="#{height - y}"/>
+          """
+        end
+      end
+
+    svg_header <> Enum.join(svg_pixels) <> svg_footer
+  end
+
+  @doc """
   Create text representation of the bitmap by rendering the pixels
   left to right, top to bottom in lines
 
