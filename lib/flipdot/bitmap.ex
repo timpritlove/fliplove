@@ -476,7 +476,7 @@ defmodule Bitmap do
 
   # draw a line using bresenham algorithm
 
-  def line(bitmap, {x1, y1}, {x2, y2}) do
+  def line(bitmap, {x1, y1} = _from, {x2, y2} = _to) do
     delta_x = abs(x2 - x1)
     sign_x = if x1 < x2, do: 1, else: -1
     delta_y = -abs(y2 - y1)
