@@ -11,8 +11,17 @@ defmodule Flipdot.DisplayPusher do
   defstruct host: nil, port: nil, socket: nil, addresses: []
 
   def start_link(_config) do
-    host = System.get_env(@host_env) || @host_default
-    port = System.get_env(@port_env) || @port_default
+    host =
+      case System.get_env(@host_env) do
+        nil -> @host_default
+        host -> String.to_charlist(host)
+      end
+
+    port =
+      case System.get_env(@port_env) do
+        nil -> @port_default
+        port -> String.to_integer(port)
+      end
 
     state = %DisplayPusher{host: host, port: port}
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
@@ -20,6 +29,7 @@ defmodule Flipdot.DisplayPusher do
 
   @impl true
   def init(state) do
+    IO.inspect(state.host, label: "host")
     {:ok, v4_addresses} = :inet.getaddrs(state.host, :inet)
     {:ok, socket} = :gen_udp.open(0)
 
