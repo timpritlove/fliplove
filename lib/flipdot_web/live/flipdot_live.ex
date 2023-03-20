@@ -100,11 +100,6 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
-  def handle_event("download", _params, socket) do
-    DisplayState.get() |> Bitmap.invert() |> DisplayState.set()
-    {:noreply, socket}
-  end
-
   # mode selector
 
   def handle_event("random", _params, socket) do
@@ -313,14 +308,15 @@ defmodule FlipdotWeb.FlipdotLive do
       <.filter target="flip-horizontally" tooltip="Flip horizontally" icon="arrow-right-arrow-left" />
 
       <.filter target="invert" tooltip="Invert" icon="image" />
-
-      <.filter target="download" tooltip="Download display as text file" icon="file-arrow-down" />
     </div>
     <div class="mt-4">
       <.image_button tooltip="Space Invaders" image={Flipdot.Images.images()["space-invaders"]} value="space-invaders" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["pacman"]} value="pacman" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["metaebene"]} value="metaebene" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
+    </div>
+    <div>
+      <.link href="/download">Download DisplayState</.link>
     </div>
     <hr class="m-4" />
     <form phx-submit="upload">
