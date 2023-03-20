@@ -570,6 +570,28 @@ defmodule Bitmap do
   end
 
   @doc """
+  Create PNG representation of the bitmap by rendering the pixels
+  left to right, top to bottom in lines
+  """
+  def to_png(bitmap) do
+    {width, height} = dimensions(bitmap)
+
+    # traverse pixels left to right, top to bottom
+    pixels =
+      for y <- (height - 1)..0, x <- 0..(width - 1) do
+        get_pixel(bitmap, {x, y}) * 255
+      end
+
+    Pngex.new(
+      type: :gray,
+      depth: :depth8,
+      width: width,
+      height: height
+    )
+    |> Pngex.generate(pixels)
+  end
+
+  @doc """
   Create SVG representation of the bitmap by rendering the pixels
   left to right, top to bottom in lines
   """
