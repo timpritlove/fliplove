@@ -1,6 +1,17 @@
 defmodule Flipdot.Images do
   import Bitmap
 
+  @crab_invader defbitmap [
+                  "  X     X  ",
+                  "   X   X   ",
+                  "  XXXXXXX  ",
+                  " XX XXX XX ",
+                  "XXXXXXXXXXX",
+                  "X XXXXXXX X",
+                  "X X     X X",
+                  "   XX XX   "
+                ]
+
   @space_invaders defbitmap [
                     "                                                                                                                   ",
                     "                                                                                                                   ",
@@ -80,7 +91,8 @@ defmodule Flipdot.Images do
     "space-invaders" => @space_invaders,
     "pacman" => @pacman,
     "metaebene" => @metaebene,
-    "fluepdot" => @fluepdot
+    "fluepdot" => @fluepdot,
+    "crab-invader" => @crab_invader
   }
 
   def images do
