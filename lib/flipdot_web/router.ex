@@ -2,23 +2,24 @@ defmodule FlipdotWeb.Router do
   use FlipdotWeb, :router
 
   pipeline :browser do
-    plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_live_flash
-    plug :put_root_layout, {FlipdotWeb.Layouts, :root}
-    plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug(:accepts, ["html"])
+    plug(:fetch_session)
+    plug(:fetch_live_flash)
+    plug(:put_root_layout, {FlipdotWeb.Layouts, :root})
+    plug(:protect_from_forgery)
+    plug(:put_secure_browser_headers)
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
   end
 
   scope "/", FlipdotWeb do
-    pipe_through :browser
+    pipe_through(:browser)
 
-    live "/", FlipdotLive
-    get "/download/:bitmap", DownloadController, :download
+    live("/", FlipdotLive)
+    get("/download", DownloadController, :download)
+    # put("/rendering/mode", FluepdotController, :rendering_mode)
   end
 
   # Other scopes may use custom stacks.
@@ -36,9 +37,9 @@ defmodule FlipdotWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through :browser
+      pipe_through(:browser)
 
-      live_dashboard "/dashboard", metrics: FlipdotWeb.Telemetry
+      live_dashboard("/dashboard", metrics: FlipdotWeb.Telemetry)
     end
   end
 end
