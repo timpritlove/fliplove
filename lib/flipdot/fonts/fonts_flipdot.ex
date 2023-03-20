@@ -1,5 +1,5 @@
 defmodule Flipdot.Font.Fonts.Flipdot do
-  import Bitmap
+  require Flipdot.Bitmap
   alias Flipdot.Font
 
   @font %Font{

@@ -1,7 +1,7 @@
 defmodule Flipdot.Images do
-  import Bitmap
+  require Flipdot.Bitmap, as: Bitmap
 
-  @space_invaders defbitmap [
+  @space_invaders defbitmap([
                     "                                                                                                                   ",
                     "                                                                                                                   ",
                     "                                                                                                                   ",
@@ -18,7 +18,7 @@ defmodule Flipdot.Images do
                     "                                                                                                                   ",
                     "                                                                                                                   ",
                     "                                                                                                                   "
-                  ]
+                  ])
 
   @metaebene defbitmap [
                "                                                                                                                   ",

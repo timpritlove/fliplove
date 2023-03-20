@@ -6,6 +6,7 @@ defmodule Flipdot.Weather do
 
   require HTTPoison
   import Flipdot.PrettyDump
+  alias Flipdot.Bitmap
 
   defstruct timer: nil, api_key: nil, weather: nil
 

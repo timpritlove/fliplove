@@ -7,6 +7,7 @@ defmodule Flipdot.Dashboard do
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
   alias Flipdot.Weather
+  require Flipdot.Bitmap, as: Bitmap
   require Logger
   # import Flipdot.PrettyDump
 

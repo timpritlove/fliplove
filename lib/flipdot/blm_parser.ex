@@ -1,5 +1,6 @@
 defmodule BLMParser do
   import NimbleParsec
+  require Flipdot.Bitmap, as: Bitmap
 
   @moduledoc """
   Parser for Blinkenlights Movie (BLM) files. These are typically delivered

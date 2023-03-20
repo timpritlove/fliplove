@@ -1,5 +1,6 @@
 defmodule Flipdot.Font.Parser do
   import NimbleParsec
+  require Flipdot.Bitmap, as: Bitmap
 
   @moduledoc """
   Parser for BDF font files. BDF files contain font definitions for low-resolution monochrome

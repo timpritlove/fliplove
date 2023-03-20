@@ -1,4 +1,4 @@
-defmodule Bitmap do
+defmodule Flipdot.Bitmap do
   require Integer
 
   @moduledoc """
@@ -15,13 +15,13 @@ defmodule Bitmap do
 
   defmacro defbitmap(lines) do
     quote do
-      Bitmap.from_lines_of_text(unquote(lines), on: ?X, off: ?\s)
+      Flipdot.Bitmap.from_lines_of_text(unquote(lines), on: ?X, off: ?\s)
     end
   end
 
-  defimpl Inspect, for: Bitmap do
+  defimpl Inspect, for: Flipdot.Bitmap do
     def inspect(bitmap, _opts) do
-      {width, height} = Bitmap.dimensions(bitmap)
+      {width, height} = Flipdot.Bitmap.dimensions(bitmap)
 
       # traverse pixels left to right, top to bottom
       delimiter = "+" <> String.duplicate("-", width) <> "+\n"
@@ -53,7 +53,7 @@ defmodule Bitmap do
   """
   def new(width, height, matrix) when is_integer(width) and is_integer(height) and is_map(matrix) do
     if valid_matrix?(matrix) do
-      %Bitmap{
+      %Flipdot.Bitmap{
         width: width,
         height: height,
         matrix: matrix
@@ -573,17 +573,29 @@ defmodule Bitmap do
   Create PNG representation of the bitmap by rendering the pixels
   left to right, top to bottom in lines
   """
-  def to_png(bitmap) do
+  def to_png(bitmap, options \\ []) do
+    options =
+      Keyword.validate!(options,
+        bg_color: {0, 0, 0},
+        fg_color: {0xFF, 0xFF, 0}
+      )
+
     {width, height} = dimensions(bitmap)
 
     # traverse pixels left to right, top to bottom
     pixels =
-      for y <- (height - 1)..0, x <- 0..(width - 1) do
-        get_pixel(bitmap, {x, y}) * 255
+      for y <- (height - 1)..0 do
+        for x <- 0..(width - 1) do
+          case get_pixel(bitmap, {x, y}) do
+            0 -> options[:bg_color]
+            1 -> options[:fg_color]
+          end
+        end
       end
+      |> List.flatten()
 
     Pngex.new(
-      type: :gray,
+      type: :rgb,
       depth: :depth8,
       width: width,
       height: height
@@ -754,12 +766,12 @@ defmodule Bitmap do
     {entry_x, entry_y} = {0, Enum.random(1..(height - 1)//2)}
     {exit_x, exit_y} = {width - 1, Enum.random(1..(height - 1)//2)}
 
-    Bitmap.new(width, height)
-    |> Bitmap.invert()
-    |> Bitmap.set_pixel({start_x, start_y}, 0)
+    new(width, height)
+    |> invert()
+    |> set_pixel({start_x, start_y}, 0)
     |> maze_gen([{start_x, start_y}])
-    |> Bitmap.set_pixel({entry_x, entry_y}, 0)
-    |> Bitmap.set_pixel({exit_x, exit_y}, 0)
+    |> set_pixel({entry_x, entry_y}, 0)
+    |> set_pixel({exit_x, exit_y}, 0)
   end
 
   defp maze_gen(bitmap, []) do
@@ -794,8 +806,8 @@ defmodule Bitmap do
         {next_x, next_y, wall_x, wall_y} = Enum.random(list)
 
         bitmap
-        |> Bitmap.set_pixel({wall_x, wall_y}, 0)
-        |> Bitmap.set_pixel({next_x, next_y}, 0)
+        |> set_pixel({wall_x, wall_y}, 0)
+        |> set_pixel({next_x, next_y}, 0)
         |> maze_gen([{next_x, next_y} | visited_cells])
     end
   end

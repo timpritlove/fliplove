@@ -2,6 +2,8 @@
 # - change state to struct
 
 defmodule Flipdot.DisplayState do
+  require Flipdot.Bitmap, as: Bitmap
+
   defstruct bitmap: nil
   use Agent
 
