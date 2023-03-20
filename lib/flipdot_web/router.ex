@@ -11,7 +11,6 @@ defmodule FlipdotWeb.Router do
   end
 
   pipeline :api do
-    plug(:accepts, ["json"])
   end
 
   scope "/", FlipdotWeb do
@@ -19,7 +18,12 @@ defmodule FlipdotWeb.Router do
 
     live("/", FlipdotLive)
     get("/download", DownloadController, :download)
-    # put("/rendering/mode", FluepdotController, :rendering_mode)
+  end
+
+  scope "/", FlipdotWeb do
+    pipe_through(:api)
+
+    put("/rendering/mode", FluepdotController, :rendering_mode)
   end
 
   # Other scopes may use custom stacks.

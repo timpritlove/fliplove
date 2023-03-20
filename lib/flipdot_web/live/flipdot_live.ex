@@ -23,6 +23,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:bitmap, DisplayState.get())
       |> assign(:clock, clock())
       |> assign(:text, "")
+      |> assign(:font_name, nil)
       |> assign(:mode, :pencil)
       |> assign(:prev_xy, nil)
       |> assign(:font_select, Library.get_fonts() |> build_font_select())
@@ -139,22 +140,31 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
-  def handle_event("render", %{"text" => text, "font" => font_name} = _params, socket) do
+  def handle_event("render-text", %{"text" => text, "font" => font_name} = _params, socket) do
     DisplayState.clear()
     |> Renderer.render_text({0, 2}, Library.get_font_by_name(font_name), text)
     |> DisplayState.set()
 
-    {:noreply, assign(socket, :text, text)}
+    socket =
+      socket
+      |> assign(:text, text)
+      |> assign(font_name: font_name)
+
+    {:noreply, socket}
   end
 
   def handle_event("upload", _params, socket) do
-    frame =
+    bitmap =
       consume_uploaded_entries(socket, :frame, fn %{path: path} = _meta, _entry ->
         IO.inspect(path, label: "path")
         Bitmap.from_file(path)
       end)
 
-    IO.inspect(frame, label: "frame")
+    IO.inspect(bitmap, label: "frame")
+    {:noreply, socket}
+  end
+
+  def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end
 
@@ -289,16 +299,8 @@ defmodule FlipdotWeb.FlipdotLive do
       <.tool mode={@mode} tooltip="Line Tool" value="line" self={:line} icon="draw-polygon" />
       <.tool mode={@mode} tooltip="Frame Tool" value="frame" self={:frame} icon="vector-square" />
       <.tool mode={@mode} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
-    </div>
 
-    <div class="mt-4">
-      <.effect target="random">Noise</.effect>
-      <.effect target="gradient-h">Gradient H</.effect>
-      <.effect target="gradient-v">Gradient V</.effect>
-      <.effect target="maze">Maze</.effect>
-      <.effect target="game-of-life">Game of Life</.effect>
-    </div>
-    <div class="mt-4">
+      <span class="ml-4" />
       <.filter target="translate-up" tooltip="Translate UP" icon="arrow-up" />
       <.filter target="translate-down" tooltip="Translate DOWN" icon="arrow-down" />
       <.filter target="translate-left" tooltip="Translate LEFT" icon="arrow-left" />
@@ -309,6 +311,14 @@ defmodule FlipdotWeb.FlipdotLive do
 
       <.filter target="invert" tooltip="Invert" icon="image" />
     </div>
+
+    <div class="mt-4">
+      <.effect target="random">Noise</.effect>
+      <.effect target="gradient-h">Gradient H</.effect>
+      <.effect target="gradient-v">Gradient V</.effect>
+      <.effect target="maze">Maze</.effect>
+      <.effect target="game-of-life">Game of Life</.effect>
+    </div>
     <div class="mt-4">
       <.image_button tooltip="Space Invaders" image={Flipdot.Images.images()["space-invaders"]} value="space-invaders" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["pacman"]} value="pacman" />
@@ -316,18 +326,13 @@ defmodule FlipdotWeb.FlipdotLive do
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
     </div>
     <div>
-      <.link href="/download">Download DisplayState</.link>
+      <.link class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" href="/download">
+        Download DisplayState
+      </.link>
     </div>
     <hr class="m-4" />
-    <form phx-submit="upload">
-      <div class="container m-4" phx-drop-target={@uploads.frame.ref}>
-        <FontAwesome.LiveView.icon name="file-arrow-up" type="solid" class="h-8 w-8" />
-        <.live_file_input upload={@uploads.frame} />
-      </div>
-      <input type="submit" value="Upload File" class="rounded-full" />
-    </form>
     <div id="text">
-      <form phx-change="render" phx-submit="render">
+      <form phx-change="render-text" phx-submit="render-text">
         <input
           type="text"
           name="text"
@@ -338,13 +343,25 @@ defmodule FlipdotWeb.FlipdotLive do
           phx-debounce="500"
         />
         <select :if={@font_select} name="font" id="font-select">
-          <option :for={font <- Enum.sort_by(@font_select, fn font_entry -> elem(font_entry, 1) end)} value={elem(font, 0)}>
+          <option
+            :for={font <- Enum.sort_by(@font_select, fn font_entry -> elem(font_entry, 1) end)}
+            value={elem(font, 0)}
+            selected={elem(font, 0) == @font_name}
+          >
             <%= elem(font, 1) %>
           </option>
         </select>
         <input type="submit" value="Render Text" class="rounded-full" />
       </form>
     </div>
+    <form phx-submit="upload" phx-change="validate">
+      <div class="container m-4" phx-drop-target={@uploads.frame.ref}>
+        <FontAwesome.LiveView.icon name="file-arrow-up" type="solid" class="h-8 w-8" />
+        <.live_file_input upload={@uploads.frame} />
+      </div>
+      <input type="submit" value="Upload File" class="rounded-full" />
+    </form>
+
     <div class="mt-20 w-10/12 bg-black m-4 p-8">
       <div class="font-mono font-bold text-5xl text-green-500 text-center align-middle">
         <%= @clock %>
