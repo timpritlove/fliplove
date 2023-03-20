@@ -379,6 +379,25 @@ defmodule Bitmap do
   end
 
   @doc """
+  Scale bitmap to a certain factor
+  """
+
+  def scale(bitmap, factor) when is_integer(factor) and factor > 0 do
+    {width, height} = dimensions(bitmap)
+
+    matrix =
+      for x <- 0..(width - 1),
+          y <- 0..(height - 1),
+          value = get_pixel(bitmap, {x, y}),
+          s <- 0..(factor - 1),
+          into: %{} do
+        {{x * factor + s, y * factor + s}, value}
+      end
+
+    new(width * factor, height * factor, matrix)
+  end
+
+  @doc """
   Rotate the bitmap by 90 degrees
   direction is either :cw (90 degress, default) or :ccw (-90 degress)
   """
@@ -573,17 +592,29 @@ defmodule Bitmap do
   Create PNG representation of the bitmap by rendering the pixels
   left to right, top to bottom in lines
   """
-  def to_png(bitmap) do
+  def to_png(bitmap, options \\ []) do
+    options =
+      Keyword.validate!(options,
+        bg_color: {0, 0, 0},
+        fg_color: {0xFF, 0xFF, 0}
+      )
+
     {width, height} = dimensions(bitmap)
 
     # traverse pixels left to right, top to bottom
     pixels =
-      for y <- (height - 1)..0, x <- 0..(width - 1) do
-        get_pixel(bitmap, {x, y}) * 255
+      for y <- (height - 1)..0 do
+        for x <- 0..(width - 1) do
+          case get_pixel(bitmap, {x, y}) do
+            0 -> options[:bg_color]
+            1 -> options[:fg_color]
+          end
+        end
       end
+      |> List.flatten()
 
     Pngex.new(
-      type: :gray,
+      type: :rgb,
       depth: :depth8,
       width: width,
       height: height
