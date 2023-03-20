@@ -1,5 +1,5 @@
 defmodule Flipdot.Font.Fonts.SpaceInvaders do
-  require Flipdot.Bitmap
+  import Flipdot.Bitmap
   alias Flipdot.Font
 
   @font %Font{

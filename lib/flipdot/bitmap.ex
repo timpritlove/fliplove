@@ -13,7 +13,13 @@ defmodule Flipdot.Bitmap do
 
   defstruct width: nil, height: nil, matrix: %{}
 
-  defmacro defbitmap(lines) do
+  def defbitmap(lines) do
+    quote do
+      Flipdot.Bitmap.from_lines_of_text(unquote(lines), on: ?X, off: ?\s)
+    end
+  end
+
+  defmacro defbitmapx(lines) do
     quote do
       Flipdot.Bitmap.from_lines_of_text(unquote(lines), on: ?X, off: ?\s)
     end
@@ -51,7 +57,8 @@ defmodule Flipdot.Bitmap do
   The matrix must be a map with coordinates as keys given as a tuple {x,y} and a value
   of 0 or 1.
   """
-  def new(width, height, matrix) when is_integer(width) and is_integer(height) and is_map(matrix) do
+  def new(width, height, matrix)
+      when is_integer(width) and is_integer(height) and is_map(matrix) do
     if valid_matrix?(matrix) do
       %Flipdot.Bitmap{
         width: width,

@@ -1,5 +1,5 @@
 defmodule Flipdot.Images do
-  require Flipdot.Bitmap, as: Bitmap
+  import Flipdot.Bitmap
 
   @space_invaders defbitmap([
                     "                                                                                                                   ",
@@ -20,7 +20,7 @@ defmodule Flipdot.Images do
                     "                                                                                                                   "
                   ])
 
-  @metaebene defbitmap [
+  @metaebene defbitmap([
                "                                                                                                                   ",
                "                                                                                                                   ",
                "                                              XX                         XX                                        ",
@@ -37,7 +37,7 @@ defmodule Flipdot.Images do
                "                                                                                                                   ",
                "                                                                                                                   ",
                "                                                                                                                   "
-             ]
+             ])
 
   @fluepdot defbitmap([
               "                                                                                                                   ",
@@ -58,7 +58,7 @@ defmodule Flipdot.Images do
               "                                                    XX                                                             "
             ])
 
-  @pacman defbitmap [
+  @pacman defbitmap([
             "                                                                                                                   ",
             "                                                      XXXX                        XXXX              XXXX           ",
             "             XXXXX                                  XXXXXXXX                    XXXXXXXX          XXXXXXXX         ",
@@ -75,7 +75,7 @@ defmodule Flipdot.Images do
             "           XXXXXXXXX                             XXXX XXXX XXXX              XXXX XXXX XXXX    XXXX XXXX XXXX      ",
             "             XXXXX                                XX   XX   XX                XX   XX   XX      XX   XX   XX       ",
             "                                                                                                                   "
-          ]
+          ])
   @images %{
     "space-invaders" => @space_invaders,
     "pacman" => @pacman,

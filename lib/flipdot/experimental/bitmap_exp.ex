@@ -1,4 +1,6 @@
 defmodule BitmapExp do
+  alias Flipdot.Bitmap
+
   @doc """
   Clip and normalise the bitmap
   - clip image to pixels within bounding box

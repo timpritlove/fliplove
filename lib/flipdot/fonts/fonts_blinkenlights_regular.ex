@@ -1,5 +1,5 @@
 defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
-  require Flipdot.Bitmap
+  import Flipdot.Bitmap
   alias Flipdot.Font
 
   @font %Font{

@@ -121,7 +121,7 @@ defmodule Flipdot.Weather do
   @impl true
   def handle_info(:update_weather, state) do
     weather = call_openweathermap(state.api_key)
-    {:noreplay, %{state | weather: weather}}
+    {:noreply, %{state | weather: weather}}
   end
 
   # helper functions

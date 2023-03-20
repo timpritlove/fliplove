@@ -7,9 +7,10 @@ defmodule Flipdot.Dashboard do
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
   alias Flipdot.Weather
-  require Flipdot.Bitmap, as: Bitmap
   require Logger
   # import Flipdot.PrettyDump
+
+  alias Flipdot.Bitmap
 
   defstruct font: nil, timer: nil, time: nil, weather: nil, bitmap: nil
 
@@ -103,7 +104,10 @@ defmodule Flipdot.Dashboard do
     bitmap = place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
 
     bitmap =
-      Bitmap.overlay(bitmap, Weather.bitmap_48(16) |> Bitmap.crop_relative(115, 16, rel_x: :center, rel_y: :middle))
+      Bitmap.overlay(
+        bitmap,
+        Weather.bitmap_48(16) |> Bitmap.crop_relative(115, 16, rel_x: :center, rel_y: :middle)
+      )
 
     # plot temperature hours
 

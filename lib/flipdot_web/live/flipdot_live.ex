@@ -6,6 +6,7 @@ defmodule FlipdotWeb.FlipdotLive do
   alias Flipdot.Dashboard
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
+  alias Flipdot.Bitmap
 
   require Integer
 
@@ -30,30 +31,6 @@ defmodule FlipdotWeb.FlipdotLive do
 
     {:ok, socket}
   end
-
-  @m %{
-    "message" => %{
-      "chat" => %{
-        "first_name" => "Tim",
-        "id" => 1_002_761_109,
-        "last_name" => "Pritlove",
-        "type" => "private",
-        "username" => "timpritlove"
-      },
-      "date" => 1_679_309_670,
-      "from" => %{
-        "first_name" => "Tim",
-        "id" => 1_002_761_109,
-        "is_bot" => false,
-        "language_code" => "de",
-        "last_name" => "Pritlove",
-        "username" => "timpritlove"
-      },
-      "message_id" => 8,
-      "text" => "hello world"
-    },
-    "update_id" => 732_732_125
-  }
 
   def handle_info({:bot_update, update}, socket) do
     Logger.info("Got message: #{inspect(update)}")

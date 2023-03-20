@@ -1,5 +1,6 @@
 defmodule Flipdot.DisplayPusher do
   alias Flipdot.DisplayPusher
+  alias Flipdot.Bitmap
   use GenServer
 
   @host_env "FLIPDOT_HOST"
