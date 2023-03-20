@@ -48,6 +48,7 @@ defmodule Flipdot.MixProject do
       {:jason, "~> 1.2"},
       {:nimble_parsec, "~> 1.2.3"},
       {:bandit, ">= 0.6.9"},
+      {:telegram, github: "visciang/telegram", tag: "0.22.4"},
       {:httpoison, "~> 2.0"},
       {:tz, "~> 0.24.0"},
       {:gen_icmp, git: "https://github.com/hauleth/gen_icmp.git"},

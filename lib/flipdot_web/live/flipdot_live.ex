@@ -1,5 +1,6 @@
 defmodule FlipdotWeb.FlipdotLive do
   use FlipdotWeb, :live_view
+  require Logger
 
   alias Flipdot.DisplayState
   alias Flipdot.Dashboard
@@ -13,6 +14,7 @@ defmodule FlipdotWeb.FlipdotLive do
       :timer.send_interval(250, self(), :tick)
       Phoenix.PubSub.subscribe(Flipdot.PubSub, DisplayState.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Library.topic())
+      Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.TelegramBot.topic())
     end
 
     socket =
@@ -27,6 +29,44 @@ defmodule FlipdotWeb.FlipdotLive do
       |> allow_upload(:frame, accept: ~w(.txt), max_entries: 1, max_file_size: 5_000)
 
     {:ok, socket}
+  end
+
+  @m %{
+    "message" => %{
+      "chat" => %{
+        "first_name" => "Tim",
+        "id" => 1_002_761_109,
+        "last_name" => "Pritlove",
+        "type" => "private",
+        "username" => "timpritlove"
+      },
+      "date" => 1_679_309_670,
+      "from" => %{
+        "first_name" => "Tim",
+        "id" => 1_002_761_109,
+        "is_bot" => false,
+        "language_code" => "de",
+        "last_name" => "Pritlove",
+        "username" => "timpritlove"
+      },
+      "message_id" => 8,
+      "text" => "hello world"
+    },
+    "update_id" => 732_732_125
+  }
+
+  def handle_info({:bot_update, update}, socket) do
+    Logger.info("Got message: #{inspect(update)}")
+
+    DisplayState.clear()
+    |> Renderer.render_text(
+      {0, 2},
+      Library.get_font_by_name("flipdot"),
+      update["message"]["chat"]["first_name"] <> ": " <> update["message"]["text"]
+    )
+    |> DisplayState.set()
+
+    {:noreply, socket}
   end
 
   def handle_info({:display_update, bitmap}, socket) do

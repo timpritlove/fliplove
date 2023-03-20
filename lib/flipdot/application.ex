@@ -22,7 +22,8 @@ defmodule Flipdot.Application do
       Flipdot.Weather,
       Flipdot.DisplayPusher,
       Flipdot.Font.Library,
-      Flipdot.Dashboard
+      Flipdot.Dashboard,
+      {Flipdot.TelegramBot, bot_key: System.get_env("TELEGRAM_BOT_SECRET")}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
