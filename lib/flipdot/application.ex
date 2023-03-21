@@ -7,6 +7,8 @@ defmodule Flipdot.Application do
 
   @impl true
   def start(_type, _args) do
+    viewport_config = Application.get_env(:flipdot, :viewport)
+
     children = [
       # Start the Telemetry supervisor
       FlipdotWeb.Telemetry,
@@ -23,7 +25,8 @@ defmodule Flipdot.Application do
       Flipdot.DisplayPusher,
       Flipdot.Font.Library,
       Flipdot.Dashboard,
-      {Flipdot.TelegramBot, bot_key: System.get_env("TELEGRAM_BOT_SECRET")}
+      {Flipdot.TelegramBot, bot_key: System.get_env("TELEGRAM_BOT_SECRET")},
+      {Scenic, [viewport_config]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
