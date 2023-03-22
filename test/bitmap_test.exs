@@ -2,6 +2,19 @@ defmodule BitmapTest do
   use ExUnit.Case
   doctest Bitmap
 
+  def invader do
+    Bitmap.from_lines_of_text([
+      "  X     X  ",
+      "   X   X   ",
+      "  XXXXXXX  ",
+      " XX XXX XX ",
+      "XXXXXXXXXXX",
+      "X XXXXXXX X",
+      "X X     X X",
+      "   XX XX   "
+    ])
+  end
+
   test "create simple bitmap" do
     assert Bitmap.new(2, 2) |> inspect == "+--+\n|  |\n|  |\n+--+\n"
   end
@@ -135,16 +148,40 @@ defmodule BitmapTest do
            """
   end
 
-  def invader do
-    Bitmap.from_lines_of_text([
-      "  X     X  ",
-      "   X   X   ",
-      "  XXXXXXX  ",
-      " XX XXX XX ",
-      "XXXXXXXXXXX",
-      "X XXXXXXX X",
-      "X X     X X",
-      "   XX XX   "
-    ])
+  test "clip bitmap" do
+    assert invader() |> Bitmap.translate({0, -4}) |> Bitmap.clip() |> inspect() == """
+           +---------+
+           | X     X |
+           |  X   X  |
+           | XXXXXXX |
+           |XX XXX XX|
+           +---------+
+           """
+  end
+
+  test "set pixel on bitmap" do
+    assert invader() |> Bitmap.set_pixel({3, 4}, 1) |> Bitmap.set_pixel({7, 4}, 1) |> inspect() == """
+           +-----------+
+           |  X     X  |
+           |   X   X   |
+           |  XXXXXXX  |
+           | XXXXXXXXX |
+           |XXXXXXXXXXX|
+           |X XXXXXXX X|
+           |X X     X X|
+           |   XX XX   |
+           +-----------+
+           """
+  end
+
+  test "crop bitmap" do
+    assert invader() |> Bitmap.crop({2, 2}, 7, 4) |> inspect() == """
+           +-------+
+           |XXXXXXX|
+           |X XXX X|
+           |XXXXXXX|
+           |XXXXXXX|
+           +-------+
+           """
   end
 end
