@@ -1,4 +1,4 @@
-defmodule Flipdot.FontRenderer.Kerning do
+defmodule Flipdot.Font.Kerning do
   @kerning %{
     "-Adobe-Helvetica-Bold-O-Normal--17-120-100-100-P-92-ISO8859-1" => %{
       17 => %{

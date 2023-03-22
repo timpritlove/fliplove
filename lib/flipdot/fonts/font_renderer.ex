@@ -1,5 +1,5 @@
 defmodule Flipdot.Font.Renderer do
-  alias Flipdot.FontRenderer.Kerning
+  alias Flipdot.Font.Kerning
 
   def render_text(bitmap, cursor, font, text) when is_binary(text) do
     render_text(bitmap, cursor, font, String.to_charlist(text))
