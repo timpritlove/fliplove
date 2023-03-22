@@ -365,9 +365,9 @@ defmodule Flipdot.Font.Fonts.Flipdot do
             " ",
             "X",
             " ",
-            "X",
             " ",
-            " "
+            " ",
+            "X"
           ])
       },
       ?; => %{
@@ -376,8 +376,8 @@ defmodule Flipdot.Font.Fonts.Flipdot do
         bitmap:
           defbitmap([
             " ",
-            " ",
             "X",
+            " ",
             " ",
             "X",
             "X"
