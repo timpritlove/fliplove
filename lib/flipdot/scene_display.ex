@@ -38,7 +38,7 @@ defmodule Flipdot.SceneDisplay do
         t: {@display_origin_x + x * @pixel_size, @display_origin_y + (bitmap.height - 1 - y) * @pixel_size}
       )
     end)
-    |> rect({(bitmap.width + 1) * @pixel_size, (bitmap.height + 1) * @pixel_size},
+    |> rounded_rectangle({(bitmap.width + 1) * @pixel_size, (bitmap.height + 1) * @pixel_size, 10},
       stroke: {1, :yellow},
       t: {@display_origin_x - div(@pixel_size, 2), @display_origin_y - div(@pixel_size, 2)}
     )
