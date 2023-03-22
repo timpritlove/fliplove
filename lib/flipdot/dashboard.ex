@@ -3,10 +3,8 @@ defmodule Flipdot.Dashboard do
   Compose a dashboard to show on flipboard
   """
   use GenServer
-  alias Flipdot.DisplayState
-  alias Flipdot.Font.Renderer
-  alias Flipdot.Font.Library
-  alias Flipdot.Weather
+  alias Flipdot.{DisplayState, Weather}
+  alias Flipdot.Font.{Renderer, Library}
   require Logger
   # import Flipdot.PrettyDump
 
