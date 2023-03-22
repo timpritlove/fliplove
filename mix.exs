@@ -4,6 +4,7 @@ defmodule Flipdot.MixProject do
   def project do
     [
       app: :flipdot,
+      name: "The Flipdot Controller Project",
       version: "0.1.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -56,7 +57,8 @@ defmodule Flipdot.MixProject do
       {:pngex, "~> 0.1.0"},
       {:tz, "~> 0.24.0"},
       {:gen_icmp, git: "https://github.com/hauleth/gen_icmp.git"},
-      {:ex_fontawesome, "~> 0.7.2"}
+      {:ex_fontawesome, "~> 0.7.2"},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false}
     ]
   end
 
