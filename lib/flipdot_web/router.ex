@@ -18,6 +18,7 @@ defmodule FlipdotWeb.Router do
 
     live("/", FlipdotLive)
     get("/download", DownloadController, :download)
+    get("/hello", PageController, :hello)
   end
 
   scope "/", FlipdotWeb do
