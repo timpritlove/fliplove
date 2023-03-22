@@ -1,4 +1,4 @@
-defmodule Flipdot.DisplayState do
+defmodule Flipdot.Display do
   @moduledoc """
   Store the current frame buffer of the virtual Bitmap Display. Send PubSub broadcasts
   whenever the content changes.

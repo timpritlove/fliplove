@@ -2,7 +2,7 @@ defmodule FlipdotWeb.FlipdotLive do
   use FlipdotWeb, :live_view
   require Logger
 
-  alias Flipdot.DisplayState
+  alias Flipdot.Display
   alias Flipdot.Dashboard
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
@@ -12,7 +12,7 @@ defmodule FlipdotWeb.FlipdotLive do
   def mount(_params, _session, socket) do
     if connected?(socket) do
       :timer.send_interval(250, self(), :tick)
-      Phoenix.PubSub.subscribe(Flipdot.PubSub, DisplayState.topic())
+      Phoenix.PubSub.subscribe(Flipdot.PubSub, Display.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Library.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.TelegramBot.topic())
     end
@@ -20,7 +20,7 @@ defmodule FlipdotWeb.FlipdotLive do
     socket =
       socket
       |> assign(page_title: "Flipdot Display")
-      |> assign(:bitmap, DisplayState.get())
+      |> assign(:bitmap, Display.get())
       |> assign(:clock, clock())
       |> assign(:text, "")
       |> assign(:font_name, nil)
@@ -35,13 +35,13 @@ defmodule FlipdotWeb.FlipdotLive do
   def handle_info({:bot_update, update}, socket) do
     Logger.info("Got message: #{inspect(update)}")
 
-    DisplayState.clear()
+    Display.clear()
     |> Renderer.render_text(
       {0, 2},
       Library.get_font_by_name("flipdot"),
       update["message"]["chat"]["first_name"] <> ": " <> update["message"]["text"]
     )
-    |> DisplayState.set()
+    |> Display.set()
 
     {:noreply, socket}
   end
@@ -67,83 +67,83 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_event("translate-up", _params, socket) do
-    DisplayState.get() |> Bitmap.translate({0, 1}) |> DisplayState.set()
+    Display.get() |> Bitmap.translate({0, 1}) |> Display.set()
     {:noreply, socket}
   end
 
   def handle_event("translate-down", _params, socket) do
-    DisplayState.get() |> Bitmap.translate({0, -1}) |> DisplayState.set()
+    Display.get() |> Bitmap.translate({0, -1}) |> Display.set()
     {:noreply, socket}
   end
 
   def handle_event("translate-right", _params, socket) do
-    DisplayState.get() |> Bitmap.translate({1, 0}) |> DisplayState.set()
+    Display.get() |> Bitmap.translate({1, 0}) |> Display.set()
     {:noreply, socket}
   end
 
   def handle_event("translate-left", _params, socket) do
-    DisplayState.get() |> Bitmap.translate({-1, 0}) |> DisplayState.set()
+    Display.get() |> Bitmap.translate({-1, 0}) |> Display.set()
     {:noreply, socket}
   end
 
   def handle_event("flip-horizontally", _params, socket) do
-    DisplayState.get() |> Bitmap.flip_horizontally() |> DisplayState.set()
+    Display.get() |> Bitmap.flip_horizontally() |> Display.set()
     {:noreply, socket}
   end
 
   def handle_event("flip-vertically", _params, socket) do
-    DisplayState.get() |> Bitmap.flip_vertically() |> DisplayState.set()
+    Display.get() |> Bitmap.flip_vertically() |> Display.set()
     {:noreply, socket}
   end
 
   def handle_event("invert", _params, socket) do
-    DisplayState.get() |> Bitmap.invert() |> DisplayState.set()
+    Display.get() |> Bitmap.invert() |> Display.set()
     {:noreply, socket}
   end
 
   # mode selector
 
   def handle_event("random", _params, socket) do
-    Bitmap.random(115, 16) |> DisplayState.set()
+    Bitmap.random(115, 16) |> Display.set()
 
     {:noreply, socket}
   end
 
   def handle_event("game-of-life", _params, socket) do
-    DisplayState.get() |> Bitmap.game_of_life() |> DisplayState.set()
+    Display.get() |> Bitmap.game_of_life() |> Display.set()
 
     {:noreply, socket}
   end
 
   def handle_event("gradient-h", _params, socket) do
-    DisplayState.get() |> Bitmap.gradient_h() |> DisplayState.set()
+    Display.get() |> Bitmap.gradient_h() |> Display.set()
 
     {:noreply, socket}
   end
 
   def handle_event("gradient-v", _params, socket) do
-    DisplayState.get() |> Bitmap.gradient_v() |> DisplayState.set()
+    Display.get() |> Bitmap.gradient_v() |> Display.set()
 
     {:noreply, socket}
   end
 
   def handle_event("maze", _params, socket) do
-    display_width = DisplayState.width()
-    display_height = DisplayState.height()
+    display_width = Display.width()
+    display_height = Display.height()
     maze_width = if Integer.is_odd(display_width), do: display_width, else: display_width - 1
     maze_height = if Integer.is_odd(display_height), do: display_height, else: display_height - 1
 
     Bitmap.maze(maze_width, maze_height)
     |> Bitmap.crop_relative(display_width, display_height, rel_y: :top)
-    |> DisplayState.set()
+    |> Display.set()
 
     {:noreply, socket}
   end
 
   def handle_event("render-text", %{"text" => text, "font" => font_name} = _params, socket) do
-    DisplayState.clear()
+    Display.clear()
     |> Renderer.render_text({0, 2}, Library.get_font_by_name(font_name), text)
-    |> DisplayState.set()
+    |> Display.set()
 
     socket =
       socket
@@ -193,7 +193,7 @@ defmodule FlipdotWeb.FlipdotLive do
 
   def handle_event("image", params, socket) do
     image = params["value"]
-    DisplayState.set(Flipdot.Images.images()[image])
+    Display.set(Flipdot.Images.images()[image])
 
     {:noreply, socket}
   end
@@ -202,8 +202,8 @@ defmodule FlipdotWeb.FlipdotLive do
     x = String.to_integer(params["x"])
     y = String.to_integer(params["y"])
 
-    do_pixel_click(socket.assigns.mode, {x, y}, socket.assigns.prev_xy, DisplayState.get())
-    |> DisplayState.set()
+    do_pixel_click(socket.assigns.mode, {x, y}, socket.assigns.prev_xy, Display.get())
+    |> Display.set()
 
     prev_xy =
       case socket.assigns.mode do
@@ -225,7 +225,7 @@ defmodule FlipdotWeb.FlipdotLive do
     socket =
       socket
       |> assign(:prev_xy, prev_xy)
-      |> assign(:bitmap, DisplayState.get())
+      |> assign(:bitmap, Display.get())
 
     {:noreply, socket}
   end
@@ -327,7 +327,7 @@ defmodule FlipdotWeb.FlipdotLive do
     </div>
     <div>
       <.link class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" href="/download">
-        Download DisplayState
+        Download Display
       </.link>
     </div>
     <hr class="m-4" />

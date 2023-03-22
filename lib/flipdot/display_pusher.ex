@@ -35,7 +35,7 @@ defmodule Flipdot.DisplayPusher do
 
     {:ok, timer} = :timer.send_interval(10_000, self(), :set_rendering_mode)
 
-    Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.DisplayState.topic())
+    Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.Display.topic())
     {:ok, %{state | socket: socket, addresses: v4_addresses, timer: timer}}
   end
 

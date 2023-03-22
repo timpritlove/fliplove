@@ -7,14 +7,14 @@ defmodule Flipdot.SceneDisplay do
   require Logger
   import Scenic.Primitives
   import Scenic.Components
-  alias Flipdot.DisplayState
+  alias Flipdot.Display
   alias Scenic.Graph
 
   def init(scene, _param, _opts) do
     graph = build_scene_graph()
 
     scene = push_graph(scene, graph)
-    Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.DisplayState.topic())
+    Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.Display.topic())
 
     {:ok, scene}
   end
@@ -31,7 +31,7 @@ defmodule Flipdot.SceneDisplay do
   end
 
   defp build_scene_graph do
-    bitmap = DisplayState.get()
+    bitmap = Display.get()
 
     graph = Graph.build()
 

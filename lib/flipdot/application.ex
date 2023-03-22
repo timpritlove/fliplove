@@ -20,7 +20,7 @@ defmodule Flipdot.Application do
       FlipdotWeb.Endpoint,
       # Start a worker by calling: Flipdot.Worker.start_link(arg)
       # {Flipdot.Worker, arg}
-      {Flipdot.DisplayState, Flipdot.Images.images()["space-invaders"]},
+      {Flipdot.Display, Flipdot.Images.images()["space-invaders"]},
       Flipdot.Weather,
       Flipdot.DisplayPusher,
       Flipdot.Font.Library,

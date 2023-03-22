@@ -3,7 +3,7 @@ defmodule Flipdot.Dashboard do
   Compose a dashboard to show on flipboard
   """
   use GenServer
-  alias Flipdot.{DisplayState, Weather}
+  alias Flipdot.{Display, Weather}
   alias Flipdot.Font.{Renderer, Library}
   require Logger
   # import Flipdot.PrettyDump
@@ -76,7 +76,7 @@ defmodule Flipdot.Dashboard do
     time_string = get_time_string()
     weather = Weather.get_weather()
 
-    bitmap = Bitmap.new(DisplayState.width(), DisplayState.height())
+    bitmap = Bitmap.new(Display.width(), Display.height())
 
     # render temperature
     temperature = Weather.get_temperature()
@@ -110,7 +110,7 @@ defmodule Flipdot.Dashboard do
     bitmap = place_text(bitmap, state.font, time_string, :bottom, :right)
 
     if bitmap != state.bitmap do
-      DisplayState.set(bitmap)
+      Display.set(bitmap)
     end
 
     %{state | time: time_string, weather: weather}

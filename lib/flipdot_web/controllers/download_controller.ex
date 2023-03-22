@@ -1,9 +1,9 @@
 defmodule FlipdotWeb.DownloadController do
   use FlipdotWeb, :controller
-  alias Flipdot.DisplayState
+  alias Flipdot.Display
 
   def download(conn, _params) do
-    bitmap_text = DisplayState.get() |> Bitmap.to_text()
+    bitmap_text = Display.get() |> Bitmap.to_text()
 
     conn
     |> put_resp_content_type("text/plain")
