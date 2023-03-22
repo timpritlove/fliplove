@@ -7,7 +7,6 @@ defmodule Flipdot.Weather do
   use GenServer
 
   require HTTPoison
-  import Flipdot.PrettyDump
 
   defstruct timer: nil, api_key: nil, weather: nil
 
@@ -200,7 +199,5 @@ defmodule Flipdot.Weather do
         {:ok, %{status_code: status_code}} ->
           raise("OpenWeatherMap API call failed (#{status_code})")
       end
-
-    pretty_dump(weather, "weather")
   end
 end
