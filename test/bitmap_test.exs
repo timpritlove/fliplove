@@ -35,16 +35,16 @@ defmodule BitmapTest do
   end
 
   test "bitmap to text" do
-    assert assert invader() |> Bitmap.to_text() ==
-                    "  X     X  \n   X   X   \n  XXXXXXX  \n XX XXX XX \nXXXXXXXXXXX\nX XXXXXXX X\nX X     X X\n   XX XX   \n"
+    assert invader() |> Bitmap.to_text() ==
+             "  X     X  \n   X   X   \n  XXXXXXX  \n XX XXX XX \nXXXXXXXXXXX\nX XXXXXXX X\nX X     X X\n   XX XX   \n"
   end
 
   test "bitmap to binary" do
-    assert assert invader() |> Bitmap.to_binary() == <<112, 24, 125, 182, 188, 60, 188, 182, 125, 24, 112>>
+    assert invader() |> Bitmap.to_binary() == <<112, 24, 125, 182, 188, 60, 188, 182, 125, 24, 112>>
   end
 
   test "bitmap dimensions" do
-    assert assert invader() |> Bitmap.dimensions() == {11, 8}
+    assert invader() |> Bitmap.dimensions() == {11, 8}
   end
 
   test "invert bitmap" do
