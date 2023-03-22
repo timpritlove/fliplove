@@ -49,6 +49,29 @@ defmodule BitmapTest do
            """
   end
 
+  test "scale bitmap" do
+    assert invader() |> Bitmap.scale(2) |> inspect() == """
+           +----------------------+
+           |    XX          XX    |
+           |    XX          XX    |
+           |      XX      XX      |
+           |      XX      XX      |
+           |    XXXXXXXXXXXXXX    |
+           |    XXXXXXXXXXXXXX    |
+           |  XXXX  XXXXXX  XXXX  |
+           |  XXXX  XXXXXX  XXXX  |
+           |XXXXXXXXXXXXXXXXXXXXXX|
+           |XXXXXXXXXXXXXXXXXXXXXX|
+           |XX  XXXXXXXXXXXXXX  XX|
+           |XX  XXXXXXXXXXXXXX  XX|
+           |XX  XX          XX  XX|
+           |XX  XX          XX  XX|
+           |      XXXX  XXXX      |
+           |      XXXX  XXXX      |
+           +----------------------+
+           """
+  end
+
   test "rotate bitmap" do
     assert invader() |> Bitmap.rotate() |> inspect() == """
            +--------+
