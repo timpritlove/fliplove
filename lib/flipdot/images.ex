@@ -1,4 +1,6 @@
 defmodule Flipdot.Images do
+  @moduledoc false
+
   import Bitmap
 
   @crab_invader defbitmap [

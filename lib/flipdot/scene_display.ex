@@ -1,4 +1,8 @@
 defmodule Flipdot.SceneDisplay do
+  @moduledoc """
+  Simple non-HTML visualizer for the Bitmap Display. Currently without interaction.
+  """
+
   use Scenic.Scene
   require Logger
   import Scenic.Primitives

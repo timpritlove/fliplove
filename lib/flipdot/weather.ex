@@ -1,6 +1,8 @@
 defmodule Flipdot.Weather do
   @moduledoc """
-  Retrieve weather data on a regular basis
+  Retrieve weather data on a regular basis. Uses OpenWeatherMap API which
+  needs an account to access it. Pass the developer API key to the library
+  via the OPENWEATHERMAP_API_KEY environment variable.
   """
   use GenServer
 

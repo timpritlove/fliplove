@@ -1,4 +1,6 @@
 defmodule Flipdot.Font do
+  @moduledoc false
+
   defstruct [:name, :properties, :characters]
 
   defimpl Inspect, for: Flipdot.Font do

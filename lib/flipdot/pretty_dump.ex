@@ -1,4 +1,6 @@
 defmodule Flipdot.PrettyDump do
+  @moduledoc false
+
   defmacro pretty_dump(var, name) do
     quote do
       inspect(unquote(var), limit: :infinity, pretty: true)

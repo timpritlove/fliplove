@@ -1,4 +1,6 @@
 defmodule Ping do
+  @moduledoc false
+
   import Bitwise
   require Logger
 

@@ -1,7 +1,9 @@
-# TODO
-# - change state to struct
-
 defmodule Flipdot.DisplayState do
+  @moduledoc """
+  Store the current frame buffer of the virtual Bitmap Display. Send PubSub broadcasts
+  whenever the content changes.
+  """
+
   defstruct bitmap: nil
   use Agent
 

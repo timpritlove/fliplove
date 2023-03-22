@@ -5,6 +5,10 @@ defmodule Flipdot.MixProject do
     [
       app: :flipdot,
       name: "The Flipdot Controller Project",
+      docs: [
+        authors: ["Tim Pritlove"],
+        logo: "data/flipdot-logo-64.jpg"
+      ],
       version: "0.1.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
