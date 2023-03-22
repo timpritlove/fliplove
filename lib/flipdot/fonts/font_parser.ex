@@ -1,5 +1,6 @@
 defmodule Flipdot.Font.Parser do
   import NimbleParsec
+  alias Flipdot.Font
 
   @moduledoc """
   Parser for BDF font files. BDF files contain font definitions for low-resolution monochrome
@@ -364,7 +365,7 @@ defmodule Flipdot.Font.Parser do
     |> map(:characters_section_map)
 
   defp bdf_map(maps) do
-    Enum.reduce(maps, %{}, fn map, acc -> Map.merge(acc, map) end)
+    Enum.reduce(maps, %Font{}, fn map, acc -> Map.merge(acc, map) end)
   end
 
   defcombinatorp(
