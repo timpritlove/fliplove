@@ -389,9 +389,10 @@ defmodule Bitmap do
       for x <- 0..(width - 1),
           y <- 0..(height - 1),
           value = get_pixel(bitmap, {x, y}),
-          s <- 0..(factor - 1),
+          dx <- 0..(factor - 1),
+          dy <- 0..(factor - 1),
           into: %{} do
-        {{x * factor + s, y * factor + s}, value}
+        {{x * factor + dx, y * factor + dy}, value}
       end
 
     new(width * factor, height * factor, matrix)
