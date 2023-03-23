@@ -47,7 +47,7 @@ defmodule Flipdot.Font.Library do
   end
 
   def get_font_by_name(font_name) do
-    GenServer.call(__MODULE__, {:get_font_by_name, font_name})
+    GenServer.call(__MODULE__, {:get_font_by_name, font_name}, 30_000)
   end
 
   # server functions
