@@ -636,19 +636,23 @@ defmodule Bitmap do
         height: height
       )
 
+    uuid = UUID.uuid4()
+
     svg_header = """
-          <svg width="#{opts[:width]}px" height="#{opts[:height]}px" viewbox="0 0 #{width} #{height}"
-           xmlns="http://www.w3.org/2000/svg"
-           xmlns:xlink="http://www.w3.org/1999/xlink">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            width="#{opts[:width]}px" height="#{opts[:height]}px"
+            viewbox="0 0 #{width} #{height}">
            	<defs>
-            <g id="pixel">
-             <rect x="0.1" y="0.1" width="0.8" height="0.8" />
-         	  </g>
-           </defs>
+              <g id="#{uuid}">
+                <rect x="0.1" y="0.1" width="0.8" height="0.8" />
+         	    </g>
+            </defs>
     """
 
     svg_footer = """
-        </svg>
+          </svg>
     """
 
     # traverse pixels left to right, top to bottom
@@ -658,7 +662,7 @@ defmodule Bitmap do
             pixel = get_pixel(bitmap, {x, y}),
             pixel == 1 do
           """
-          	<use xlink:href="#pixel" x="#{x}" y="#{height - 1 - y}"/>
+          	<use xlink:href="##{uuid}" x="#{x}" y="#{height - 1 - y}"/>
           """
         end
       end
