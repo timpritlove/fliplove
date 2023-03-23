@@ -627,11 +627,17 @@ defmodule Bitmap do
   Create SVG representation of the bitmap by rendering the pixels
   left to right, top to bottom in lines
   """
-  def to_svg(bitmap) do
+  def to_svg(bitmap, opts \\ []) do
     {width, height} = dimensions(bitmap)
 
+    opts =
+      Keyword.validate!(opts,
+        width: width,
+        height: height
+      )
+
     svg_header = """
-          <svg width=#{width}px height=#{height}px viewBox="0 0 #{width} #{height}"
+          <svg width="#{opts[:width]}px" height="#{opts[:height]}px" viewbox="0 0 #{width} #{height}"
            xmlns="http://www.w3.org/2000/svg"
            xmlns:xlink="http://www.w3.org/1999/xlink">
            	<defs>
@@ -652,7 +658,7 @@ defmodule Bitmap do
             pixel = get_pixel(bitmap, {x, y}),
             pixel == 1 do
           """
-          	<use xlink:href="#pixel" x="#{x}" y="#{height - y}"/>
+          	<use xlink:href="#pixel" x="#{x}" y="#{height - 1 - y}"/>
           """
         end
       end
