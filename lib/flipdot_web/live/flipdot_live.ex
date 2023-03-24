@@ -267,26 +267,42 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def build_font_select(fonts) do
-    for font <- fonts do
-      {
-        font.name,
-        Map.get(font.properties, :foundry, "") <>
-          "-" <>
-          Map.get(font.properties, :family_name, "") <>
-          "-" <>
-          Map.get(font.properties, :weight_name, "") <>
-          "-" <>
-          case Map.get(font.properties, :slant) do
-            nil -> "Regular"
-            "R" -> "Regular"
-            "I" -> "Italic"
-            "O" -> "Oblique"
-          end <>
-          case Map.get(font.properties, :pixel_size) do
-            nil -> "-unknown"
-            pixel_size -> "-" <> Integer.to_string(pixel_size)
-          end
-      }
+    font_list =
+      Enum.map(fonts, fn font ->
+        {font.name,
+         Map.get(font.properties, :foundry, "") <>
+           "-" <>
+           Map.get(font.properties, :family_name, "") <>
+           "-" <>
+           Map.get(font.properties, :weight_name, "") <>
+           "-" <>
+           case Map.get(font.properties, :slant) do
+             nil -> "Regular"
+             "R" -> "Regular"
+             "I" -> "Italic"
+             "O" -> "Oblique"
+           end,
+         case Map.get(font.properties, :pixel_size) do
+           nil -> "-unknown"
+           pixel_size -> "-" <> Integer.to_string(pixel_size)
+         end}
+      end)
+
+    font_faces =
+      for {_name, face, _size} <- font_list do
+        face
+      end
+      |> Enum.uniq()
+      |> Enum.sort()
+
+    for font_face <- font_faces do
+      {font_face,
+       for {name, face, size} <- font_list, font_face == face do
+         {
+           face <> size,
+           name
+         }
+       end}
     end
   end
 
@@ -342,14 +358,9 @@ defmodule FlipdotWeb.FlipdotLive do
           autocomplete="off"
           phx-debounce="500"
         />
+
         <select :if={@font_select} name="font" id="font-select">
-          <option
-            :for={font <- Enum.sort_by(@font_select, fn font_entry -> elem(font_entry, 1) end)}
-            value={elem(font, 0)}
-            selected={elem(font, 0) == @font_name}
-          >
-            <%= elem(font, 1) %>
-          </option>
+          <%= Phoenix.HTML.Form.options_for_select(@font_select, @font_name) %>
         </select>
         <input type="submit" value="Render Text" class="rounded-full" />
       </form>
