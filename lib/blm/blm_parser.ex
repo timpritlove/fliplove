@@ -1,4 +1,4 @@
-defmodule BLMParser do
+defmodule BLM.Parser do
   import NimbleParsec
 
   @moduledoc """
