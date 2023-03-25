@@ -63,7 +63,8 @@ defmodule Flipdot.MixProject do
       {:gen_icmp, git: "https://github.com/hauleth/gen_icmp.git"},
       {:ex_fontawesome, "~> 0.7.2"},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
-      {:uuid, "~> 1.1"}
+      {:uuid, "~> 1.1"},
+      {:mix_audit, "~> 2.0", only: [:dev, :test], runtime: false}
     ]
   end
 
