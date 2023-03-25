@@ -7,24 +7,28 @@ defmodule Flipdot.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      # Start the Telemetry supervisor
-      FlipdotWeb.Telemetry,
-      # Start the PubSub system
-      {Phoenix.PubSub, name: Flipdot.PubSub},
-      # Start Finch
-      {Finch, name: Flipdot.Finch},
-      # Start the Endpoint (http/https)
-      FlipdotWeb.Endpoint,
-      # Start a worker by calling: Flipdot.Worker.start_link(arg)
-      # {Flipdot.Worker, arg}
-      {Flipdot.Display, Flipdot.Images.images()["space-invaders"]},
-      Flipdot.Weather,
-      Flipdot.DisplayPusher,
-      Flipdot.Font.Library,
-      Flipdot.Dashboard,
-      {Flipdot.TelegramBot, bot_key: System.get_env("TELEGRAM_BOT_SECRET")}
-    ]
+    children =
+      [
+        # Start the Telemetry supervisor
+        FlipdotWeb.Telemetry,
+        # Start the PubSub system
+        {Phoenix.PubSub, name: Flipdot.PubSub},
+        # Start Finch
+        {Finch, name: Flipdot.Finch},
+        # Start the Endpoint (http/https)
+        FlipdotWeb.Endpoint,
+        # Start a worker by calling: Flipdot.Worker.start_link(arg)
+        # {Flipdot.Worker, arg}
+        {Flipdot.Display, Flipdot.Images.images()["space-invaders"]},
+        Flipdot.Weather,
+        Flipdot.DisplayPusher,
+        Flipdot.Font.Library,
+        Flipdot.Dashboard
+      ] ++
+        case System.get_env("TELEGRAM_BOT_SECRET") do
+          nil -> []
+          telegram_bot_secret -> [{Flipdot.TelegramBot, bot_key: telegram_bot_secret}]
+        end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
