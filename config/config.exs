@@ -20,19 +20,6 @@ config :flipdot, FlipdotWeb.Endpoint,
   pubsub_server: Flipdot.PubSub,
   live_view: [signing_salt: "xJ5q7C8F"]
 
-config :flipdot, :viewport, %{
-  name: :main_viewport,
-  size: {1280, 400},
-  default_scene: Flipdot.SceneDisplay,
-  drivers: [
-    %{
-      module: Scenic.Driver.Local,
-      name: :local,
-      window: [title: "Flipdot Display"]
-    }
-  ]
-}
-
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

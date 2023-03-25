@@ -50,8 +50,6 @@ defmodule Flipdot.MixProject do
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
-      {:scenic, "~> 0.11.1"},
-      {:scenic_driver_local, "~> 0.11.0"},
       {:jason, "~> 1.2"},
       {:nimble_parsec, "~> 1.2.3"},
       {:nimble_options, "~> 1.0", override: true},
