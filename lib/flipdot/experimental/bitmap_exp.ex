@@ -78,4 +78,44 @@ defmodule BitmapExp do
 
     Bitmap.new(new_width, new_height, Map.merge(background.matrix, overlay_matrix))
   end
+
+  def fill_stream(bitmap, {x, y}) do
+    Stream.resource(
+      fn -> {bitmap, [{x, y}]} end,
+      fn {bitmap, coords} ->
+        case coords do
+          [] ->
+            {:halt, bitmap}
+
+          [{x, y} | rest] ->
+            case Bitmap.get_pixel(bitmap, {x, y}) do
+              1 ->
+                {:halt, bitmap}
+
+              0 ->
+                bitmap = Bitmap.set_pixel(bitmap, {x, y}, 1)
+
+                # look for clear neighbors
+
+                {width, height} = Bitmap.dimensions(bitmap)
+
+                empty_neighbors =
+                  for {nx, ny} <- [{x - 1, y}, {x + 1, y}, {x, y + 1}, {x, y - 1}],
+                      nx >= 0,
+                      ny >= 0,
+                      nx < width,
+                      ny < height,
+                      Bitmap.get_pixel(bitmap, {nx, ny}) == 0 do
+                    {nx, ny}
+                  end
+
+                coords = Enum.uniq(rest ++ empty_neighbors)
+
+                {[bitmap], {bitmap, coords}}
+            end
+        end
+      end,
+      fn bitmap -> bitmap end
+    )
+  end
 end
