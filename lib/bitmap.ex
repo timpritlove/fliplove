@@ -111,6 +111,37 @@ defmodule Bitmap do
     {bitmap.width, bitmap.height}
   end
 
+  # individual pixel manipulation
+
+  def get_pixel(bitmap, {x, y} = _coordinate) do
+    Map.get(bitmap.matrix, {x, y}, 0)
+  end
+
+  def set_pixel(bitmap, {x, y} = _coordinate, value) do
+    new(width(bitmap), height(bitmap), Map.put(bitmap.matrix, {x, y}, value))
+  end
+
+  def toggle_pixel(bitmap, {x, y} = _coordinate) do
+    set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
+  end
+
+  # streaming
+
+  def filter_stream(bitmap, filter) when is_function(filter, 1) do
+    Stream.resource(
+      fn -> bitmap end,
+      fn bitmap ->
+        bitmap = filter.(bitmap)
+        {[bitmap], bitmap}
+      end,
+      fn foo -> foo end
+    )
+  end
+
+  def game_of_life_stream(bitmap) do
+    filter_stream(bitmap, &game_of_life/1)
+  end
+
   @doc """
   Determine the effective bounding box of the bitmap
   """
@@ -208,20 +239,6 @@ defmodule Bitmap do
       end
 
     new(width, height, matrix)
-  end
-
-  # individual pixel manipulation
-
-  def get_pixel(bitmap, {x, y} = _coordinate) do
-    Map.get(bitmap.matrix, {x, y}, 0)
-  end
-
-  def set_pixel(bitmap, {x, y} = _coordinate, value) do
-    new(width(bitmap), height(bitmap), Map.put(bitmap.matrix, {x, y}, value))
-  end
-
-  def toggle_pixel(bitmap, {x, y} = _coordinate) do
-    set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
   end
 
   @doc """
