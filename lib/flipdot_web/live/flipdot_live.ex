@@ -198,6 +198,12 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  def handle_event("erase", _params, socket) do
+    Bitmap.new(115, 16) |> Display.set()
+
+    {:noreply, socket}
+  end
+
   def handle_event("pixel", params, socket) do
     x = String.to_integer(params["x"])
     y = String.to_integer(params["y"])
@@ -326,6 +332,7 @@ defmodule FlipdotWeb.FlipdotLive do
       <.filter target="flip-horizontally" tooltip="Flip horizontally" icon="arrow-right-arrow-left" />
 
       <.filter target="invert" tooltip="Invert" icon="image" />
+      <.filter target="erase" tooltip="Erase" icon="eraser" />
     </div>
 
     <div class="mt-4">
