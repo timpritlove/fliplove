@@ -43,7 +43,6 @@ defmodule Flipdot.DisplayPusher do
   @impl true
   def handle_info(:set_rendering_mode, state) do
     if state.host != "localhost" do
-      Logger.info("Updating rendering mode")
       {:ok, _response} = HTTPoison.put("http://" <> state.host <> @rendering_mode_url, <<?1>>)
     end
 
