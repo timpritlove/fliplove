@@ -3,6 +3,7 @@ defmodule Flipdot.DisplayPusher do
 
   use GenServer
   require HTTPoison
+  require Logger
 
   @host_env "FLIPDOT_HOST"
   @host_default "localhost"
@@ -42,7 +43,8 @@ defmodule Flipdot.DisplayPusher do
   @impl true
   def handle_info(:set_rendering_mode, state) do
     if state.host != "localhost" do
-      {:ok, _response} = HTTPoison.put("http://" <> state.host <> @rendering_mode_url, <<1>>)
+      Logger.info("Updating rendering mode")
+      {:ok, _response} = HTTPoison.put("http://" <> state.host <> @rendering_mode_url, <<?1>>)
     end
 
     {:noreply, state}
