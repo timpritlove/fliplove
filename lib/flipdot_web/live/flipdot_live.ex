@@ -267,6 +267,10 @@ defmodule FlipdotWeb.FlipdotLive do
     end
   end
 
+  def do_pixel_click(_mode, _coords, _prev_xy, bitmap) do
+    bitmap
+  end
+
   def clock do
     DateTime.now!("Europe/Berlin", Tz.TimeZoneDatabase)
     |> Calendar.strftime("%c", preferred_datetime: "%d.%m.%Y %H:%M:%S")
@@ -455,7 +459,7 @@ defmodule FlipdotWeb.FlipdotLive do
       phx-click="image"
       value={@value}
     >
-      <%= raw(Bitmap.to_svg(@image)) %>
+      <%= raw(Bitmap.to_svg(@image, width: 115, height: 16)) %>
     </button>
     """
   end
