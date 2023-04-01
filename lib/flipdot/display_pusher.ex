@@ -43,7 +43,13 @@ defmodule Flipdot.DisplayPusher do
   @impl true
   def handle_info(:set_rendering_mode, state) do
     if state.host != "localhost" do
-      {:ok, _response} = HTTPoison.put("http://" <> state.host <> @rendering_mode_url, <<?1>>)
+      case HTTPoison.put("http://" <> state.host <> @rendering_mode_url, <<?1>>) do
+      {:ok, response} -> case response.status_code do
+        200 -> true
+        status_code -> Logger.info("Call to set rendering mode returned status code #{status_code}")
+      end
+      {:error, reason} -> Logger.info("Could not set rendering mode. Reason: #{reason}")
+      end
     end
 
     {:noreply, state}
