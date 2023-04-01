@@ -39,6 +39,7 @@ defmodule Flipdot.Weather do
   def start_weather_service(), do: GenServer.call(__MODULE__, :start_weather_service)
   def stop_weather_service(), do: GenServer.call(__MODULE__, :stop_weather_service)
   def get_weather(), do: GenServer.call(__MODULE__, :get_weather)
+  def update_weather(), do: GenServer.call(__MODULE__, :update_weather)
 
   def get_temperature() do
     weather = get_weather()
@@ -89,6 +90,14 @@ defmodule Flipdot.Weather do
   end
 
   # server functions
+  @impl true
+
+  def handle_call(:update_weather, _, state) do
+    weather = call_openweathermap(state.api_key)
+    {:reply, :ok, %{state | weather: weather}}
+  end
+
+
 
   @impl true
   def handle_call(:start_weather_service, _, state) do
