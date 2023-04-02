@@ -175,8 +175,7 @@ defmodule FlipdotWeb.FlipdotLive do
       if socket.assigns.mode != new_mode do
         case {socket.assigns.mode, new_mode} do
           {_, :dashboard} ->
-            {:ok, pid} =
-              Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
+            {:ok, pid} = Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
 
             Logger.info("Dashboard started (Supervisor: #{inspect(pid)})")
 
