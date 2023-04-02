@@ -6,6 +6,8 @@ defmodule FlipdotWeb.FlipdotLive do
   alias Flipdot.Dashboard
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
+  alias Bitmap.Maze
+  alias Bitmap.GameOfLife
 
   require Integer
 
@@ -110,7 +112,7 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_event("game-of-life", _params, socket) do
-    Display.get() |> Bitmap.game_of_life() |> Display.set()
+    Display.get() |> GameOfLife.game_of_life() |> Display.set()
 
     {:noreply, socket}
   end
@@ -133,7 +135,7 @@ defmodule FlipdotWeb.FlipdotLive do
     maze_width = if Integer.is_odd(display_width), do: display_width, else: display_width - 1
     maze_height = if Integer.is_odd(display_height), do: display_height, else: display_height - 1
 
-    Bitmap.maze(maze_width, maze_height)
+    Maze.generate_maze(maze_width, maze_height)
     |> Bitmap.crop_relative(display_width, display_height, rel_y: :top)
     |> Display.set()
 

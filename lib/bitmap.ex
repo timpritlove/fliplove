@@ -2,10 +2,9 @@ defmodule Bitmap do
   require Integer
 
   @moduledoc """
-  Functions for working with low-resolution monochrome  2D-bitmaps. You can
+  Basic functions for working with low-resolution monochrome 2D-bitmaps. You can
   create, crop, transform, invert, flip and overlay bitmaps as well as read
-  and write bitmaps to and from files. Generators create mazes or apply
-  game of life and other algorithms on the bitmaps.
+  and write bitmaps to and from strings or files.
 
   Bitmaps are stored in a simple matrix structure as maps with {x,y} coordinates
   as keys. Only 0 and 1 are allowed as values (no greyscaling or color).
@@ -136,10 +135,6 @@ defmodule Bitmap do
       end,
       fn foo -> foo end
     )
-  end
-
-  def game_of_life_stream(bitmap) do
-    filter_stream(bitmap, &game_of_life/1)
   end
 
   @doc """
@@ -455,48 +450,6 @@ defmodule Bitmap do
   end
 
   @doc """
-  Apply Game of Life Algorithm to bitmap
-  - a living cell surrounded by less than 2 living cells will die.
-  - a living cell surrounded by more than 3 living cells will also die.
-  - a dead cell surrounded by 3 living cells will be reborn.
-  """
-  def game_of_life(bitmap) do
-    {width, height} = dimensions(bitmap)
-
-    matrix =
-      for x <- 0..(width - 1),
-          y <- 0..(height - 1),
-          into: %{} do
-        number_of_neighbors =
-          for dx <- [x - 1, x, x + 1],
-              dy <- [y - 1, y, y + 1],
-              dx >= 0,
-              dy >= 0,
-              dx < width,
-              dy < height,
-              not (dx == x and dy == y),
-              get_pixel(bitmap, {dx, dy}) == 1,
-              reduce: 0 do
-            count -> count + 1
-          end
-
-        old_cell = get_pixel(bitmap, {x, y})
-
-        new_cell =
-          cond do
-            old_cell == 1 and number_of_neighbors < 2 -> 0
-            old_cell == 1 and number_of_neighbors > 3 -> 0
-            old_cell == 0 and number_of_neighbors == 3 -> 1
-            true -> old_cell
-          end
-
-        {{x, y}, new_cell}
-      end
-
-    new(width, height, matrix)
-  end
-
-  @doc """
   Create a bitmap surrounded by a frame
   """
   def frame(width, height) do
@@ -798,64 +751,5 @@ defmodule Bitmap do
       end
 
     new(width, height, matrix)
-  end
-
-  @doc """
-  Generate a maze. Both width and height must be odd numbers
-  """
-
-  def maze(width, height) do
-    if Integer.is_even(width) or Integer.is_even(height),
-      do: raise("maze dimensions must be odd numbers")
-
-    {start_x, start_y} = {Enum.random(1..(width - 1)//2), Enum.random(1..(height - 1)//2)}
-
-    {entry_x, entry_y} = {0, Enum.random(1..(height - 1)//2)}
-    {exit_x, exit_y} = {width - 1, Enum.random(1..(height - 1)//2)}
-
-    Bitmap.new(width, height)
-    |> Bitmap.invert()
-    |> Bitmap.set_pixel({start_x, start_y}, 0)
-    |> maze_gen([{start_x, start_y}])
-    |> Bitmap.set_pixel({entry_x, entry_y}, 0)
-    |> Bitmap.set_pixel({exit_x, exit_y}, 0)
-  end
-
-  defp maze_gen(bitmap, []) do
-    bitmap
-  end
-
-  defp maze_gen(bitmap, visited_cells) do
-    {width, height} = dimensions(bitmap)
-
-    {cur_x, cur_y} = hd(visited_cells)
-
-    unvisited_neighbors =
-      for {nx, ny, wx, wy, _} <- [
-            {cur_x, cur_y + 2, cur_x, cur_y + 1, :up},
-            {cur_x + 2, cur_y, cur_x + 1, cur_y, :right},
-            {cur_x, cur_y - 2, cur_x, cur_y - 1, :down},
-            {cur_x - 2, cur_y, cur_x - 1, cur_y, :left}
-          ],
-          nx >= 0,
-          ny >= 0,
-          nx < width,
-          ny < height,
-          get_pixel(bitmap, {nx, ny}) == 1 do
-        {nx, ny, wx, wy}
-      end
-
-    case unvisited_neighbors do
-      [] ->
-        maze_gen(bitmap, tl(visited_cells))
-
-      list ->
-        {next_x, next_y, wall_x, wall_y} = Enum.random(list)
-
-        bitmap
-        |> Bitmap.set_pixel({wall_x, wall_y}, 0)
-        |> Bitmap.set_pixel({next_x, next_y}, 0)
-        |> maze_gen([{next_x, next_y} | visited_cells])
-    end
   end
 end
