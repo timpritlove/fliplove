@@ -91,22 +91,22 @@ defmodule Flipdot.Images do
           ]
 
   @blinkenlights defbitmap [
-                   "                                                                                                                   ",
-                   "                                                                                                                   ",
-                   "                                                                                                                   ",
-                   "                                                                                                                   ",
-                   "                                   X   X X     X           X X  XX X   X                                           ",
-                   "                                   X   X       X           X    X  X   X                                           ",
-                   "                                   XXX X X XX  XXX XXX XX  X X XXX XXX XX XXX                                      ",
-                   "                                   X X X X XXX XX  X X XXX X X X X X X X  X                                        ",
-                   "                                   X X X X X X XXX XXX X X X X XXX X X X  XXX                                      ",
-                   "                                   X X X X X X X X X   X X X X  X  X X X    X                                      ",
-                   "                                   XXX X X X X X X XX  X X X X XXX X X XX XXX                                      ",
-                   "                                                               X X                                                 ",
-                   "                                                               XXX                                                 ",
-                   "                                                                                                                   ",
-                   "                                                                                                                   ",
-                   "                                                                                                                   "
+                   "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                   "X                                                                                                                 X",
+                   "X                                                                                                                 X",
+                   "X                                                                                                                 X",
+                   "X                                  X   X X     X           X X  XX X   X                                          X",
+                   "X                                  X   X       X           X    X  X   X                                          X",
+                   "X                                  XXX X X XX  XXX XXX XX  X X XXX XXX XX XXX                                     X",
+                   "X                                  X X X X XXX XX  X X XXX X X X X X X X  X                                       X",
+                   "X                                  X X X X X X XXX XXX X X X X XXX X X X  XXX                                     X",
+                   "X                                  X X X X X X X X X   X X X X  X  X X X    X                                     X",
+                   "X                                  XXX X X X X X X XX  X X X X XXX X X XX XXX                                     X",
+                   "X                                                              X X                                                X",
+                   "X                                                              XXX                                                X",
+                   "X                                                                                                                 X",
+                   "X                                                                                                                 X",
+                   "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
                  ]
 
   @images %{
