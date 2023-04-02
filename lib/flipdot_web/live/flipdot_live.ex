@@ -354,10 +354,11 @@ defmodule FlipdotWeb.FlipdotLive do
       <.image_button tooltip="Space Invaders" image={Flipdot.Images.images()["space-invaders"]} value="space-invaders" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["pacman"]} value="pacman" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["metaebene"]} value="metaebene" />
+      <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["blinkenlights"]} value="blinkenlights" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
     </div>
     <div>
-      <.link class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" href="/download">
+      <.link target="_blank" class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" href="/download">
         Download Display
       </.link>
     </div>
