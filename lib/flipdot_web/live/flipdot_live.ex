@@ -33,7 +33,7 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_info({:bot_update, update}, socket) do
-    Logger.info("Got message: #{inspect(update)}")
+    Logger.debug("Got message: #{inspect(update)}")
 
     Display.clear()
     |> Renderer.render_text(
@@ -177,11 +177,11 @@ defmodule FlipdotWeb.FlipdotLive do
           {_, :dashboard} ->
             {:ok, pid} = Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
 
-            Logger.info("Dashboard started (Supervisor: #{inspect(pid)})")
+            Logger.debug("Dashboard started (Supervisor: #{inspect(pid)})")
 
           {:dashboard, _} ->
             :ok = Supervisor.stop(:dashboard)
-            Logger.info("Dashboard stopped")
+            Logger.debug("Dashboard stopped")
 
           _ ->
             true

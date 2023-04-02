@@ -68,7 +68,7 @@ defmodule Flipdot.TelegramBot do
     updates
     # Process our updates
     |> Enum.map(fn update ->
-      Logger.info("Update received: #{inspect(update)}")
+      Logger.debug("Update received: #{inspect(update)}")
       # Offload the updates to whoever they may concern
       broadcast(update)
 

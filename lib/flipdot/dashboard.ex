@@ -29,18 +29,18 @@ defmodule Flipdot.Dashboard do
     schedule_next_minute(:clock_timer)
     PubSub.subscribe(Flipdot.PubSub, Weather.topic())
 
-    Logger.info("Dashboard has been started.")
+    Logger.debug("Dashboard has been started.")
     {:ok, state}
   end
 
   @impl true
   def terminate(_reason, _state) do
-    Logger.info("Shutting down Dashboard.")
+    Logger.debug("Shutting down Dashboard.")
   end
 
   @impl true
   def handle_info(:clock_timer, state) do
-    Logger.info("Clock timer fired")
+    Logger.debug("Clock timer fired")
     update_dashboard(state)
     schedule_next_minute(:clock_timer)
 
@@ -49,7 +49,7 @@ defmodule Flipdot.Dashboard do
 
   @impl true
   def handle_info({:update_weather, _weather}, state) do
-    Logger.info("Dashboard received new weather data")
+    Logger.debug("Dashboard received new weather data")
     update_dashboard(state)
     {:noreply, state}
   end
@@ -92,8 +92,7 @@ defmodule Flipdot.Dashboard do
     {_wind_speed, wind_force} = Weather.get_wind()
 
     # bitmap = place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed, decimals: 1), :bottom, :left)
-    bitmap =
-      place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
+    bitmap = place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
 
     bitmap =
       Bitmap.overlay(

@@ -204,7 +204,7 @@ defmodule Flipdot.Weather do
 
     case HTTPoison.get(url, [], params: params) do
       {:ok, %{status_code: 200, body: body}} ->
-        Logger.info("OpenWeatherMap API call succeeded")
+        Logger.debug("OpenWeatherMap API call succeeded")
         Jason.decode!(body)
 
       {:ok, %{status_code: status_code}} ->
