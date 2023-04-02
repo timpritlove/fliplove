@@ -1,13 +1,13 @@
-defmodule Flipdot.DisplayPusher do
-  alias Flipdot.DisplayPusher
-
+defmodule Flipdot.Fluepdot do
   use GenServer
+  alias Flipdot.PubSub
+  alias Flipdot.Display
   require HTTPoison
   require Logger
 
-  @host_env "FLIPDOT_HOST"
+  @host_env "FLUEPDOT_HOST"
   @host_default "localhost"
-  @port_env "FLIPDOT_PORT"
+  @port_env "FLUEPDOT_PORT"
   @port_default 1337
   @rendering_mode_url "/rendering/mode"
 
@@ -26,7 +26,7 @@ defmodule Flipdot.DisplayPusher do
         port -> String.to_integer(port)
       end
 
-    GenServer.start_link(__MODULE__, %DisplayPusher{host: host, port: port}, name: __MODULE__)
+    GenServer.start_link(__MODULE__, %__MODULE__{host: host, port: port}, name: __MODULE__)
   end
 
   @impl true
@@ -36,7 +36,7 @@ defmodule Flipdot.DisplayPusher do
 
     {:ok, timer} = :timer.send_interval(10_000, self(), :set_rendering_mode)
 
-    Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.Display.topic())
+    Phoenix.PubSub.subscribe(PubSub, Display.topic())
     {:ok, %{state | socket: socket, addresses: v4_addresses, timer: timer}}
   end
 
