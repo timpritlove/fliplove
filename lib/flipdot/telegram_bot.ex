@@ -47,6 +47,7 @@ defmodule Flipdot.TelegramBot do
       |> case do
         # Empty, typically a timeout. State returned unchanged.
         {:ok, []} ->
+          next_loop()
           state
 
         # A response with content, exciting!
@@ -56,11 +57,14 @@ defmodule Flipdot.TelegramBot do
 
           # Update the last_seen state so we only get new updates on the
           # next check
+          next_loop()
           %{state | last_seen: last_seen}
+
+        {:error, reason} ->
+          Logger.warn("Bot: Can't get updates: #{reason}")
+          state
       end
 
-    # Re-trigger the looping behavior
-    next_loop()
     {:noreply, state}
   end
 
