@@ -89,11 +89,32 @@ defmodule Flipdot.Images do
             "             XXXXX                                XX   XX   XX                XX   XX   XX      XX   XX   XX       ",
             "                                                                                                                   "
           ]
+
+  @blinkenlights defbitmap [
+                   "                                                                                                                   ",
+                   "                                                                                                                   ",
+                   "                                                                                                                   ",
+                   "                                                                                                                   ",
+                   "                                   X   X X     X           X X  XX X   X                                           ",
+                   "                                   X   X       X           X    X  X   X                                           ",
+                   "                                   XXX X X XX  XXX XXX XX  X X XXX XXX XX XXX                                      ",
+                   "                                   X X X X XXX XX  X X XXX X X X X X X X  X                                        ",
+                   "                                   X X X X X X XXX XXX X X X X XXX X X X  XXX                                      ",
+                   "                                   X X X X X X X X X   X X X X  X  X X X    X                                      ",
+                   "                                   XXX X X X X X X XX  X X X X XXX X X XX XXX                                      ",
+                   "                                                               X X                                                 ",
+                   "                                                               XXX                                                 ",
+                   "                                                                                                                   ",
+                   "                                                                                                                   ",
+                   "                                                                                                                   "
+                 ]
+
   @images %{
     "space-invaders" => @space_invaders,
     "pacman" => @pacman,
     "metaebene" => @metaebene,
     "fluepdot" => @fluepdot,
+    "blinkenlights" => @blinkenlights,
     "crab-invader" => @crab_invader
   }
 
