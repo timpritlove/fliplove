@@ -4,14 +4,18 @@ defmodule Flipdot.Weather do
   needs an account to access it. Pass the developer API key to the library
   via the OPENWEATHERMAP_API_KEY environment variable.
   """
+  alias Phoenix.PubSub
   use GenServer
 
   require HTTPoison
+  require Logger
 
   defstruct timer: nil, api_key: nil, weather: nil
 
   @latitude_env "WEATHER_LATITUDE"
   @longitude_env "WEATHER_LONGITUDE"
+
+  @topic "weather:update"
 
   @latitude 52.5363101
   @longitude 13.4273403
@@ -20,7 +24,9 @@ defmodule Flipdot.Weather do
   @api_key_file "data/keys/openweathermap.txt"
   @api_key_env "OPENWEATHERMAP_API_KEY"
 
-  # start genserver
+  def topic, do: @topic
+
+  # initialization functions
 
   def start_link(_state) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -31,15 +37,25 @@ defmodule Flipdot.Weather do
     # Read API Key from dev file or from environment
     api_key = get_api_key()
 
-    {:ok, %{state | api_key: api_key}}
+    # update weather information in a second and then every 5 minutes
+    {:ok, _} = :timer.send_after(5_000, :update_weather)
+    {:ok, timer} = :timer.send_interval(300_000, :update_weather)
+
+    {:ok, %{state | api_key: api_key, timer: timer}}
+  end
+
+  @impl true
+  def terminate(_reason, state) do
+    if state.timer do
+      {:ok, :cancel} = :timer.cancel(state.timer)
+    end
   end
 
   # client functions
 
-  def start_weather_service(), do: GenServer.call(__MODULE__, :start_weather_service)
-  def stop_weather_service(), do: GenServer.call(__MODULE__, :stop_weather_service)
-  def get_weather(), do: GenServer.call(__MODULE__, :get_weather)
   def update_weather(), do: GenServer.call(__MODULE__, :update_weather)
+
+  def get_weather(), do: GenServer.call(__MODULE__, :get_weather)
 
   def get_temperature() do
     weather = get_weather()
@@ -90,47 +106,32 @@ defmodule Flipdot.Weather do
   end
 
   # server functions
-  @impl true
-
-  def handle_call(:update_weather, _, state) do
-    weather = call_openweathermap(state.api_key)
-    {:reply, :ok, %{state | weather: weather}}
-  end
-
-
-
-  @impl true
-  def handle_call(:start_weather_service, _, state) do
-    weather = call_openweathermap(state.api_key)
-    {:ok, timer} = :timer.send_interval(300_000, self(), :update_weather)
-    {:reply, :ok, %{state | timer: timer, weather: weather}}
-  end
-
-  @impl true
-  def handle_call(:stop_weather_service, _, state) do
-    if state.timer do
-      {:ok, :cancel} = :timer.cancel(state.timer)
-      {:reply, :ok, %{state | timer: nil}}
-    else
-      {:reply, :ok, state}
-    end
-  end
 
   @impl true
   def handle_call(:get_weather, _, state) do
-    weather =
-      case state.weather do
-        nil -> call_openweathermap(state.api_key)
-        weather -> weather
-      end
+    {:reply, state.weather, state}
+  end
 
-    {:reply, weather, %{state | weather: weather}}
+  @impl true
+  def handle_call(:update_weather, _, state) do
+    {:reply, :ok, update_weather(state)}
   end
 
   @impl true
   def handle_info(:update_weather, state) do
-    weather = call_openweathermap(state.api_key)
-    {:noreply, %{state | weather: weather}}
+    state = update_weather(state)
+    {:noreply, state}
+  end
+
+  defp update_weather(state) do
+    case call_openweathermap(state.api_key) do
+      nil ->
+        state
+
+      weather ->
+        PubSub.broadcast(Flipdot.PubSub, topic(), {:update_weather, weather})
+        %{state | weather: weather}
+    end
   end
 
   # helper functions
@@ -145,7 +146,8 @@ defmodule Flipdot.Weather do
 
   defp do_rainfall_intensity(_, rainfall_level, []), do: rainfall_level
 
-  defp do_rainfall_intensity(rainfall_rate, rainfall_intensity, [threshold | _]) when rainfall_rate < threshold do
+  defp do_rainfall_intensity(rainfall_rate, rainfall_intensity, [threshold | _])
+       when rainfall_rate < threshold do
     rainfall_intensity
   end
 
@@ -202,10 +204,12 @@ defmodule Flipdot.Weather do
 
     case HTTPoison.get(url, [], params: params) do
       {:ok, %{status_code: 200, body: body}} ->
+        Logger.info("OpenWeatherMap API call succeeded")
         Jason.decode!(body)
 
       {:ok, %{status_code: status_code}} ->
-        raise("OpenWeatherMap API call failed (#{status_code})")
+        Logger.warn("OpenWeatherMap API call failed (#{status_code})")
+        nil
     end
   end
 end

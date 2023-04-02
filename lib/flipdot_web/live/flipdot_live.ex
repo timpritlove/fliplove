@@ -172,20 +172,25 @@ defmodule FlipdotWeb.FlipdotLive do
     new_mode = String.to_atom(params["value"])
 
     socket =
-      case(socket.assigns.mode != new_mode) do
-        false ->
-          socket
+      if socket.assigns.mode != new_mode do
+        case {socket.assigns.mode, new_mode} do
+          {_, :dashboard} ->
+            {:ok, pid} =
+              Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
 
-        true ->
-          case {socket.assigns.mode, new_mode} do
-            {:dashboard, _} -> Dashboard.stop_dashboard()
-            {_, :dashboard} -> Dashboard.start_dashboard()
-            _ -> true
-          end
+            Logger.info("Dashboard started (Supervisor: #{inspect(pid)})")
 
-          socket
-          |> assign(:prev_xy, nil)
-          |> assign(:mode, new_mode)
+          {:dashboard, _} ->
+            :ok = Supervisor.stop(:dashboard)
+            Logger.info("Dashboard stopped")
+
+          _ ->
+            true
+        end
+
+        socket
+        |> assign(:prev_xy, nil)
+        |> assign(:mode, new_mode)
       end
 
     {:noreply, socket}

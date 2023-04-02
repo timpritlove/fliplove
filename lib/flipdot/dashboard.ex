@@ -3,69 +3,65 @@ defmodule Flipdot.Dashboard do
   Compose a dashboard to show on flipboard
   """
   use GenServer
+  alias Phoenix.PubSub
   alias Flipdot.{Display, Weather}
   alias Flipdot.Font.{Renderer, Library}
   require Logger
   # import Flipdot.PrettyDump
 
-  defstruct font: nil, timer: nil, time: nil, weather: nil, bitmap: nil
+  defstruct font: nil, bitmap: nil
 
   @font "flipdot"
   @clock_symbol 0xF017
-  @wind_symbol 0xF72E
+  #  @wind_symbol 0xF72E
 
   def start_link(_state) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
-  @impl true
-  def init(state) do
-    font = Library.get_font_by_name(@font)
-
-    {:ok, %{state | font: font}}
-  end
-
-  def start_dashboard() do
-    GenServer.call(__MODULE__, :start_dashboard)
-  end
-
-  def stop_dashboard() do
-    GenServer.call(__MODULE__, :stop_dashboard)
-  end
-
   # server functions
 
   @impl true
-  def handle_call(:start_dashboard, _, state) do
-    {:ok, timer} = :timer.send_interval(250, self(), :update_dashboard)
+  def init(state) do
+    state = %{state | font: Library.get_font_by_name(@font)}
+    update_dashboard(state)
+
+    schedule_next_minute(:clock_timer)
+    PubSub.subscribe(Flipdot.PubSub, Weather.topic())
 
     Logger.info("Dashboard has been started.")
-    {:reply, :ok, %{state | timer: timer}}
+    {:ok, state}
   end
 
   @impl true
-  def handle_call(:stop_dashboard, _, state) do
+  def terminate(_reason, _state) do
     Logger.info("Shutting down Dashboard.")
-
-    state =
-      if state.timer do
-        {:ok, :cancel} = :timer.cancel(state.timer)
-        Logger.info("Timer canceled.")
-        %{state | timer: nil}
-      else
-        state
-      end
-
-    {:reply, :ok, state}
   end
 
   @impl true
-  def handle_info(:update_dashboard, state) do
-    state = update_dashboard(state)
+  def handle_info(:clock_timer, state) do
+    Logger.info("Clock timer fired")
+    update_dashboard(state)
+    schedule_next_minute(:clock_timer)
+
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:update_weather, _weather}, state) do
+    Logger.info("Dashboard received new weather data")
+    update_dashboard(state)
     {:noreply, state}
   end
 
   # helper functions
+
+  defp schedule_next_minute(message) do
+    now = System.system_time(:millisecond)
+    next_minute = div(now, 60_000) * 60_000 + 60_000
+    remaining_time = next_minute - now
+    :timer.send_after(remaining_time, __MODULE__, message)
+  end
 
   defp get_time_string do
     DateTime.now!("Europe/Berlin", Tz.TimeZoneDatabase)
@@ -74,7 +70,6 @@ defmodule Flipdot.Dashboard do
 
   defp update_dashboard(state) do
     time_string = get_time_string()
-    weather = Weather.get_weather()
 
     bitmap = Bitmap.new(Display.width(), Display.height())
 
@@ -97,10 +92,14 @@ defmodule Flipdot.Dashboard do
     {_wind_speed, wind_force} = Weather.get_wind()
 
     # bitmap = place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed, decimals: 1), :bottom, :left)
-    bitmap = place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
+    bitmap =
+      place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
 
     bitmap =
-      Bitmap.overlay(bitmap, Weather.bitmap_48(16) |> Bitmap.crop_relative(115, 16, rel_x: :center, rel_y: :middle))
+      Bitmap.overlay(
+        bitmap,
+        Weather.bitmap_48(16) |> Bitmap.crop_relative(115, 16, rel_x: :center, rel_y: :middle)
+      )
 
     # plot temperature hours
 
@@ -112,8 +111,6 @@ defmodule Flipdot.Dashboard do
     if bitmap != state.bitmap do
       Display.set(bitmap)
     end
-
-    %{state | time: time_string, weather: weather}
   end
 
   defp place_text(bitmap, font, text, align_vertically, align_horizontally) do

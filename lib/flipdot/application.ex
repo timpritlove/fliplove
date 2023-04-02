@@ -22,8 +22,7 @@ defmodule Flipdot.Application do
         {Flipdot.Display, Flipdot.Images.images()["space-invaders"]},
         Flipdot.Weather,
         Flipdot.DisplayPusher,
-        Flipdot.Font.Library,
-        Flipdot.Dashboard
+        Flipdot.Font.Library
       ] ++
         case System.get_env("TELEGRAM_BOT_SECRET") do
           nil -> []
