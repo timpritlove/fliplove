@@ -43,7 +43,7 @@ defmodule Flipdot.Fluepdot do
   @impl true
   def handle_info(:set_rendering_mode, state) do
     if state.host != "localhost" do
-      case HTTPoison.put("http://" <> state.host <> @rendering_mode_url, <<?1>>) do
+      case HTTPoison.put(Path.join(["http://", state.host, @rendering_mode_url]), <<?1>>) do
         {:ok, response} ->
           case response.status_code do
             200 -> true
