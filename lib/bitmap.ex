@@ -12,6 +12,12 @@ defmodule Bitmap do
 
   defstruct width: nil, height: nil, matrix: %{}
 
+  @doc """
+  Macro to define a monochrome bitmap inline as lines of text.
+  Default characters are space for 0 and 'X' for 1. This can
+  be overriden with the on: and off: parametes accordingly.
+  All lines must have the same length.
+  """
   defmacro defbitmap(lines) do
     quote do
       Bitmap.from_lines_of_text(unquote(lines), on: ?X, off: ?\s)
@@ -50,7 +56,8 @@ defmodule Bitmap do
   The matrix must be a map with coordinates as keys given as a tuple {x,y} and a value
   of 0 or 1.
   """
-  def new(width, height, matrix) when is_integer(width) and is_integer(height) and is_map(matrix) do
+  def new(width, height, matrix)
+      when is_integer(width) and is_integer(height) and is_map(matrix) do
     if valid_matrix?(matrix) do
       %Bitmap{
         width: width,
@@ -88,7 +95,7 @@ defmodule Bitmap do
   end
 
   @doc """
-  retrieves stored width of bitmap
+  Returns the configured width of bitmap.
   """
 
   def width(bitmap) do
@@ -96,7 +103,7 @@ defmodule Bitmap do
   end
 
   @doc """
-  retrieves stored height of bitmap
+  Returns the configured height of bitmap.
   """
 
   def height(bitmap) do
@@ -104,7 +111,7 @@ defmodule Bitmap do
   end
 
   @doc """
-  retrieves both width and height of bitmap in a tuple
+  Returns the configured width and height of bitmap as a tuple.
   """
   def dimensions(bitmap) do
     {bitmap.width, bitmap.height}
@@ -112,20 +119,35 @@ defmodule Bitmap do
 
   # individual pixel manipulation
 
+  @doc """
+  The current value of the pixel at given `coordinate`.
+  The coordinate must be passed as a tuple {x,y}.
+  """
   def get_pixel(bitmap, {x, y} = _coordinate) do
     Map.get(bitmap.matrix, {x, y}, 0)
   end
 
+  @doc """
+  Set the pixel at given coordinate to `value`.
+  The coordinate must be passed as a tuple {x,y}.
+  """
   def set_pixel(bitmap, {x, y} = _coordinate, value) do
     new(width(bitmap), height(bitmap), Map.put(bitmap.matrix, {x, y}, value))
   end
 
+  @doc """
+  Toggle the value of the pixel at given coordinate.
+  The coordinate must be passed as a tuple {x,y}.
+  """
   def toggle_pixel(bitmap, {x, y} = _coordinate) do
     set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
   end
 
   # streaming
 
+  @doc """
+  Create a stream with a given bitmap filter function on bitmap.
+  """
   def filter_stream(bitmap, filter) when is_function(filter, 1) do
     Stream.resource(
       fn -> bitmap end,
@@ -138,7 +160,8 @@ defmodule Bitmap do
   end
 
   @doc """
-  Determine the effective bounding box of the bitmap
+  Determine the effective bounding box of the bitmap.
+  Returns the bounding box as min/max coordinate in a tuple.
   """
 
   def bbox(bitmap) do
@@ -194,7 +217,7 @@ defmodule Bitmap do
   end
 
   @doc """
-  Invert the bitmap
+  Invert the bitmap.
   """
   def invert(bitmap) do
     {width, height} = dimensions(bitmap)
@@ -208,7 +231,7 @@ defmodule Bitmap do
   end
 
   @doc """
-  Flip the bitmap horizontally
+  Flip the bitmap horizontally.
   """
   def flip_horizontally(bitmap) do
     {width, height} = dimensions(bitmap)
@@ -222,7 +245,7 @@ defmodule Bitmap do
   end
 
   @doc """
-  Flip the bitmap vertically
+  Flip the bitmap vertically.
   """
 
   def flip_vertically(bitmap) do
@@ -237,7 +260,7 @@ defmodule Bitmap do
   end
 
   @doc """
-    fill image beginning at a certain coordinate.
+    Fill image beginning at a certain coordinate.
     stop when hitting a set pixel
   """
 
@@ -275,12 +298,14 @@ defmodule Bitmap do
     end
   end
 
-  # overlay one bitmap on another
-  #
-  # options:
-  #  opaque: should the painted bitmap replace background bits
-  #  bbox:   use bounding box info in bitmap to calculate target
-  #
+  @doc """
+  Overlay one bitmap on another
+
+  Options:
+   opaque: should the painted bitmap replace background bits
+   bbox:   use bounding box info in bitmap to calculate target
+  """
+
   # TODO
   # - support opaque: false option
   #
@@ -465,6 +490,10 @@ defmodule Bitmap do
   end
 
   # draw a line using bresenham algorithm
+
+  @doc """
+  Draw line from one coordinate to another.
+  """
 
   def line(bitmap, {x1, y1} = _from, {x2, y2} = _to) do
     delta_x = abs(x2 - x1)
@@ -704,7 +733,10 @@ defmodule Bitmap do
 
   def from_binary(data, width, height) do
     if byte_size(data) != div(width * height, 8),
-      do: raise("Packet size (#{byte_size(data)}) does not match dimensions (width: #{width}, height: #{height})")
+      do:
+        raise(
+          "Packet size (#{byte_size(data)}) does not match dimensions (width: #{width}, height: #{height})"
+        )
 
     pixels = for <<pixel::1 <- data>>, do: pixel
     columns = Enum.chunk_every(pixels, height)
