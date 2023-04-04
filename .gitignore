@@ -35,6 +35,7 @@ flipdot-*.tar
 npm-debug.log
 /assets/node_modules/
 
-data/keys/openweathermap.txt
+/data/keys/
 
+/.elixir_ls/
 .DS_Store
