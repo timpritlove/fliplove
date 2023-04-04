@@ -158,11 +158,9 @@ defmodule FlipdotWeb.FlipdotLive do
   def handle_event("upload", _params, socket) do
     [bitmap] =
       consume_uploaded_entries(socket, :frame, fn %{path: path} = _meta, _entry ->
-        # IO.inspect(path, label: "path")
         {:ok, Bitmap.from_file(path)}
       end)
 
-    IO.inspect(bitmap, label: "frame")
     Flipdot.Display.set(bitmap)
     {:noreply, socket}
   end
