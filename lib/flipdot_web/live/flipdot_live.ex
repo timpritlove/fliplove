@@ -156,13 +156,14 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_event("upload", _params, socket) do
-    bitmap =
+    [bitmap] =
       consume_uploaded_entries(socket, :frame, fn %{path: path} = _meta, _entry ->
-        IO.inspect(path, label: "path")
-        Bitmap.from_file(path)
+        # IO.inspect(path, label: "path")
+        {:ok, Bitmap.from_file(path)}
       end)
 
     IO.inspect(bitmap, label: "frame")
+    Flipdot.Display.set(bitmap)
     {:noreply, socket}
   end
 
@@ -360,7 +361,7 @@ defmodule FlipdotWeb.FlipdotLive do
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
     </div>
     <div>
-      <.link target="_blank" class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" href="/download">
+      <.link class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" href="/download">
         Download Display
       </.link>
     </div>
