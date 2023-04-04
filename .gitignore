@@ -38,4 +38,5 @@ npm-debug.log
 /data/keys/
 
 /.elixir_ls/
+/.vscode/
 .DS_Store
