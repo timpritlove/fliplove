@@ -1,5 +1,7 @@
-defmodule BLM.Parser do
+defmodule Blinkenlights.BLM do
   import NimbleParsec
+
+  defstruct [:width, :height, :header, :frames]
 
   @moduledoc """
   Parser for Blinkenlights Movie (BLM) files. These are typically delivered
@@ -126,11 +128,21 @@ defmodule BLM.Parser do
     |> wrap()
     |> map(:frames_map)
 
+  defp blm_map(blm) do
+    [blm: [width: width, height: height], header: header, frames: frames] = blm
+
+    frames = for {:frame, [ms: ms, matrix: matrix]} <- frames, do: {ms, matrix}
+
+    %__MODULE__{width: width, height: height, header: Enum.into(header, %{}), frames: frames}
+  end
+
   defcombinatorp(
     :blm,
     blm_magic
     |> concat(blm_header)
     |> concat(blm_frames)
+    |> wrap()
+    |> map(:blm_map)
   )
 
   defparsec(:parse_blm, parsec(:blm))
