@@ -67,66 +67,66 @@ defmodule Bitmap.Maze do
   # maze solver
 
   def solve_maze(bitmap, opts \\ []) do
+    opts = Keyword.validate!(opts, mode: :parallel)
+
     Stream.resource(
       fn -> {:dead_end, bitmap, opts} end,
-      fn acc ->
-        case acc do
-          {:close_doors, bitmap, dead_ends, opts} ->
-            case opts[:mode] do
-              :parallel ->
-                bitmap =
-                  for {_, {nx, ny}} <- dead_ends, reduce: bitmap do
-                    bitmap -> Bitmap.set_pixel(bitmap, {nx, ny}, 1)
-                  end
-
-                {[bitmap], {:dead_end, bitmap, opts}}
-
-              :one_by_one ->
-                {_, {nx, ny}} = hd(dead_ends)
-                bitmap = Bitmap.set_pixel(bitmap, {nx, ny}, 1)
-                {[bitmap], {:dead_end, bitmap, opts}}
-            end
-
-          {:dead_end, bitmap, opts} ->
-            {width, height} = Bitmap.dimensions(bitmap)
-
-            # find dead ends
-
-            dead_ends =
-              for x <- Range.new(1, width - 2, 2),
-                  y <- Range.new(1, height - 2, 2),
-                  Bitmap.get_pixel(bitmap, {x, y}) == 0,
-                  open_paths =
-                    (for {nx, ny} <- [{x, y + 1}, {x, y - 1}, {x - 1, y}, {x + 1, y}],
-                         Bitmap.get_pixel(bitmap, {nx, ny}) == 0 do
-                       {nx, ny}
-                     end),
-                  length(open_paths) == 1 do
-                {{x, y}, hd(open_paths)}
-              end
-
-            case dead_ends do
-              [] ->
-                {:halt, nil}
-
-              dead_ends ->
-                case opts[:mode] do
-                  :parallel ->
-                    bitmap =
-                      for {{x, y}, _} <- dead_ends, reduce: bitmap do
-                        bitmap -> Bitmap.set_pixel(bitmap, {x, y}, 1)
-                      end
-
-                    {[bitmap], {:close_doors, bitmap, dead_ends, opts}}
-
-                  :one_by_one ->
-                    dead_ends = Enum.shuffle(dead_ends)
-                    {{x, y}, _} = hd(dead_ends)
-                    bitmap = Bitmap.set_pixel(bitmap, {x, y}, 1)
-                    {[bitmap], {:close_doors, bitmap, dead_ends, opts}}
+      fn
+        {:close_doors, bitmap, dead_ends, opts} ->
+          case opts[:mode] do
+            :parallel ->
+              bitmap =
+                for {_, {nx, ny}} <- dead_ends, reduce: bitmap do
+                  bitmap -> Bitmap.set_pixel(bitmap, {nx, ny}, 1)
                 end
+
+              {[bitmap], {:dead_end, bitmap, opts}}
+
+            :one_by_one ->
+              {_, {nx, ny}} = hd(dead_ends)
+              bitmap = Bitmap.set_pixel(bitmap, {nx, ny}, 1)
+              {[bitmap], {:dead_end, bitmap, opts}}
+          end
+
+        {:dead_end, bitmap, opts} ->
+          {width, height} = Bitmap.dimensions(bitmap)
+
+          # find dead ends
+
+          dead_ends =
+            for x <- Range.new(1, width - 2, 2),
+                y <- Range.new(1, height - 2, 2),
+                Bitmap.get_pixel(bitmap, {x, y}) == 0,
+                open_paths =
+                  (for {nx, ny} <- [{x, y + 1}, {x, y - 1}, {x - 1, y}, {x + 1, y}],
+                       Bitmap.get_pixel(bitmap, {nx, ny}) == 0 do
+                     {nx, ny}
+                   end),
+                length(open_paths) == 1 do
+              {{x, y}, hd(open_paths)}
             end
-        end
+
+          case dead_ends do
+            [] ->
+              {:halt, nil}
+
+            dead_ends ->
+              case opts[:mode] do
+                :parallel ->
+                  bitmap =
+                    for {{x, y}, _} <- dead_ends, reduce: bitmap do
+                      bitmap -> Bitmap.set_pixel(bitmap, {x, y}, 1)
+                    end
+
+                  {[bitmap], {:close_doors, bitmap, dead_ends, opts}}
+
+                :one_by_one ->
+                  dead_ends = Enum.shuffle(dead_ends)
+                  {{x, y}, _} = hd(dead_ends)
+                  bitmap = Bitmap.set_pixel(bitmap, {x, y}, 1)
+                  {[bitmap], {:close_doors, bitmap, dead_ends, opts}}
+              end
+          end
       end,
       fn _ -> nil end
     )
