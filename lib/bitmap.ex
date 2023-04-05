@@ -165,7 +165,7 @@ defmodule Bitmap do
   """
 
   def bbox(bitmap) do
-    pixels = Map.filter(bitmap.matrix, fn {_, value} -> value == 1 end) |> Map.keys()
+    pixels = Map.filter(bitmap.matrix, fn {_, value} -> value != 0 end) |> Map.keys()
 
     {min_x, min_y} =
       Enum.reduce(pixels, fn {x, y}, {min_x, min_y} ->
@@ -659,9 +659,9 @@ defmodule Bitmap do
       for y <- (height - 1)..0 do
         for x <- 0..(width - 1),
             pixel = get_pixel(bitmap, {x, y}),
-            pixel == 1 do
+            pixel > 0 do
           """
-          	<use xlink:href="##{uuid}" x="#{x}" y="#{height - 1 - y}"/>
+          	<use xlink:href="##{uuid}" x="#{x}" y="#{height - 1 - y}" fill-opacity="#{pixel}" />
           """
         end
       end
