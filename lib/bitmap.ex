@@ -10,7 +10,7 @@ defmodule Bitmap do
   as keys. Only 0 and 1 are allowed as values (no greyscaling or color).
   """
 
-  defstruct width: nil, height: nil, matrix: %{}
+  defstruct width: nil, height: nil, depth: 1, matrix: %{}
 
   @doc """
   Macro to define a monochrome bitmap inline as lines of text.
