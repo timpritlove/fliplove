@@ -19,6 +19,18 @@ defmodule BitmapTest do
     assert Bitmap.new(2, 2) |> inspect == "+--+\n|  |\n|  |\n+--+\n"
   end
 
+  test "set pixel value" do
+    assert Bitmap.new(1, 1)
+           |> Bitmap.set_pixel({0, 0}, 1)
+           |> Bitmap.get_pixel({0, 0}) == 1
+  end
+
+  test "toggle pixel value" do
+    assert Bitmap.new(1, 1)
+           |> Bitmap.toggle_pixel({0, 0})
+           |> Bitmap.get_pixel({0, 0}) == 1
+  end
+
   test "create bitmap from lines of text" do
     assert invader() |> inspect() == """
            +-----------+
@@ -134,7 +146,7 @@ defmodule BitmapTest do
   end
 
   test "game of life" do
-    assert invader() |> Bitmap.game_of_life() |> inspect() == """
+    assert invader() |> Bitmap.GameOfLife.game_of_life() |> inspect() == """
            +-----------+
            |           |
            |     X     |
