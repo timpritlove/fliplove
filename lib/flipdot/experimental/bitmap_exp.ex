@@ -17,7 +17,11 @@ defmodule BitmapExp do
         {{x, y}, Map.get(bitmap.matrix, {min_x + x, min_y + y}, 0)}
       end
 
-    Bitmap.new(range_x + 1, range_y + 1, normalised_matrix)
+    Bitmap.new(
+      width: range_x + 1,
+      height: range_y + 1,
+      matrix: normalised_matrix
+    )
   end
 
   def overlay_alt(background, overlay, options \\ []) do
@@ -76,7 +80,11 @@ defmodule BitmapExp do
         {Bitmap.width(background), Bitmap.height(background)}
       end
 
-    Bitmap.new(new_width, new_height, Map.merge(background.matrix, overlay_matrix))
+    Bitmap.new(
+      width: new_width,
+      height: new_height,
+      matrix: Map.merge(background.matrix, overlay_matrix)
+    )
   end
 
   def fill_stream(bitmap, {x, y}) do

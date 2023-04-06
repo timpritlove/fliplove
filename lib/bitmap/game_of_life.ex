@@ -38,7 +38,7 @@ defmodule Bitmap.GameOfLife do
         {{x, y}, new_cell}
       end
 
-    Bitmap.new(width, height, matrix)
+    Bitmap.new(width: width, height: height, matrix: matrix)
   end
 
   def game_of_life_stream(bitmap) do

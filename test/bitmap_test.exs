@@ -16,7 +16,25 @@ defmodule BitmapTest do
   end
 
   test "create simple bitmap" do
-    assert Bitmap.new(2, 2) |> inspect == "+--+\n|  |\n|  |\n+--+\n"
+    assert Bitmap.new(width: 2, height: 2) |> inspect == "+--+\n|  |\n|  |\n+--+\n"
+  end
+
+  test "set pixel value" do
+    assert Bitmap.new(width: 1, height: 1, depth: 1)
+           |> Bitmap.set_pixel({0, 0}, 1)
+           |> Bitmap.get_pixel({0, 0}) == 1
+  end
+
+  test "toggle pixel value" do
+    assert Bitmap.new(width: 1, height: 1, depth: 1)
+           |> Bitmap.toggle_pixel({0, 0})
+           |> Bitmap.get_pixel({0, 0}) == 1
+  end
+
+  test "toggle pixel value with depth = 8" do
+    assert Bitmap.new(width: 1, height: 1, depth: 8)
+           |> Bitmap.toggle_pixel({0, 0})
+           |> Bitmap.get_pixel({0, 0}) == 255
   end
 
   test "create bitmap from lines of text" do
@@ -40,7 +58,8 @@ defmodule BitmapTest do
   end
 
   test "bitmap to binary" do
-    assert invader() |> Bitmap.to_binary() == <<112, 24, 125, 182, 188, 60, 188, 182, 125, 24, 112>>
+    assert invader() |> Bitmap.to_binary() ==
+             <<112, 24, 125, 182, 188, 60, 188, 182, 125, 24, 112>>
   end
 
   test "bitmap dimensions" do
@@ -134,7 +153,7 @@ defmodule BitmapTest do
   end
 
   test "game of life" do
-    assert invader() |> Bitmap.game_of_life() |> inspect() == """
+    assert invader() |> Bitmap.GameOfLife.game_of_life() |> inspect() == """
            +-----------+
            |           |
            |     X     |
@@ -160,18 +179,19 @@ defmodule BitmapTest do
   end
 
   test "set pixel on bitmap" do
-    assert invader() |> Bitmap.set_pixel({3, 4}, 1) |> Bitmap.set_pixel({7, 4}, 1) |> inspect() == """
-           +-----------+
-           |  X     X  |
-           |   X   X   |
-           |  XXXXXXX  |
-           | XXXXXXXXX |
-           |XXXXXXXXXXX|
-           |X XXXXXXX X|
-           |X X     X X|
-           |   XX XX   |
-           +-----------+
-           """
+    assert invader() |> Bitmap.set_pixel({3, 4}, 1) |> Bitmap.set_pixel({7, 4}, 1) |> inspect() ==
+             """
+             +-----------+
+             |  X     X  |
+             |   X   X   |
+             |  XXXXXXX  |
+             | XXXXXXXXX |
+             |XXXXXXXXXXX|
+             |X XXXXXXX X|
+             |X X     X X|
+             |   XX XX   |
+             +-----------+
+             """
   end
 
   test "crop bitmap" do

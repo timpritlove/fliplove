@@ -12,6 +12,10 @@ defmodule Bitmap do
 
   defstruct width: nil, height: nil, depth: 1, matrix: %{}
 
+  @ascii_table ' .\'`^",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$'
+               |> List.to_tuple()
+  @ascii_table_size @ascii_table |> tuple_size()
+
   @doc """
   Macro to define a monochrome bitmap inline as lines of text.
   Default characters are space for 0 and 'X' for 1. This can
@@ -25,6 +29,10 @@ defmodule Bitmap do
   end
 
   defimpl Inspect, for: Bitmap do
+    @ascii_table ' .\'`^",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$'
+                 |> List.to_tuple()
+    @ascii_table_size @ascii_table |> tuple_size()
+
     def inspect(bitmap, _opts) do
       {width, height} = Bitmap.dimensions(bitmap)
 
@@ -35,9 +43,15 @@ defmodule Bitmap do
         for y <- (height - 1)..0 do
           line =
             for x <- 0..(width - 1) do
-              case Map.get(bitmap.matrix, {x, y}, 0) do
-                0 -> ?\s
-                _ -> ?X
+              case {bitmap.depth, Map.get(bitmap.matrix, {x, y}, 0)} do
+                {1, 0} ->
+                  ?\s
+
+                {1, 1} ->
+                  ?X
+
+                {depth, value} ->
+                  elem(@ascii_table, trunc(@ascii_table_size / :math.pow(2, depth) * value))
               end
             end
             |> List.to_string()
@@ -56,42 +70,45 @@ defmodule Bitmap do
   The matrix must be a map with coordinates as keys given as a tuple {x,y} and a value
   of 0 or 1.
   """
-  def new(width, height, matrix)
-      when is_integer(width) and is_integer(height) and is_map(matrix) do
-    if valid_matrix?(matrix) do
-      %Bitmap{
-        width: width,
-        height: height,
-        matrix: matrix
-      }
-    else
-      raise "Invalid matrix"
-    end
+
+  def new(width, height), do: new(width: width, height: height)
+
+  def new(opts \\ []) do
+    opts = Keyword.validate!(opts, [:width, :height, depth: 1, matrix: %{}])
+
+    unless opts[:width], do: raise("Missing width")
+    unless opts[:height], do: raise("Missing height")
+
+    width = opts[:width]
+    height = opts[:height]
+    depth = opts[:depth]
+    matrix = opts[:matrix]
+
+    if depth < 0 and depth > 8, do: raise("Invalid depth #{depth}")
+    if not valid_matrix?(matrix, depth), do: raise("Invalid matrix")
+
+    %Bitmap{
+      width: width,
+      height: height,
+      depth: depth,
+      matrix: matrix
+    }
   end
 
-  defp valid_matrix?(matrix) do
+  defp valid_matrix?(%{}, _), do: true
+
+  defp valid_matrix?(matrix, depth) do
     matrix
     |> Map.keys()
     |> Enum.all?(fn key ->
       case key do
         {x, y} when is_integer(x) and is_integer(y) and x >= 0 and y >= 0 ->
-          case Map.get(matrix, key) do
-            0 -> true
-            1 -> true
-            _ -> false
-          end
+          Map.get(matrix, key) < trunc(:math.pow(2, depth))
 
         _ ->
           false
       end
     end)
-  end
-
-  @doc """
-  Create a new empty bitmap with given width and height
-  """
-  def new(width, height) when is_integer(width) and is_integer(height) do
-    new(width, height, %{})
   end
 
   @doc """
@@ -117,6 +134,14 @@ defmodule Bitmap do
     {bitmap.width, bitmap.height}
   end
 
+  @doc """
+  Returns the configured depth of bitmap.
+  """
+
+  def depth(bitmap) do
+    bitmap.depth
+  end
+
   # individual pixel manipulation
 
   @doc """
@@ -132,7 +157,11 @@ defmodule Bitmap do
   The coordinate must be passed as a tuple {x,y}.
   """
   def set_pixel(bitmap, {x, y} = _coordinate, value) do
-    new(width(bitmap), height(bitmap), Map.put(bitmap.matrix, {x, y}, value))
+    new(
+      width: width(bitmap),
+      height: height(bitmap),
+      matrix: Map.put(bitmap.matrix, {x, y}, value)
+    )
   end
 
   @doc """
@@ -140,7 +169,7 @@ defmodule Bitmap do
   The coordinate must be passed as a tuple {x,y}.
   """
   def toggle_pixel(bitmap, {x, y} = _coordinate) do
-    set_pixel(bitmap, {x, y}, 1 - get_pixel(bitmap, {x, y}))
+    set_pixel(bitmap, {x, y}, trunc(:math.pow(2, bitmap.depth)) - 1 - get_pixel(bitmap, {x, y}))
   end
 
   # streaming
@@ -191,7 +220,11 @@ defmodule Bitmap do
         {{x - min_x, y - min_y}, get_pixel(bitmap, {x, y})}
       end
 
-    new(max_x - min_x + 1, max_y - min_y + 1, matrix)
+    new(
+      width: max_x - min_x + 1,
+      height: max_y - min_y + 1,
+      matrix: matrix
+    )
   end
 
   @doc """
@@ -213,7 +246,7 @@ defmodule Bitmap do
         {{pos_x, pos_y}, get_pixel(bitmap, {x, y})}
       end
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   @doc """
@@ -227,7 +260,7 @@ defmodule Bitmap do
         {{x, y}, 1 - get_pixel(bitmap, {x, y})}
       end
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   @doc """
@@ -241,7 +274,7 @@ defmodule Bitmap do
         {{x, y}, get_pixel(bitmap, {width - 1 - x, y})}
       end
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   @doc """
@@ -256,7 +289,7 @@ defmodule Bitmap do
         {{x, y}, get_pixel(bitmap, {x, height - 1 - y})}
       end
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   @doc """
@@ -353,7 +386,11 @@ defmodule Bitmap do
         end
       end
 
-    new(width, height, Map.merge(bitmap.matrix, overlay_matrix))
+    new(
+      width: width,
+      height: height,
+      matrix: Map.merge(bitmap.matrix, overlay_matrix)
+    )
   end
 
   @doc """
@@ -376,7 +413,11 @@ defmodule Bitmap do
         {{x, y}, get_pixel(bitmap, {pos_x, pos_y})}
       end
 
-    new(crop_width, crop_height, cropped_matrix)
+    new(
+      width: crop_width,
+      height: crop_height,
+      matrix: cropped_matrix
+    )
   end
 
   @doc """
@@ -432,7 +473,11 @@ defmodule Bitmap do
         {{x * factor + dx, y * factor + dy}, value}
       end
 
-    new(width * factor, height * factor, matrix)
+    new(
+      width: width * factor,
+      height: height * factor,
+      matrix: matrix
+    )
   end
 
   @doc """
@@ -457,7 +502,7 @@ defmodule Bitmap do
          )}
       end
 
-    new(height, width, matrix)
+    new(width: height, height: width, matrix: matrix)
   end
 
   @doc """
@@ -471,7 +516,7 @@ defmodule Bitmap do
           into: %{},
           do: {{x, y}, Enum.random(0..1)}
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   @doc """
@@ -486,7 +531,7 @@ defmodule Bitmap do
     v = for(y <- 0..(height - 1), x <- [0, width - 1], do: {x, y})
     matrix = for {x, y} <- Enum.uniq(h ++ v), into: %{}, do: {{x, y}, 1}
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   # draw a line using bresenham algorithm
@@ -581,7 +626,7 @@ defmodule Bitmap do
         {{x, height - dy}, value}
       end
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   def to_file(bitmap, file, options \\ []) do
@@ -748,7 +793,7 @@ defmodule Bitmap do
         {{x, y}, pixel}
       end
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   @doc """
@@ -765,7 +810,7 @@ defmodule Bitmap do
         {{x, y}, value}
       end
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 
   @doc """
@@ -782,6 +827,6 @@ defmodule Bitmap do
         {{x, y}, value}
       end
 
-    new(width, height, matrix)
+    new(width: width, height: height, matrix: matrix)
   end
 end
