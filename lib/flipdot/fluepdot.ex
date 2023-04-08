@@ -37,6 +37,7 @@ defmodule Flipdot.Fluepdot do
     {:ok, timer} = :timer.send_interval(10_000, self(), :set_rendering_mode)
 
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
+    Logger.info("Fluepdot server started.")
     {:ok, %{state | socket: socket, addresses: v4_addresses, timer: timer}}
   end
 
@@ -51,7 +52,7 @@ defmodule Flipdot.Fluepdot do
           end
 
         {:error, reason} ->
-          Logger.warning("Could not set rendering mode. Reason: #{reason}")
+          Logger.warning("Could not set rendering mode. Reason: #{inspect(reason)}")
       end
     end
 
