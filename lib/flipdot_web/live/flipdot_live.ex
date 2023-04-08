@@ -191,6 +191,8 @@ defmodule FlipdotWeb.FlipdotLive do
         socket
         |> assign(:prev_xy, nil)
         |> assign(:mode, new_mode)
+      else
+        socket
       end
 
     {:noreply, socket}
