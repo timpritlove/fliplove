@@ -109,12 +109,12 @@ defmodule Flipdot.Fluepdot do
         cmd = "\nframebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64()) <> "\n"
 
         IO.binwrite(state.handle, cmd)
-        Logger.debug(cmd)
 
-        Logger.debug("Framebuffer updated (mode: usb, handle: #{inspect(state.handle)})")
+      # Logger.debug("Framebuffer updated (mode: usb, handle: #{inspect(state.handle)})")
 
       :dummy ->
-        Logger.debug("Framebuffer updated (cmd: >dummy)")
+        nil
+        # Logger.debug("Framebuffer updated (cmd: >dummy)")
     end
 
     {:noreply, state}
