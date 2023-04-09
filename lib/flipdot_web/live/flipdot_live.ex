@@ -48,7 +48,7 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
-  def handle_info({:display_update, bitmap}, socket) do
+  def handle_info({:display_updated, bitmap}, socket) do
     {:noreply,
      socket
      |> assign(:bitmap, bitmap)}
@@ -176,7 +176,8 @@ defmodule FlipdotWeb.FlipdotLive do
       if socket.assigns.mode != new_mode do
         case {socket.assigns.mode, new_mode} do
           {_, :dashboard} ->
-            {:ok, pid} = Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
+            {:ok, pid} =
+              Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
 
             Logger.debug("Dashboard started (Supervisor: #{inspect(pid)})")
 
