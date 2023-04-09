@@ -37,7 +37,7 @@ defmodule Flipdot.Fluepdot do
     {:ok, timer} = :timer.send_interval(10_000, self(), :set_rendering_mode)
 
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
-    Logger.info("Fluepdot server started.")
+    Logger.info("Fluepdot server started (target: #{state.host}).")
     {:ok, %{state | socket: socket, addresses: v4_addresses, timer: timer}}
   end
 
