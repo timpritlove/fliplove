@@ -33,14 +33,16 @@ defmodule Flipdot.Fluepdot do
     state =
       cond do
         device = System.get_env(@device_env) ->
-          {_result, 0} =
-            System.cmd(
-              Path.join(["sh ", Flipdot.priv_dir(), "scripts/tty_settings.sh"]),
-              device,
-              @device_bitrate
-            )
+          case System.cmd("sh", [
+                 Path.join(Flipdot.priv_dir(), "scripts/tty_settings.sh"),
+                 device,
+                 Integer.to_string(@device_bitrate)
+               ]) do
+            {_result, 0} -> Logger.info("TTY settings for #{device} have been set")
+            {result, status} -> Logger.warn("Can't set TTY settings: #{result} (#{status})")
+          end
 
-          {:ok, handle} = File.open!(device, [:write])
+          {:ok, handle} = File.open(device, [:read, :write, :sync])
 
           %{state | mode: :usb, dev: device, handle: handle}
 
@@ -67,7 +69,7 @@ defmodule Flipdot.Fluepdot do
           }
 
         true ->
-          %{state | mode: :dummy}
+          %{state | mode: :dsummy}
       end
 
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
@@ -108,15 +110,24 @@ defmodule Flipdot.Fluepdot do
         )
 
       :usb ->
-        File.write!(
-          state.dev,
-          "framebuffer64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64()) <> "\n"
-        )
+        cmd = "\nframebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64()) <> "\n"
+
+        IO.binwrite(state.handle, cmd)
+        Logger.debug(cmd)
+
+        Logger.debug("Framebuffer updated (mode: usb, handle: #{inspect(state.handle)})")
 
       :dummy ->
-        Logger.debug("Framebuffer updated (mode: dummy)")
+        Logger.debug("Framebuffer updated (cmd: >dummy)")
     end
 
     {:noreply, state}
+  end
+
+  def handle_info(udp, state) do
+    IO.inspect(udp, label: "udp")
+    Logger.debug("Received confirmation UDP packet")
+    {:noreply, state}
+
   end
 end
