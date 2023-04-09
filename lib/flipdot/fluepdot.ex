@@ -33,16 +33,12 @@ defmodule Flipdot.Fluepdot do
     state =
       cond do
         device = System.get_env(@device_env) ->
-          case System.cmd("sh", [
-                 Path.join(Flipdot.priv_dir(), "scripts/tty_settings.sh"),
-                 device,
-                 Integer.to_string(@device_bitrate)
-               ]) do
+          case System.cmd("stty", ["-F", device, Integer.to_string(@device_bitrate)]) do
             {_result, 0} -> Logger.info("TTY settings for #{device} have been set")
             {result, status} -> Logger.warn("Can't set TTY settings: #{result} (#{status})")
           end
 
-          {:ok, handle} = File.open(device, [:read, :write, :sync])
+          {:ok, handle} = File.open(device, [:read, :write, :raw])
 
           %{state | mode: :usb, dev: device, handle: handle}
 
@@ -128,6 +124,5 @@ defmodule Flipdot.Fluepdot do
     IO.inspect(udp, label: "udp")
     Logger.debug("Received confirmation UDP packet")
     {:noreply, state}
-
   end
 end
