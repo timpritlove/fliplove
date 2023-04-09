@@ -49,6 +49,8 @@ defmodule Flipdot.Weather do
     if state.timer do
       {:ok, :cancel} = :timer.cancel(state.timer)
     end
+
+    Logger.info("Terminating weather service")
   end
 
   # client functions
