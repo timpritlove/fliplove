@@ -176,8 +176,7 @@ defmodule FlipdotWeb.FlipdotLive do
       if socket.assigns.mode != new_mode do
         case {socket.assigns.mode, new_mode} do
           {_, :dashboard} ->
-            {:ok, pid} =
-              Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
+            {:ok, pid} = Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
 
             Logger.debug("Dashboard started (Supervisor: #{inspect(pid)})")
 
@@ -233,8 +232,6 @@ defmodule FlipdotWeb.FlipdotLive do
         _ ->
           nil
       end
-
-    IO.inspect(prev_xy)
 
     socket =
       socket
@@ -403,11 +400,12 @@ defmodule FlipdotWeb.FlipdotLive do
 
   def display(assigns) do
     ~H"""
-    <div class="p-4 bg-gray-700 mt-0 ml-0">
+    <div id="display" class="p-4 bg-gray-700 mt-0 ml-0">
       <%= for y <- (@height - 1)..0 do %>
-        <div class="flex">
+        <div id={"row" <> y} class="flex">
           <%= for x <- 0..(@width - 1) do %>
             <div
+              id={"cell" <> x <> "," <> y}
               phx-click="pixel"
               phx-value-x={x}
               phx-value-y={y}
