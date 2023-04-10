@@ -401,28 +401,25 @@ defmodule FlipdotWeb.FlipdotLive do
   def display(assigns) do
     ~H"""
     <div id="display" class="p-4 bg-gray-700 mt-0 ml-0">
-      <%= for y <- (@height - 1)..0 do %>
-        <div id={"row" <> y} class="flex">
-          <%= for x <- 0..(@width - 1) do %>
-            <div
-              id={"cell" <> x <> "," <> y}
-              phx-click="pixel"
-              phx-value-x={x}
-              phx-value-y={y}
-              class={
-                ["shrink-0", "w-[8px]", "h-[8px]", "flex", "items-center", "justify-around"] ++
-                  [
-                    if(Map.get(@bitmap.matrix, {x, y}) == 1,
-                      do: "bg-[url('/images/flipdot/flipdot-pixel-on-8x8.png')]",
-                      else: "bg-[url('/images/flipdot/flipdot-pixel-off-8x8.png')]"
-                    )
-                  ]
-              }
-            >
-            </div>
-          <% end %>
+      <div :for={y <- (@height - 1)..0} id={"row-#{y}"} class="flex">
+        <div
+          :for={x <- 0..(@width - 1)}
+          id={"cell-#{x},#{y}"}
+          phx-click="pixel"
+          phx-value-x={x}
+          phx-value-y={y}
+          class={
+            ["shrink-0", "w-[8px]", "h-[8px]", "flex", "items-center", "justify-around"] ++
+              [
+                if(Map.get(@bitmap.matrix, {x, y}) == 1,
+                  do: "bg-[url('/images/flipdot/flipdot-pixel-on-8x8.png')]",
+                  else: "bg-[url('/images/flipdot/flipdot-pixel-off-8x8.png')]"
+                )
+              ]
+          }
+        >
         </div>
-      <% end %>
+      </div>
     </div>
     """
   end
