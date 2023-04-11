@@ -310,8 +310,8 @@ defmodule Flipdot.Font.Fonts.Flipdot do
         encoding: ?6,
         bitmap:
           defbitmap([
-            "  XXX",
-            " X   ",
+            " XXX ",
+            "X   X",
             "X    ",
             "XXXX ",
             "X   X",
@@ -354,8 +354,8 @@ defmodule Flipdot.Font.Fonts.Flipdot do
             "X   X",
             " XXXX",
             "    X",
-            "   X ",
-            "XXX  "
+            "X   X",
+            " XXX "
           ])
       },
       ?: => %{
