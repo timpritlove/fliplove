@@ -17,15 +17,19 @@ defmodule Flipdot.Fluepdot.USB do
 
   @impl true
   def init(state) do
-    device = System.get_env(@device_env)
+    case System.get_env(@device_env) do
+      nil ->
+        {:stop, "#{@device_env} environment variable not set"}
 
-    # replace this with connection monitor
-    case System.cmd("stty", ["-F", device, Integer.to_string(@device_bitrate)]) do
-      {_result, 0} -> Logger.info("TTY settings for #{device} have been set")
-      {result, status} -> Logger.warn("Can't set TTY settings: #{result} (#{status})")
+      device ->
+        # replace this with connection monitor
+        case System.cmd("stty", ["-F", device, Integer.to_string(@device_bitrate)]) do
+          {_result, 0} -> Logger.info("TTY settings for #{device} have been set")
+          {result, status} -> Logger.warn("Can't set TTY settings: #{result} (#{status})")
+        end
+
+        {:ok, %{state | counter: 0, device: device}}
     end
-
-    {:ok, %{state | counter: 0, device: device}}
   end
 
   @impl true
