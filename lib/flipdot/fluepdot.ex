@@ -29,8 +29,8 @@ defmodule Flipdot.Fluepdot do
         _ -> :dummy
       end
 
-    {:ok, driver_supervisor} = DynamicSupervisor.start_link(strategy: :one_for_one, name: nil)
-    {:ok, driver} = DynamicSupervisor.start_child(driver_supervisor, {@driver[mode], []})
+    {:ok, _} = DynamicSupervisor.start_link(strategy: :one_for_one, name: Flipdot.Fluepdot.DriverSupervisor)
+    {:ok, driver} = DynamicSupervisor.start_child(Flipdot.Fluepdot.DriverSupervisor, {@driver[mode], []})
 
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
     Logger.info("Fluepdot server started (mode: #{inspect(mode)}).")
