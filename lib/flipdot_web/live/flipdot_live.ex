@@ -3,7 +3,6 @@ defmodule FlipdotWeb.FlipdotLive do
   require Logger
 
   alias Flipdot.Display
-  alias Flipdot.Dashboard
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
   alias Bitmap.Maze
@@ -17,6 +16,7 @@ defmodule FlipdotWeb.FlipdotLive do
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Display.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Library.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.TelegramBot.topic())
+      Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.Composer.topic())
     end
 
     socket =
@@ -24,6 +24,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(page_title: "Flipdot Display")
       |> assign(:bitmap, Display.get())
       |> assign(:clock, clock())
+      |> assign(:composer, Flipdot.Composer.running_composer())
       |> assign(:text, "")
       |> assign(:font_name, nil)
       |> assign(:mode, :pencil)
@@ -52,6 +53,12 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply,
      socket
      |> assign(:bitmap, bitmap)}
+  end
+
+  def handle_info({:running_composer, composer}, socket) do
+    {:noreply,
+     socket
+     |> assign(:composer, composer)}
   end
 
   def handle_info(:font_library_update, socket) do
@@ -174,20 +181,6 @@ defmodule FlipdotWeb.FlipdotLive do
 
     socket =
       if socket.assigns.mode != new_mode do
-        case {socket.assigns.mode, new_mode} do
-          {_, :dashboard} ->
-            {:ok, pid} = Supervisor.start_link([Dashboard], strategy: :one_for_one, name: :dashboard)
-
-            Logger.debug("Dashboard started (Supervisor: #{inspect(pid)})")
-
-          {:dashboard, _} ->
-            :ok = Supervisor.stop(:dashboard)
-            Logger.debug("Dashboard stopped")
-
-          _ ->
-            true
-        end
-
         socket
         |> assign(:prev_xy, nil)
         |> assign(:mode, new_mode)
@@ -195,6 +188,19 @@ defmodule FlipdotWeb.FlipdotLive do
         socket
       end
 
+    {:noreply, socket}
+  end
+
+  def handle_event("composer", params, socket) do
+    composer = String.to_atom(params["value"])
+
+    if composer == Flipdot.Composer.running_composer() do
+      Flipdot.Composer.stop_composer()
+    else
+      Flipdot.Composer.start_composer(composer)
+    end
+
+    socket = socket |> assign(:composer, Flipdot.Composer.running_composer())
     {:noreply, socket}
   end
 
@@ -329,7 +335,6 @@ defmodule FlipdotWeb.FlipdotLive do
       <.tool mode={@mode} tooltip="Fill Tool" value="fill" self={:fill} icon="fill" />
       <.tool mode={@mode} tooltip="Line Tool" value="line" self={:line} icon="draw-polygon" />
       <.tool mode={@mode} tooltip="Frame Tool" value="frame" self={:frame} icon="vector-square" />
-      <.tool mode={@mode} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
 
       <span class="ml-4" />
       <.filter target="translate-up" tooltip="Translate UP" icon="arrow-up" />
@@ -345,6 +350,11 @@ defmodule FlipdotWeb.FlipdotLive do
     </div>
 
     <div class="mt-4">
+      <.composer composer={@composer} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
+      <.composer composer={@composer} tooltip="Slideshow" value="slideshow" self={:slideshow} icon="images" />
+      <.composer composer={@composer} tooltip="Maze Solver" value="maze_solver" self={:maze_solver} icon="hat-wizard" />
+      <span class="ml-4" />
+
       <.effect target="random">Noise</.effect>
       <.effect target="gradient-h">Gradient H</.effect>
       <.effect target="gradient-v">Gradient V</.effect>
@@ -433,6 +443,21 @@ defmodule FlipdotWeb.FlipdotLive do
       value={@value}
     >
       <div class={if @mode == @self, do: "fill-yellow-300"}>
+        <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-8 w-8" />
+      </div>
+    </button>
+    """
+  end
+
+  def composer(assigns) do
+    ~H"""
+    <button
+      title={@tooltip}
+      class="fill-white bg-indigo-600 text-l px-4 py-4 rounded hover:bg-indigo-900"
+      phx-click="composer"
+      value={@value}
+    >
+      <div class={if @composer == @self, do: "fill-yellow-300"}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-8 w-8" />
       </div>
     </button>

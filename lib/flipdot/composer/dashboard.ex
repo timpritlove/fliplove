@@ -1,4 +1,4 @@
-defmodule Flipdot.Dashboard do
+defmodule Flipdot.Composer.Dashboard do
   @moduledoc """
   Compose a dashboard to show on flipboard
   """
@@ -11,11 +11,13 @@ defmodule Flipdot.Dashboard do
 
   defstruct font: nil, bitmap: nil
 
+  @registry Flipdot.Composer.Registry
+
   @font "flipdot"
   @clock_symbol 0xF017
   #  @wind_symbol 0xF72E
 
-  def start_link(_state) do
+  def start_link(_opts) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
@@ -23,6 +25,8 @@ defmodule Flipdot.Dashboard do
 
   @impl true
   def init(state) do
+    Registry.register(@registry, :running_composer, :dashboard)
+
     state = %{state | font: Library.get_font_by_name(@font)}
     update_dashboard(state)
 
