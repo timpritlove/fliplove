@@ -3,7 +3,6 @@ defmodule Flipdot.Composer.MazeSolver do
   Show and solve a maze on the flipboard
   """
   use GenServer
-  alias ElixirLS.LanguageServer.Experimental.Protocol.Types.CodeAction.Disabled
   alias Flipdot.Display
   require Logger
 
