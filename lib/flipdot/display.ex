@@ -30,7 +30,7 @@ defmodule Flipdot.Display do
 
   def set(bitmap) do
     old_bitmap = get()
-    new_bitmap = Bitmap.crop_relative(bitmap, 115, 16, rel_x: :center, rel_y: :middle)
+    new_bitmap = Bitmap.crop_relative(bitmap, width(), height(), rel_x: :center, rel_y: :middle)
 
     if new_bitmap != old_bitmap do
       Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:display_updated, new_bitmap})

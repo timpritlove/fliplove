@@ -3,6 +3,7 @@ defmodule Flipdot.Composer.MazeSolver do
   Show and solve a maze on the flipboard
   """
   use GenServer
+  alias ElixirLS.LanguageServer.Experimental.Protocol.Types.CodeAction.Disabled
   alias Flipdot.Display
   require Logger
 
@@ -20,7 +21,7 @@ defmodule Flipdot.Composer.MazeSolver do
   def init(state) do
     Registry.register(@registry, :running_composer, :maze_solver)
 
-    maze = Bitmap.Maze.generate_maze(115, 15)
+    maze = Bitmap.Maze.generate_maze(Display.width(), Display.width() - 1)
     Display.set(maze)
 
     maze_stream = Bitmap.Maze.solve_maze(maze, mode: :parallel)
@@ -45,7 +46,7 @@ defmodule Flipdot.Composer.MazeSolver do
           Stream.drop(state.maze_stream, 1)
 
         [] ->
-          maze = Bitmap.Maze.generate_maze(115, 15)
+          maze = Bitmap.Maze.generate_maze(Display.width(), Display.height())
           Display.set(maze)
           Bitmap.Maze.solve_maze(maze, mode: :parallel)
           Process.send_after(self(), :next_frame, 5_000)

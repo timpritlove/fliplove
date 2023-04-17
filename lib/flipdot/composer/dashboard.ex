@@ -101,7 +101,8 @@ defmodule Flipdot.Composer.Dashboard do
     bitmap =
       Bitmap.overlay(
         bitmap,
-        Weather.bitmap_48(16) |> Bitmap.crop_relative(115, 16, rel_x: :center, rel_y: :middle)
+        Weather.bitmap_48(Display.height())
+        |> Bitmap.crop_relative(Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
       )
 
     # plot temperature hours

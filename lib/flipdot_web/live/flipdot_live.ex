@@ -113,7 +113,7 @@ defmodule FlipdotWeb.FlipdotLive do
   # mode selector
 
   def handle_event("random", _params, socket) do
-    Bitmap.random(115, 16) |> Display.set()
+    Bitmap.random(Display.width(), Display.height()) |> Display.set()
 
     {:noreply, socket}
   end
@@ -212,7 +212,7 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   def handle_event("erase", _params, socket) do
-    Bitmap.new(115, 16) |> Display.set()
+    Bitmap.new(Display.width(), Display.height()) |> Display.set()
 
     {:noreply, socket}
   end
@@ -488,7 +488,7 @@ defmodule FlipdotWeb.FlipdotLive do
       phx-click="image"
       value={@value}
     >
-      <%= raw(Bitmap.to_svg(@image, width: 115, height: 16)) %>
+      <%= raw(Bitmap.to_svg(@image, width: Display.width(), height: Display.height())) %>
     </button>
     """
   end
