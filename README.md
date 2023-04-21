@@ -1,18 +1,16 @@
 # Flipdot
 
-To start your Phoenix server:
+This is experimental code to build a driver environment for dealing with a fluepdot enabled
+flipdot display. It's all work in progress and primarily a system for learning elixir and OTP.
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+https://github.com/Fluepke/Fluepdot
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+It comes with a basic bitmap library for monochrome pixels with a limited set of 
+basic graphical operations (setting pixels, flipping, inverting) and some fancy filters 
+and generators. It also contains a super simple Telegram bot plugin.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+There is a LiveView based web server that shows the current display state and allows
+for a set of basic operations (setting images, applying filters, painting pixels and lines, filling).
 
-## Learn more
-
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+When a fluepdot-based display is connected via either UDP or USB the system
+can be configured to sync its current virtuel display state to the real display. Set the 
