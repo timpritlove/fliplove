@@ -10,7 +10,7 @@ defmodule Flipdot.Weather do
   require HTTPoison
   require Logger
 
-  defstruct timer: nil, api_key: nil, weather: nil
+  defstruct [:timer, :api_key, :latitude, :longitude, :weather]
 
   @latitude_env "WEATHER_LATITUDE"
   @longitude_env "WEATHER_LONGITUDE"
@@ -36,12 +36,16 @@ defmodule Flipdot.Weather do
   def init(state) do
     # Read API Key from dev file or from environment
     api_key = get_api_key()
+    latitude = System.get_env(@latitude_env) || @latitude
+    longitude = System.get_env(@longitude_env) || @longitude
 
     # update weather information in a second and then every 5 minutes
     {:ok, _} = :timer.send_after(5_000, :update_weather)
     {:ok, timer} = :timer.send_interval(300_000, :update_weather)
 
-    {:ok, %{state | api_key: api_key, timer: timer}}
+    Logger.debug("Weather service started (#{latitude}, #{longitude})")
+
+    {:ok, %{state | api_key: api_key, latitude: latitude, longitude: longitude, timer: timer}}
   end
 
   @impl true
@@ -126,7 +130,7 @@ defmodule Flipdot.Weather do
   end
 
   defp update_weather(state) do
-    case call_openweathermap(state.api_key) do
+    case call_openweathermap(state.api_key, state.latitude, state.longitude) do
       nil ->
         state
 
@@ -187,15 +191,8 @@ defmodule Flipdot.Weather do
     end
   end
 
-  defp get_location do
-    latitude = System.get_env(@latitude_env) || @latitude
-    longitude = System.get_env(@longitude_env) || @longitude
-    {latitude, longitude}
-  end
-
-  def call_openweathermap(api_key) do
+  def call_openweathermap(api_key, latitude, longitude) do
     url = @openweathermap_onecall_url
-    {latitude, longitude} = get_location()
 
     params = [
       {"lat", latitude},
@@ -206,7 +203,6 @@ defmodule Flipdot.Weather do
 
     case HTTPoison.get(url, [], params: params) do
       {:ok, %{status_code: 200, body: body}} ->
-        Logger.debug("OpenWeatherMap API call succeeded (#{latitude}, #{longitude})")
         Jason.decode!(body)
 
       {:ok, %{status_code: status_code}} ->
