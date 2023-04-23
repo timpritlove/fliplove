@@ -4,13 +4,20 @@ defmodule Blinkenlights do
   # stream a Blinkenlights movie
   # each iteration creates a {ms, frame} tuple
 
+  @doc """
+  Parse a Blinkenlights Movie file and return it as a %BLM{} struct.
+  """
   def parse_blm_file(path) do
     blm_file = File.read!(path)
     {:ok, [blm], _, _, _, _} = BLM.parse_blm(blm_file)
     blm
   end
 
-  def blm_movie(path, opts \\ []) do
+  @doc """
+  Open a BLM movie and return a stream of timed frames.
+  """
+
+  def blm_movie_stream(path, opts \\ []) do
     opts = Keyword.validate!(opts, loop: false)
 
     Stream.resource(
