@@ -30,7 +30,7 @@ defmodule Flipdot.Font.Library do
       font_files
       |> Enum.map(fn font_file ->
         path = Path.join([font_dir, font_file])
-        Task.async(__MODULE__, :parse_font, [path])
+        Task.async(Parser, :parse_font, [path])
       end)
 
     fonts = Task.await_many(parse_tasks, 30_000)
@@ -59,10 +59,5 @@ defmodule Flipdot.Font.Library do
   def handle_call({:get_font_by_name, font_name}, _, state) do
     [font] = state.fonts |> Enum.filter(fn font -> font.name == font_name end)
     {:reply, font, state}
-  end
-
-  def parse_font(path) do
-    {:ok, [font], _, _, _, _} = path |> File.read!() |> Parser.parse_bdf()
-    font
   end
 end

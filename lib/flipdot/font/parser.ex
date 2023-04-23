@@ -392,4 +392,9 @@ defmodule Flipdot.Font.Parser do
   )
 
   defparsec(:parse_bdf, parsec(:bdf))
+
+  def parse_font(path) do
+    {:ok, [font], _, _, _, _} = path |> File.read!() |> parse_bdf()
+    font
+  end
 end
