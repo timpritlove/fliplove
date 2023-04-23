@@ -35,7 +35,11 @@ defmodule Blinkenlights do
     )
   end
 
-  def speed(frames, factor) do
+  @doc """
+  Adjust the speed of a movie stream by factor.
+  A factor of > 1 speeds things up, a factor < 1 slows it down.
+  """
+  def speed(frames, factor) when factor > 0 do
     Stream.transform(
       frames,
       nil,
