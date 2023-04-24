@@ -55,7 +55,7 @@ defmodule Flipdot.Fluepdot.UDP do
     )
 
     counter = state.counter + 1
-    Logger.debug("UDP: Display updated (##{counter}).")
+    # Logger.debug("UDP: Display updated (##{counter}).")
     {:noreply, %{state | counter: counter}}
   end
 

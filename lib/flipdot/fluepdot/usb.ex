@@ -42,7 +42,7 @@ defmodule Flipdot.Fluepdot.USB do
     end
 
     counter = state.counter + 1
-    Logger.debug("USB: Display updated (##{counter}).")
+    # Logger.debug("USB: Display updated (##{counter}).")
     {:noreply, %{state | counter: counter}}
   end
 end

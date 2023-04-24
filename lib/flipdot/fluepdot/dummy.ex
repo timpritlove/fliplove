@@ -19,7 +19,7 @@ defmodule Flipdot.Fluepdot.Dummy do
   @impl true
   def handle_info({:display_updated, _bitmap}, state) do
     counter = state.counter + 1
-    Logger.debug("Dummy: Display updated (##{counter}).")
+    # Logger.debug("Dummy: Display updated (##{counter}).")
     {:noreply, %{state | counter: counter}}
   end
 end
