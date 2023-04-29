@@ -35,13 +35,11 @@ defmodule Flipdot.Fluepdot do
         name: Flipdot.Fluepdot.DriverSupervisor
       )
 
-    {:ok, driver} =
-      DynamicSupervisor.start_child(Flipdot.Fluepdot.DriverSupervisor, @driver[mode])
+    {:ok, driver} = DynamicSupervisor.start_child(Flipdot.Fluepdot.DriverSupervisor, @driver[mode])
 
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
     Logger.info("Fluepdot server started (mode: #{inspect(mode)}).")
     send(self(), {:display_updated, Display.get()})
-
     {:ok, %{state | mode: mode, driver: driver}}
   end
 
