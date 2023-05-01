@@ -741,78 +741,78 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
         encoding: ?X,
         bitmap:
           defbitmap([
-            "XX   XX",
-            "XX   XX",
-            " XX XX ",
-            "  XXX  ",
-            " XX XX ",
-            "XX   XX",
-            "XX   XX"
+            "XX  XX",
+            "XX  XX",
+            " XXXX ",
+            "  XX  ",
+            " XXXX ",
+            "XX  XX",
+            "XX  XX"
           ])
       },
       ?Y => %{
         encoding: ?Y,
         bitmap:
           defbitmap([
-            "X   X",
-            "X   X",
-            " X X ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  "
+            "XX  XX",
+            "XX  XX",
+            "XX  XX",
+            " XXXX ",
+            "  XX  ",
+            "  XX  ",
+            "  XX  "
           ])
       },
       ?Z => %{
         encoding: ?Z,
         bitmap:
           defbitmap([
-            "XXXXX",
-            "    X",
-            "   X ",
-            "  X  ",
-            " X   ",
-            "X    ",
-            "XXXXX"
+            "XXXXXX",
+            "    XX",
+            "   XX ",
+            "  XX  ",
+            " XX   ",
+            "XX    ",
+            "XXXXXX"
           ])
       },
       ?[ => %{
         encoding: ?[,
         bitmap:
           defbitmap([
-            "XXX",
-            "X  ",
-            "X  ",
-            "X  ",
-            "X  ",
-            "X  ",
-            "XXX"
+            "XXXX",
+            "XX  ",
+            "XX  ",
+            "XX  ",
+            "XX  ",
+            "XX  ",
+            "XXXX"
           ])
       },
       ?\\ => %{
         encoding: ?\\,
         bitmap:
           defbitmap([
-            "X    ",
-            "X    ",
-            " X   ",
-            "  X  ",
-            "   X ",
-            "    X",
-            "    X"
+            "XX    ",
+            "XX    ",
+            " XX   ",
+            "  XX  ",
+            "   XX ",
+            "    XX",
+            "    XX"
           ])
       },
       ?] => %{
         encoding: ?],
         bitmap:
           defbitmap([
-            "XXX",
-            "  X",
-            "  X",
-            "  X",
-            "  X",
-            "  X",
-            "XXX"
+            "XXXX",
+            "  XX",
+            "  XX",
+            "  XX",
+            "  XX",
+            "  XX",
+            "XXXX"
           ])
       },
       ?^ => %{
