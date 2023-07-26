@@ -640,14 +640,8 @@ defmodule Bitmap do
     svg_header = """
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
             width="#{opts[:width]}px" height="#{opts[:height]}px"
             viewbox="0 0 #{width} #{height}">
-           	<defs>
-              <g id="#{uuid}">
-                <rect x="0.1" y="0.1" width="0.8" height="0.8" />
-         	    </g>
-            </defs>
     """
 
     svg_footer = """
@@ -661,7 +655,7 @@ defmodule Bitmap do
             pixel = get_pixel(bitmap, {x, y}),
             pixel == 1 do
           """
-          	<use xlink:href="##{uuid}" x="#{x}" y="#{height - 1 - y}"/>
+          <rect x="#{x}" y="#{height - 1 - y}" width="0.8" height="0.8" />
           """
         end
       end
@@ -733,10 +727,7 @@ defmodule Bitmap do
 
   def from_binary(data, width, height) do
     if byte_size(data) != div(width * height, 8),
-      do:
-        raise(
-          "Packet size (#{byte_size(data)}) does not match dimensions (width: #{width}, height: #{height})"
-        )
+      do: raise("Packet size (#{byte_size(data)}) does not match dimensions (width: #{width}, height: #{height})")
 
     pixels = for <<pixel::1 <- data>>, do: pixel
     columns = Enum.chunk_every(pixels, height)
