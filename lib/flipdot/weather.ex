@@ -206,7 +206,7 @@ defmodule Flipdot.Weather do
         Jason.decode!(body)
 
       {:ok, %{status_code: status_code}} ->
-        Logger.warn("OpenWeatherMap API call failed (#{status_code})")
+        Logger.warning("OpenWeatherMap API call failed (#{status_code})")
         nil
     end
   end

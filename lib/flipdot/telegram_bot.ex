@@ -61,7 +61,7 @@ defmodule Flipdot.TelegramBot do
           %{state | last_seen: last_seen}
 
         {:error, reason} ->
-          Logger.warn("Bot: Can't get updates: #{reason}")
+          Logger.warning("Bot: Can't get updates: #{reason}")
           state
       end
 

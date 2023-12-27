@@ -25,7 +25,7 @@ defmodule Flipdot.Fluepdot.USB do
         # replace this with connection monitor
         case System.cmd("stty", ["-F", device, Integer.to_string(@device_bitrate)]) do
           {_result, 0} -> Logger.info("TTY settings for #{device} have been set")
-          {result, status} -> Logger.warn("Can't set TTY settings: #{result} (#{status})")
+          {result, status} -> Logger.warning("Can't set TTY settings: #{result} (#{status})")
         end
 
         {:ok, %{state | counter: 0, device: device}}
