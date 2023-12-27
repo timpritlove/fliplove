@@ -11,7 +11,7 @@ defmodule Flipdot.Font.Parser do
 
   newline = ascii_char([?\n])
 
-  whitespace = ascii_string([?\s, ?\v, ?\t], min: 1)
+  whitespace = ascii_string([?\s, ?\v, ?\r, ?\t], min: 1)
 
   eol = ignore(eventually(newline) |> repeat(optional(whitespace) |> concat(newline)))
 
