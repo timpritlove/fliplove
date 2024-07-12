@@ -787,48 +787,48 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         encoding: ?[,
         bitmap:
           defbitmap([
-            "XXXX",
-            "XX  ",
-            "XX  ",
-            "XX  ",
-            "XX  ",
-            "XX  ",
-            "XXXX"
+            "XXX",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            "XXX"
           ])
       },
       ?\\ => %{
         encoding: ?\\,
         bitmap:
           defbitmap([
-            "XX    ",
-            "XX    ",
-            " XX   ",
-            "  XX  ",
-            "   XX ",
-            "    XX",
-            "    XX"
+            "X    ",
+            "X    ",
+            " X   ",
+            "  X  ",
+            "   X ",
+            "    X",
+            "    X"
           ])
       },
       ?] => %{
         encoding: ?],
         bitmap:
           defbitmap([
-            "XXXX",
-            "  XX",
-            "  XX",
-            "  XX",
-            "  XX",
-            "  XX",
-            "XXXX"
+            "XXX",
+            "  X",
+            "  X",
+            "  X",
+            "  X",
+            "  X",
+            "XXX"
           ])
       },
       ?^ => %{
         encoding: ?^,
         bitmap:
           defbitmap([
-            "  XX  ",
-            " XXXX ",
-            "XX  XX",
+            "  X  ",
+            " X X ",
+            "X   X",
             "      ",
             "      ",
             "      ",
@@ -839,376 +839,374 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         encoding: ?_,
         bitmap:
           defbitmap([
-            "XXXXXX"
+            "XXXXX"
           ])
       },
       ?` => %{
         encoding: ?`,
         bitmap:
           defbitmap([
-            "XX ",
-            " XX",
-            "   ",
-            "   ",
-            "   ",
-            "   ",
-            "   "
+            "X ",
+            " X",
+            "  ",
+            "  ",
+            "  ",
+            "  ",
+            "  "
           ])
       },
       ?a => %{
         encoding: ?a,
         bitmap:
           defbitmap([
-            " XXXXX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXXX"
+            " XXXX",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXXX"
           ])
       },
       ?b => %{
         encoding: ?b,
         bitmap:
           defbitmap([
-            "XX    ",
-            "XX    ",
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XXXXX "
+            "X    ",
+            "X    ",
+            "XXXX ",
+            "X   X",
+            "X   X",
+            "X   X",
+            "XXXX "
           ])
       },
       ?c => %{
         encoding: ?c,
         bitmap:
           defbitmap([
-            "      ",
-            "      ",
-            " XXXXX",
-            "XX    ",
-            "XX    ",
-            "XX    ",
-            " XXXXX"
+            " XXXX",
+            "X    ",
+            "X    ",
+            "X    ",
+            " XXXX"
           ])
       },
       ?d => %{
         encoding: ?d,
         bitmap:
           defbitmap([
-            "    XX",
-            "    XX",
-            " XXXXX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXXX"
+            "    X",
+            "    X",
+            " XXXX",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXXX"
           ])
       },
       ?e => %{
         encoding: ?e,
         bitmap:
           defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX    ",
-            " XXXXX"
+            " XXX ",
+            "X   X",
+            "XXXXX",
+            "X    ",
+            " XXXX"
           ])
       },
       ?f => %{
         encoding: ?f,
         bitmap:
           defbitmap([
-            "  XXX",
-            " XX  ",
-            " XX  ",
-            "XXXXX",
-            " XX  ",
-            " XX  ",
-            " XX  "
+            "  XX",
+            " X  ",
+            " X  ",
+            "XXXX",
+            " X  ",
+            " X  ",
+            " X  "
           ])
       },
       ?g => %{
         encoding: ?g,
         bitmap:
           defbitmap([
-            " XXXXX",
-            "XX  XX",
-            " XXXXX",
-            "    XX",
-            "XXXXX "
+            " XXXX",
+            "X   X",
+            " XXXX",
+            "    X",
+            "XXXX "
           ])
       },
       ?h => %{
         encoding: ?h,
         bitmap:
           defbitmap([
-            "XX    ",
-            "XX    ",
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX"
+            "X    ",
+            "X    ",
+            "XXXX ",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X"
           ])
       },
       ?i => %{
         encoding: ?i,
         bitmap:
           defbitmap([
-            "XX",
-            "  ",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX"
+            "X",
+            " ",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
           ])
       },
       ?j => %{
         encoding: ?j,
         bitmap:
           defbitmap([
-            "   XX",
-            "     ",
-            "   XX",
-            "   XX",
-            "   XX",
-            "XX XX",
-            " XXX "
+            "   X",
+            "    ",
+            "   X",
+            "   X",
+            "   X",
+            "X  X",
+            " XX "
           ])
       },
       ?k => %{
         encoding: ?k,
         bitmap:
           defbitmap([
-            "XX    ",
-            "XX XX ",
-            "XXXX  ",
-            "XXXX  ",
-            "XXXX  ",
-            "XX XX ",
-            "XX  XX"
+            "X   ",
+            "X  X",
+            "X X ",
+            "XX  ",
+            "X X ",
+            "X  X",
+            "X  X"
           ])
       },
       ?l => %{
         encoding: ?l,
         bitmap:
           defbitmap([
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX"
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
           ])
       },
       ?m => %{
         encoding: ?m,
         bitmap:
           defbitmap([
-            "XXX XXX ",
-            "XX XX XX",
-            "XX XX XX",
-            "XX XX XX",
-            "XX XX XX"
+            "XXX XX ",
+            "X  X  X",
+            "X  X  X",
+            "X  X  X",
+            "X  X  X"
           ])
       },
       ?n => %{
         encoding: ?n,
         bitmap:
           defbitmap([
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX"
+            "XXXX ",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X"
           ])
       },
       ?o => %{
         encoding: ?o,
         bitmap:
           defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX "
+            " XXX ",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
           ])
       },
       ?p => %{
         encoding: ?p,
         bitmap:
           defbitmap([
-            "XXXXX ",
-            "XX  XX",
-            "XXXXX ",
-            "XX    ",
-            "XX    "
+            "XXXX ",
+            "X   X",
+            "XXXX ",
+            "X    ",
+            "X    "
           ])
       },
       ?q => %{
         encoding: ?q,
         bitmap:
           defbitmap([
-            " XXXXX",
-            "XX  XX",
-            " XXXXX",
-            "    XX",
-            "    XX"
+            " XXXX",
+            "X   X",
+            " XXXX",
+            "    X",
+            "    X"
           ])
       },
       ?r => %{
         encoding: ?r,
         bitmap:
           defbitmap([
-            " XXXX",
-            "XX   ",
-            "XX   ",
-            "XX   ",
-            "XX   "
+            " XXX",
+            "X   ",
+            "X   ",
+            "X   ",
+            "X   "
           ])
       },
       ?s => %{
         encoding: ?s,
         bitmap:
           defbitmap([
-            " XXXXX",
-            "XX    ",
-            " XXXX ",
-            "    XX",
-            "XXXXX "
+            " XXXX",
+            "X    ",
+            " XXX ",
+            "    X",
+            "XXXX "
           ])
       },
       ?t => %{
         encoding: ?t,
         bitmap:
           defbitmap([
-            " XX ",
-            " XX ",
-            "XXXX",
-            " XX ",
-            " XX ",
-            " XX ",
-            " XX "
+            " X ",
+            " X ",
+            "XXX",
+            " X ",
+            " X ",
+            " X ",
+            " X "
           ])
       },
       ?u => %{
         encoding: ?u,
         bitmap:
           defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX "
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
           ])
       },
       ?v => %{
         encoding: ?v,
         bitmap:
           defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX ",
-            "  XX  "
+            "X   X",
+            "X   X",
+            "X   X",
+            " X X ",
+            "  X  "
           ])
       },
       ?w => %{
         encoding: ?w,
         bitmap:
           defbitmap([
-            "XX    XX",
-            "XX    XX",
-            "XX XX XX",
-            "XX XX XX",
-            " XX  XX "
+            "X     X",
+            "X     X",
+            "X  X  X",
+            "X  X  X",
+            " XX XX "
           ])
       },
       ?x => %{
         encoding: ?x,
         bitmap:
           defbitmap([
-            "XX  XX",
-            " XXXX ",
-            "  XX  ",
-            " XXXX ",
-            "XX  XX"
+            "X   X",
+            " X X ",
+            "  X  ",
+            " X X ",
+            "X   X"
           ])
       },
       ?y => %{
         encoding: ?y,
         bitmap:
           defbitmap([
-            "XX  XX",
-            "XX  XX",
-            " XXXXX",
-            "    XX",
-            "XXXXX "
+            "X   X",
+            "X   X",
+            " XXXX",
+            "    X",
+            "XXXX "
           ])
       },
       ?z => %{
         encoding: ?z,
         bitmap:
           defbitmap([
-            "XXXXXX",
-            "   XX ",
-            "  XX  ",
-            " XX   ",
-            "XXXXXX"
+            "XXXXX",
+            "   X ",
+            "  X  ",
+            " X   ",
+            "XXXXX"
           ])
       },
       ?{ => %{
         encoding: ?{,
         bitmap:
           defbitmap([
-            "  XX",
-            " XX ",
-            " XX ",
-            "XX  ",
-            " XX ",
-            " XX ",
-            "  XX"
+            "  X",
+            " X ",
+            " X ",
+            "X  ",
+            " X ",
+            " X ",
+            "  X"
           ])
       },
       ?| => %{
         encoding: ?|,
         bitmap:
           defbitmap([
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX"
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
           ])
       },
       ?} => %{
         encoding: ?},
         bitmap:
           defbitmap([
-            "XX  ",
-            " XX ",
-            " XX ",
-            "  XX",
-            " XX ",
-            " XX ",
-            "XX  "
+            "X  ",
+            " X ",
+            " X ",
+            "  X",
+            " X ",
+            " X ",
+            "X  "
           ])
       },
       ?~ => %{
         encoding: ?~,
         bitmap:
           defbitmap([
-            " XX    ",
-            "XX X XX",
-            "    XX ",
-            "       ",
-            "       "
+            " X   ",
+            "X X X",
+            "   X ",
+            "     ",
+            "     "
           ])
       },
 
@@ -1219,13 +1217,13 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         name: "no-break space",
         bitmap:
           defbitmap([
-            "  ",
-            "  ",
-            "  ",
-            "  ",
-            "  ",
-            "  ",
-            "  "
+            " ",
+            " ",
+            " ",
+            " ",
+            " ",
+            " ",
+            " "
           ])
       },
       ?¡ => %{
@@ -1233,13 +1231,13 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         name: "inverted exclamation mark",
         bitmap:
           defbitmap([
-            "XX",
-            "  ",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX"
+            "X",
+            " ",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
           ])
       },
       ?¢ => %{
@@ -1304,13 +1302,30 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         name: "broken bar",
         bitmap:
           defbitmap([
-            "XX",
-            "XX",
-            "XX",
-            "  ",
-            "XX",
-            "XX",
-            "XX"
+            "X",
+            "X",
+            "X",
+            " ",
+            "X",
+            "X",
+            "X"
+          ])
+      },
+      ?§ => %{
+        encoding: ?§,
+        name: "section sign",
+        bb_y_off: -1,
+        bitmap:
+          defbitmap([
+            " XXX ",
+            "X    ",
+            " X   ",
+            " XXX ",
+            "X   X",
+            " XXX ",
+            "   X ",
+            "    X",
+            " XXX "
           ])
       },
       ?ß => %{
@@ -1318,97 +1333,97 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         bb_y_off: -1,
         bitmap:
           defbitmap([
-            " XXXXX ",
-            "XX   XX",
-            "XX  XX ",
-            "XX XX  ",
-            "XX  XX ",
-            "XX   XX",
-            "XX XXX ",
-            "XX     "
+            " XXX ",
+            "X   X",
+            "X  X ",
+            "X X  ",
+            "X  X ",
+            "X   X",
+            "X XX ",
+            "X    "
           ])
       },
       ?Ä => %{
         encoding: ?Ä,
         bitmap:
           defbitmap([
-            "      ",
-            "X    X",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
-            "XX  XX"
+            "     ",
+            "X   X",
+            "     ",
+            " XXX ",
+            "X   X",
+            "XXXXX",
+            "X   X",
+            "X   X"
           ])
       },
       ?Á => %{
         encoding: ?Á,
         bitmap:
           defbitmap([
-            "   XX ",
-            "  XX  ",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
-            "XX  XX"
+            "   X ",
+            "  X  ",
+            "     ",
+            " XXX ",
+            "X   X",
+            "XXXXX",
+            "X   X",
+            "X   X"
           ])
       },
       ?À => %{
         encoding: ?À,
         bitmap:
           defbitmap([
-            " XX   ",
-            "  XX  ",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
-            "XX  XX"
+            " X   ",
+            "  X  ",
+            "     ",
+            " XXX ",
+            "X   X",
+            "XXXXX",
+            "X   X",
+            "X   X"
           ])
       },
       ?Å => %{
         encoding: ?Å,
         bitmap:
           defbitmap([
-            " XXXX ",
-            " XXXX ",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
-            "XX  XX"
+            " XXX ",
+            " XXX ",
+            "     ",
+            " XXX ",
+            "X   X",
+            "XXXXX",
+            "X   X",
+            "X   X"
           ])
       },
       ?Ã => %{
         encoding: ?Ã,
         bitmap:
           defbitmap([
-            " XX XX",
-            "XX XX ",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
-            "XX  XX"
+            " XX X",
+            "X XX ",
+            "     ",
+            " XXX ",
+            "X   X",
+            "XXXXX",
+            "X   X",
+            "X   X"
           ])
       },
       ?ä => %{
         encoding: ?ä,
         bitmap:
           defbitmap([
-            "XX  XX",
-            "      ",
-            " XXXXX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXXX"
+            "X   X",
+            "     ",
+            " XXXX",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXXX"
           ])
       },
       ?Ö => %{
@@ -1416,8 +1431,8 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         bitmap:
           defbitmap([
             "X   X",
+            "     ",
             " XXX ",
-            "X   X",
             "X   X",
             "X   X",
             "X   X",
@@ -1429,40 +1444,40 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         encoding: ?ö,
         bitmap:
           defbitmap([
-            "XX  XX",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX "
+            " X X ",
+            "     ",
+            " XXX ",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
           ])
       },
       ?Ü => %{
         encoding: ?Ü,
         bitmap:
           defbitmap([
-            "XX  XX",
-            "      ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX "
+            "X   X",
+            "     ",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
           ])
       },
       ?ü => %{
         encoding: ?ü,
         bitmap:
           defbitmap([
-            "XX  XX",
-            "      ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX "
+            " X X ",
+            "     ",
+            "X   X",
+            "X   X",
+            "X   X",
+            "X   X",
+            " XXX "
           ])
       },
       ?¨ => %{
@@ -1470,13 +1485,13 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
         name: "diaresis",
         bitmap:
           defbitmap([
-            "XX  XX",
-            "      ",
-            "      ",
-            "      ",
-            "      ",
-            "      ",
-            "      "
+            "X X",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   "
           ])
       },
       ?© => %{
