@@ -829,10 +829,10 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
             "  X  ",
             " X X ",
             "X   X",
-            "      ",
-            "      ",
-            "      ",
-            "      "
+            "     ",
+            "     ",
+            "     ",
+            "     "
           ])
       },
       ?_ => %{

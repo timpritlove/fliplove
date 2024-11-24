@@ -822,10 +822,10 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
             "  XX  ",
             " XXXX ",
             "XX  XX",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            "      ",
+            "      ",
+            "      ",
+            "      "
           ])
       },
       ?_ => %{
@@ -1265,7 +1265,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
         name: "currency sign",
         bitmap:
           defbitmap([
-            "     ",
+            "      ",
             "XX  XX",
             " XXXX ",
             "XX  XX",
@@ -1424,7 +1424,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
           defbitmap([
             "XX  XX",
             "      ",
-            " XXXX",
+            " XXXX ",
             "XX  XX",
             "XX  XX",
             "XX  XX",
