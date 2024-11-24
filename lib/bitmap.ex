@@ -557,8 +557,10 @@ defmodule Bitmap do
 
     width = length(List.first(lines))
 
-    if Enum.any?(lines, fn line -> length(line) != width end),
-      do: raise("lines are of unequal length")
+    if Enum.any?(lines, fn line -> length(line) != width end) do
+      formatted_lines = Enum.map(lines, fn line -> "|#{line}|" end)
+      raise("lines are of unequal length:\n#{Enum.join(formatted_lines, "\n")}")
+    end
 
     height = length(lines)
 
@@ -689,7 +691,7 @@ defmodule Bitmap do
           _ -> options[:on]
         end
       end
-      |> Enum.concat('\n')
+      |> Enum.concat("\n")
     end
     |> List.flatten()
     |> List.to_string()
