@@ -22,6 +22,9 @@ defmodule Flipdot.Composer do
     Logger.debug("Starting DynamicSupervisor")
     {:ok, _pid} = DynamicSupervisor.start_link(strategy: :one_for_one, name: @supervisor)
 
+    # Start the dashboard composer by default
+    start_composer(:dashboard)
+
     {:ok, state}
   end
 
