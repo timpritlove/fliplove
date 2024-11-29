@@ -19,11 +19,11 @@ defmodule Flipdot.Application do
         FlipdotWeb.Endpoint,
         # Start a worker by calling: Flipdot.Worker.start_link(arg)
         # {Flipdot.Worker, arg}
-        Flipdot.Composer,
         {Flipdot.Display, Flipdot.Images.images()["space-invaders"]},
         Flipdot.Weather,
         Flipdot.Fluepdot,
-        Flipdot.Font.Library
+        Flipdot.Font.Library,
+        Flipdot.Composer
       ] ++
         case System.get_env("TELEGRAM_BOT_SECRET") do
           nil -> []
