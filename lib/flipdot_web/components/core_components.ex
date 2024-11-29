@@ -12,7 +12,7 @@ defmodule FlipdotWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  import FlipdotWeb.Gettext
+  use Gettext, backend: FlipdotWeb.Gettext
 
   @doc """
   Renders a modal.
