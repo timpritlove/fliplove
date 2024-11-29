@@ -18,10 +18,12 @@ defmodule Flipdot.Experimental.Letterbox do
 
   def render_transition([from_char | remaining_letters], font) do
     from = render_letter(from_char, font)
-    to_char = hd(remaining_letters)
-    to = render_letter(to_char, font)
-    movie = Transition.push_up(from, to, @transition_ms) |> Enum.to_list()
-    movie ++ render_transition(remaining_letters, font)
+    to = render_letter(hd(remaining_letters), font)
+
+    frames = Transition.push_up(from, to)
+    |> Enum.map(fn frame -> {@transition_ms, frame} end)
+
+    frames ++ render_transition(remaining_letters, font)
   end
 
   def render_letter(char, font) do
