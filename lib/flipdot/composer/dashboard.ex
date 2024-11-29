@@ -95,17 +95,23 @@ defmodule Flipdot.Composer.Dashboard do
     #   )
 
     # render wind
-    {_wind_speed, wind_force} = Weather.get_wind()
-
-    # bitmap = place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed, decimals: 1), :bottom, :left)
-    bitmap = place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
+    bitmap =
+      try do
+        {_wind_speed, wind_force} = Weather.get_wind()
+        place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
+      rescue
+        _ -> bitmap  # Return unchanged bitmap if wind data is unavailable
+      end
 
     bitmap =
-      Bitmap.overlay(
-        bitmap,
-        Weather.bitmap_48(Display.height())
+      try do
+        weather_bitmap = Weather.bitmap_48(Display.height())
         |> Bitmap.crop_relative(Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
-      )
+
+        Bitmap.overlay(bitmap, weather_bitmap)
+      rescue
+        _ -> bitmap  # Return unchanged bitmap if weather bitmap creation fails
+      end
 
     # plot temperature hours
 
