@@ -5,6 +5,7 @@ defmodule Flipdot.Font.Library do
   """
   use GenServer
   alias Flipdot.Font.Parser
+  require Logger
 
   @topic "font_library_update"
   defstruct fonts: [], task_supervisor: nil
