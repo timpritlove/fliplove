@@ -29,7 +29,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:font_name, nil)
       |> assign(:mode, :pencil)
       |> assign(:prev_xy, nil)
-      |> assign(:font_select, Library.get_fonts() |> build_font_select(), timeout: 30_000)
+      |> assign(:font_select, Library.get_fonts() |> build_font_select())
       |> allow_upload(:frame, accept: ~w(.txt), max_entries: 1, max_file_size: 5_000)
 
     {:ok, socket}
