@@ -74,14 +74,16 @@ defmodule Flipdot.Composer.Dashboard do
 
   defp update_dashboard(state) do
     time_string = get_time_string()
-
     bitmap = Bitmap.new(Display.width(), Display.height())
 
     # render temperature
     temperature = Weather.get_temperature()
-    # pretty_dump(temperature, "temperature")
-    temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°C"
-    bitmap = place_text(bitmap, state.font, temp_string, :top, :left)
+    bitmap = if temperature do
+      temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°C"
+      place_text(bitmap, state.font, temp_string, :top, :left)
+    else
+      bitmap
+    end
 
     # render rain
     # {rainfall_rate, rainfall_intensity} = Weather.get_rain()
