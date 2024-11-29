@@ -18,12 +18,16 @@ defmodule Flipdot.Composer do
   end
 
   def init(state) do
-    {:ok, _pid} = Registry.start_link(keys: :unique, name: @registry)
+    # Start Registry
+    {:ok, registry_pid} = Registry.start_link(keys: :unique, name: @registry)
     Logger.debug("Starting DynamicSupervisor")
-    {:ok, _pid} = DynamicSupervisor.start_link(strategy: :one_for_one, name: @supervisor)
+    {:ok, supervisor_pid} = DynamicSupervisor.start_link(strategy: :one_for_one, name: @supervisor)
 
-    # Start the dashboard composer by default
-    start_composer(:dashboard)
+    # Ensure both processes are alive before starting the dashboard
+    if Process.alive?(registry_pid) and Process.alive?(supervisor_pid) do
+      Logger.debug("Starting default dashboard composer")
+      start_composer(:dashboard)
+    end
 
     {:ok, state}
   end
@@ -65,15 +69,17 @@ defmodule Flipdot.Composer do
       restart: :transient
     }
 
-    Logger.debug("Starting Composer")
+    Logger.debug("Starting Composer #{composer}")
 
     case DynamicSupervisor.start_child(@supervisor, child_spec) do
-      {:ok, _} ->
-        Logger.debug("Composer started")
+      {:ok, pid} ->
+        Logger.debug("Composer #{composer} started with pid #{inspect(pid)}")
         Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:running_composer, running_composer()})
+        {:ok, pid}
 
-      {:error, reason} ->
-        Logger.debug("Starting the Composer failed (#{inspect(reason)})")
+      {:error, reason} = error ->
+        Logger.error("Starting the Composer #{composer} failed: #{inspect(reason)}")
+        error
     end
   end
 
