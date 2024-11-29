@@ -7,7 +7,7 @@ defmodule Flipdot.Font.Library do
   alias Flipdot.Font.Parser
 
   @topic "font_library_update"
-  defstruct fonts: []
+  defstruct fonts: [], task_supervisor: nil
 
   def start_link(_state) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -15,31 +15,48 @@ defmodule Flipdot.Font.Library do
 
   def topic, do: @topic
 
-  def init(state) do
-    {:ok, state, {:continue, :read_fonts}}
+  def init(_) do
+    # Start with built-in fonts
+    initial_fonts = [
+      Flipdot.Font.Fonts.SpaceInvaders.get(),
+      Flipdot.Font.Fonts.Flipdot.get()
+    ]
+
+    {:ok, task_supervisor} = Task.Supervisor.start_link()
+
+    state = %__MODULE__{fonts: initial_fonts, task_supervisor: task_supervisor}
+    {:ok, state, {:continue, :schedule_font_loading}}
   end
 
-  def handle_continue(:read_fonts, state) do
+  def handle_continue(:schedule_font_loading, state) do
     font_dir = Path.join([Flipdot.static_dir(), "fonts"])
 
-    font_files =
-      File.ls!(font_dir)
-      |> Enum.filter(fn file_name -> String.ends_with?(file_name, ".bdf") end)
+    # Schedule parsing tasks for each font file
+    File.ls!(font_dir)
+    |> Enum.filter(fn file_name -> String.ends_with?(file_name, ".bdf") end)
+    |> Enum.each(fn font_file ->
+      path = Path.join([font_dir, font_file])
+      Task.Supervisor.async_nolink(state.task_supervisor, Parser, :parse_font, [path])
+    end)
 
-    parse_tasks =
-      font_files
-      |> Enum.map(fn font_file ->
-        path = Path.join([font_dir, font_file])
-        Task.async(Parser, :parse_font, [path])
-      end)
+    {:noreply, state}
+  end
 
-    fonts = Task.await_many(parse_tasks, 30_000)
+  # Handle successful font parsing
+  def handle_info({ref, parsed_font}, state) when is_reference(ref) do
+    # Flush the DOWN message
+    Process.demonitor(ref, [:flush])
 
-    fonts = [Flipdot.Font.Fonts.SpaceInvaders.get() | fonts]
-    fonts = [Flipdot.Font.Fonts.Flipdot.get() | fonts]
-
+    new_state = %{state | fonts: [parsed_font | state.fonts]}
     Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, :font_library_update)
-    {:noreply, %{state | fonts: fonts}}
+
+    {:noreply, new_state}
+  end
+
+  # Handle failed parsing tasks
+  def handle_info({:DOWN, _ref, :process, _pid, reason}, state) do
+    Logger.error("Font parsing failed: #{inspect(reason)}")
+    {:noreply, state}
   end
 
   def get_fonts() do
