@@ -5,7 +5,7 @@ defmodule Flipdot.Fluepdot do
   require Logger
 
   # udp mode
-  @mode_env "FLUEPDOT_MODE"
+  @mode_env "FLIPDOT_MODE"
   @driver %{
     udp: Flipdot.Fluepdot.UDP,
     usb: Flipdot.Fluepdot.USB,

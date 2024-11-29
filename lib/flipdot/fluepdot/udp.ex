@@ -6,8 +6,8 @@ defmodule Flipdot.Fluepdot.UDP do
   require HTTPoison
   require Logger
 
-  @host_env "FLUEPDOT_HOST"
-  @port_env "FLUEPDOT_PORT"
+  @host_env "FLIPDOT_HOST"
+  @port_env "FLIPDOT_PORT"
   @port_default 1337
 
   @set_rendering_mode false
@@ -81,8 +81,8 @@ defmodule Flipdot.Fluepdot.UDP do
   end
 
   # receive reply UDP packet
-  def handle_info(udp, state) do
-    IO.inspect(udp, label: "udp")
+  def handle_info(_udp, state) do
+    # IO.inspect(udp, label: "udp")
     Logger.debug("Received confirmation UDP packet")
     {:noreply, state}
   end

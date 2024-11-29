@@ -6,7 +6,7 @@ defmodule Flipdot.Fluepdot.USB do
   require Logger
 
   # usb mode
-  @device_env "FLUEPDOT_DEVICE"
+  @device_env "FLIPDOT_DEVICE"
   @device_bitrate 115_200
 
   defstruct [:counter, :device, :timer, connected: false]
