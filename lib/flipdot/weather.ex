@@ -29,13 +29,19 @@ defmodule Flipdot.Weather do
   # initialization functions
 
   def start_link(_state) do
-    GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
+    case get_api_key() do
+      {:ok, _api_key} ->
+        GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
+
+      {:error, reason} ->
+        Logger.warning("Weather service disabled: #{reason}")
+        :ignore
+    end
   end
 
   @impl true
   def init(state) do
-    # Read API Key from dev file or from environment
-    api_key = get_api_key()
+    {:ok, api_key} = get_api_key()
     latitude = System.get_env(@latitude_env) || @latitude
     longitude = System.get_env(@longitude_env) || @longitude
 
@@ -184,10 +190,13 @@ defmodule Flipdot.Weather do
   def get_api_key do
     case File.read(@api_key_file) do
       {:ok, key} ->
-        key
+        {:ok, String.trim(key)}
 
       {:error, _} ->
-        System.fetch_env!(@api_key_env)
+        case System.get_env(@api_key_env) do
+          nil -> {:error, "No API key found in file or environment"}
+          key -> {:ok, key}
+        end
     end
   end
 
