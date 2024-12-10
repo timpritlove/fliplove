@@ -25,7 +25,7 @@ defmodule Flipdot.Application do
         Flipdot.Font.Library,
         Flipdot.Composer
       ] ++
-        case System.get_env("TELEGRAM_BOT_SECRET") do
+        case System.get_env("FLIPDOT_TELEGRAM_BOT_SECRET") do
           nil -> []
           telegram_bot_secret -> [{Flipdot.TelegramBot, bot_key: telegram_bot_secret}]
         end

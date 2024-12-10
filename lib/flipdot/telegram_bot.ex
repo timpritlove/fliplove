@@ -1,6 +1,6 @@
 defmodule Flipdot.TelegramBot do
   @moduledoc """
-  Simple interface to a telegram bot. Use the TELEGRAM_BOT_SECRET environment variable
+  Simple interface to a telegram bot. Use the FLIPDOT_TELEGRAM_BOT_SECRET environment variable
   to pass a Telegram bot token to the library. The library connects to Telegram and waits
   for commands. Any received command is announced via PubSub and can be consumed by any
   module subscribing to it.

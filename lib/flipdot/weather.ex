@@ -2,7 +2,7 @@ defmodule Flipdot.Weather do
   @moduledoc """
   Retrieve weather data on a regular basis. Uses OpenWeatherMap API which
   needs an account to access it. Pass the developer API key to the library
-  via the OPENWEATHERMAP_API_KEY environment variable.
+  via the FLIPDOT_OPENWEATHERMAP_API_KEY environment variable.
   """
   alias Phoenix.PubSub
   use GenServer
@@ -22,7 +22,7 @@ defmodule Flipdot.Weather do
 
   @openweathermap_onecall_url "https://api.openweathermap.org/data/3.0/onecall"
   @api_key_file "data/keys/openweathermap.txt"
-  @api_key_env "OPENWEATHERMAP_API_KEY"
+  @api_key_env "FLIPDOT_OPENWEATHERMAP_API_KEY"
 
   def topic, do: @topic
 
