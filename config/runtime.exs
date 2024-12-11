@@ -80,3 +80,18 @@ if config_env() == :prod do
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
 end
+
+# Configure logging based on environment variables
+if log_file = System.get_env("FLIPDOT_LOGFILE") do
+  config :logger,
+    backends: [{LoggerFileBackend, :file_log}]
+
+  config :logger, :file_log,
+    path: log_file,
+    format: "$time $metadata[$level] $message\n",
+    metadata: [:request_id]
+else
+  config :logger, :console,
+    format: "$time $metadata[$level] $message\n",
+    metadata: [:request_id]
+end

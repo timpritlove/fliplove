@@ -64,7 +64,8 @@ defmodule Flipdot.MixProject do
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:mix_audit, "~> 2.0", only: [:dev, :test], runtime: false},
       #      {:circuits_uart, "~> 1.5"},
-      {:easing, "~> 0.3.1"}
+      {:easing, "~> 0.3.1"},
+      {:logger_file_backend, "~> 0.0.13"}
     ]
   end
 
