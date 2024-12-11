@@ -23,13 +23,13 @@ defmodule Flipdot.Composer.Slideshow do
     all_images = Flipdot.Images.images() |> Map.values()
     remaining = all_images
     :timer.send_after(0, __MODULE__, :next_slide)
-    Logger.debug("Slideshow has been started.")
+    Logger.info("Slideshow has been started.")
     {:ok, %{state | all_images: all_images, remaining: remaining}}
   end
 
   @impl true
   def terminate(_reason, _state) do
-    Logger.debug("Shutting down Slideshow.")
+    Logger.info("Slideshow has been shut down.")
   end
 
   @impl true

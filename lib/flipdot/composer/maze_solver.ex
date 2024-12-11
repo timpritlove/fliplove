@@ -26,13 +26,13 @@ defmodule Flipdot.Composer.MazeSolver do
     maze_stream = Bitmap.Maze.solve_maze(maze, mode: :parallel)
 
     Process.send_after(self(), :next_frame, 1_000)
-    Logger.debug("Maze Solver has been started.")
+    Logger.info("Maze Solver has been started.")
     {:ok, %{state | maze_stream: maze_stream}}
   end
 
   @impl true
   def terminate(_reason, _state) do
-    Logger.debug("Shutting down Maze Solver.")
+    Logger.info("Maze Solver has been shut down.")
   end
 
   @impl true

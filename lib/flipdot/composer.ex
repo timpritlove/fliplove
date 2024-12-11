@@ -20,8 +20,11 @@ defmodule Flipdot.Composer do
   def init(state) do
     # Start Registry
     {:ok, registry_pid} = Registry.start_link(keys: :unique, name: @registry)
-    Logger.debug("Starting DynamicSupervisor")
+    Logger.info("Registry started")
+
+    Logger.debug("Starting DynamicSupervisor...")
     {:ok, supervisor_pid} = DynamicSupervisor.start_link(strategy: :one_for_one, name: @supervisor)
+    Logger.info("DynamicSupervisor started")
 
     # Ensure both processes are alive before starting the dashboard
     if Process.alive?(registry_pid) and Process.alive?(supervisor_pid) do
@@ -69,11 +72,11 @@ defmodule Flipdot.Composer do
       restart: :transient
     }
 
-    Logger.debug("Starting Composer #{composer}")
+    Logger.debug("Starting Composer #{composer}...")
 
     case DynamicSupervisor.start_child(@supervisor, child_spec) do
       {:ok, pid} ->
-        Logger.debug("Composer #{composer} started with pid #{inspect(pid)}")
+        Logger.info("Composer #{composer} started")
         Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:running_composer, running_composer()})
         {:ok, pid}
 

@@ -49,7 +49,7 @@ defmodule Flipdot.Weather do
     {:ok, _} = :timer.send_after(5_000, :update_weather)
     {:ok, timer} = :timer.send_interval(300_000, :update_weather)
 
-    Logger.debug("Weather service started (#{latitude}, #{longitude})")
+    Logger.info("Weather service started (#{latitude}, #{longitude})")
 
     {:ok, %{state | api_key: api_key, latitude: latitude, longitude: longitude, timer: timer}}
   end

@@ -33,13 +33,13 @@ defmodule Flipdot.Composer.Dashboard do
     schedule_next_minute(:clock_timer)
     PubSub.subscribe(Flipdot.PubSub, Weather.topic())
 
-    Logger.debug("Dashboard has been started.")
+    Logger.info("Dashboard has been started.")
     {:ok, state}
   end
 
   @impl true
   def terminate(_reason, _state) do
-    Logger.debug("Shutting down Dashboard.")
+    Logger.info("Dashboard has been shut down.")
   end
 
   @impl true

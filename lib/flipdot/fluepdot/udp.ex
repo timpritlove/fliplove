@@ -55,7 +55,7 @@ defmodule Flipdot.Fluepdot.UDP do
     )
 
     counter = state.counter + 1
-    # Logger.debug("UDP: Display updated (##{counter}).")
+    Logger.debug("UDP: Display updated (##{counter}).")
     {:noreply, %{state | counter: counter}}
   end
 
@@ -69,7 +69,7 @@ defmodule Flipdot.Fluepdot.UDP do
               true
 
             status_code ->
-              Logger.debug("Call to set rendering mode returned status code #{status_code}")
+              Logger.warning("Call to set rendering mode returned status code #{status_code}")
           end
 
         {:error, reason} ->
@@ -83,7 +83,7 @@ defmodule Flipdot.Fluepdot.UDP do
   # receive reply UDP packet
   def handle_info(_udp, state) do
     # IO.inspect(udp, label: "udp")
-    Logger.debug("Received confirmation UDP packet")
+    Logger.debug("UDP: Received confirmation packet")
     {:noreply, state}
   end
 end
