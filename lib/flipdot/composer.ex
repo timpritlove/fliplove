@@ -95,8 +95,7 @@ defmodule Flipdot.Composer do
         receive do
           {:DOWN, ^ref, :process, ^pid, reason} ->
             Logger.debug("Composer has stopped #{reason}")
-            Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:running_composer, running_composer()})
-
+            Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:running_composer, nil})
             :ok
         after
           5_000 ->
