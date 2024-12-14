@@ -8,7 +8,7 @@ defmodule Flipdot.Composer.MazeSolver do
 
   @registry Flipdot.Composer.Registry
 
-  @frame_delay 500
+  @frame_delay 100
   @maze_delay 5_000
 
   defstruct maze_stream: nil
@@ -45,18 +45,22 @@ defmodule Flipdot.Composer.MazeSolver do
 
   @impl true
   def handle_info(:next_frame, state) do
-    maze_stream =
+    { maze_stream, next_event, delay } =
       case Enum.take(state.maze_stream, 1) do
         [bitmap] ->
           Display.set(bitmap)
-          Process.send_after(self(), :next_frame, @frame_delay)
-          Stream.drop(state.maze_stream, 1)
+          delay = case Enum.take(state.maze_stream, 2) do
+            [_, next_bitmap] -> Bitmap.diff_count(bitmap, next_bitmap) * @frame_delay
+            _ -> @frame_delay
+          end
+          { Stream.drop(state.maze_stream, 1), :next_frame, delay }
 
         [] ->
-          Process.send_after(self(), :new_maze_stream, @maze_delay)
-          []
+          { [], :new_maze_stream, @maze_delay }
       end
 
+
+    Process.send_after(self(), next_event, delay)
     {:noreply, %{state | maze_stream: maze_stream}}
   end
 
