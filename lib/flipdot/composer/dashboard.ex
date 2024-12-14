@@ -25,6 +25,7 @@ defmodule Flipdot.Composer.Dashboard do
 
   @impl true
   def init(state) do
+    Logger.info("Dashboard is starting...")
     Registry.register(@registry, :running_composer, :dashboard)
 
     state = %{state | font: Library.get_font_by_name(@font)}
@@ -33,7 +34,6 @@ defmodule Flipdot.Composer.Dashboard do
     schedule_next_minute(:clock_timer)
     PubSub.subscribe(Flipdot.PubSub, Weather.topic())
 
-    Logger.info("Dashboard has been started.")
     {:ok, state}
   end
 
