@@ -775,4 +775,23 @@ defmodule Bitmap do
 
     new(width, height, matrix)
   end
+
+  @doc """
+  Returns the number of pixels that differ between two bitmaps.
+  Both bitmaps must have the same dimensions.
+  """
+  def diff_count(bitmap1, bitmap2) do
+    if dimensions(bitmap1) != dimensions(bitmap2) do
+      raise "Bitmaps must have the same dimensions"
+    end
+
+    {width, height} = dimensions(bitmap1)
+
+    for x <- 0..(width - 1),
+        y <- 0..(height - 1),
+        get_pixel(bitmap1, {x, y}) != get_pixel(bitmap2, {x, y}),
+        reduce: 0 do
+      acc -> acc + 1
+    end
+  end
 end
