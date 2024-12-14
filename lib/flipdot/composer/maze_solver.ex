@@ -20,7 +20,7 @@ defmodule Flipdot.Composer.MazeSolver do
   def init(state) do
     Registry.register(@registry, :running_composer, :maze_solver)
 
-    maze = Bitmap.Maze.generate_maze(Display.width(), Display.width() - 1)
+    maze = Bitmap.Maze.generate_maze(Display.width(), Display.height() - 1)
     Display.set(maze)
 
     maze_stream = Bitmap.Maze.solve_maze(maze, mode: :parallel)
