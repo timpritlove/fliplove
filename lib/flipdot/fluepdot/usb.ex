@@ -5,11 +5,10 @@ defmodule Flipdot.Fluepdot.USB do
   use GenServer
   require Logger
 
-  # usb mode
   @device_env "FLIPDOT_DEVICE"
   @device_bitrate 115_200
 
-  defstruct [:counter, :device, :timer, connected: false]
+  defstruct [:counter, :device, :uart, :timer, connected: false]
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -22,13 +21,20 @@ defmodule Flipdot.Fluepdot.USB do
         {:stop, "#{@device_env} environment variable not set"}
 
       device ->
-        # replace this with connection monitor
-        case System.cmd("stty", ["-F", device, Integer.to_string(@device_bitrate)]) do
-          {_result, 0} -> Logger.info("TTY settings for #{device} have been set")
-          {result, status} -> Logger.warning("Can't set TTY settings: #{result} (#{status})")
-        end
+        {:ok, uart_pid} = Circuits.UART.start_link()
 
-        {:ok, %{state | counter: 0, device: device}}
+        case Circuits.UART.open(uart_pid, device,
+               speed: @device_bitrate,
+               active: false
+             ) do
+          :ok ->
+            Logger.info("Successfully opened serial connection to #{device}")
+            {:ok, %{state | counter: 0, device: device, uart: uart_pid}}
+
+          {:error, reason} ->
+            Logger.error("Failed to open serial connection: #{inspect(reason)}")
+            {:stop, reason}
+        end
     end
   end
 
@@ -36,13 +42,22 @@ defmodule Flipdot.Fluepdot.USB do
   def handle_info({:display_updated, bitmap}, state) do
     cmd = "\nframebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64()) <> "\n"
 
-    case File.write(state.device, cmd, [:write, :raw]) do
-      :ok -> {:noreply, state}
-      {:error, reason} -> raise(reason)
-    end
+    case Circuits.UART.write(state.uart, cmd) do
+      :ok ->
+        counter = state.counter + 1
+        Logger.debug("USB: Display updated (##{counter}).")
+        {:noreply, %{state | counter: counter}}
 
-    counter = state.counter + 1
-   Logger.debug("USB: Display updated (##{counter}).")
-    {:noreply, %{state | counter: counter}}
+      {:error, reason} ->
+        Logger.error("Failed to write to serial port: #{inspect(reason)}")
+        {:noreply, state}
+    end
+  end
+
+  @impl true
+  def terminate(_reason, state) do
+    if state.uart do
+      Circuits.UART.close(state.uart)
+    end
   end
 end
