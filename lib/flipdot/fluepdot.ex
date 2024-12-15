@@ -4,10 +4,10 @@ defmodule Flipdot.Fluepdot do
   alias Flipdot.Display
   require Logger
 
-  # udp mode
+  # network mode
   @mode_env "FLIPDOT_MODE"
   @driver %{
-    udp: Flipdot.Fluepdot.UDP,
+    network: Flipdot.Fluepdot.Network,
     usb: Flipdot.Fluepdot.USB,
     dummy: Flipdot.Fluepdot.Dummy
   }
@@ -25,7 +25,7 @@ defmodule Flipdot.Fluepdot do
     mode =
       case mode_string do
         "USB" -> :usb
-        "UDP" -> :udp
+        "NETWORK" -> :network
         _ -> :dummy
       end
 

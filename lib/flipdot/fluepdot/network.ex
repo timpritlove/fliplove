@@ -1,6 +1,6 @@
-defmodule Flipdot.Fluepdot.UDP do
+defmodule Flipdot.Fluepdot.Network do
   @doc """
-  Driver for Fluepdot Display via UDP
+  Driver for Fluepdot Display via Network (UDP + HTTP)
   """
   use GenServer
   require HTTPoison
@@ -10,7 +10,6 @@ defmodule Flipdot.Fluepdot.UDP do
   @port_env "FLIPDOT_PORT"
   @port_default 1337
 
-  @set_rendering_mode false
   @rendering_mode_url "/rendering/mode"
 
   defstruct counter: 0, host: nil, port: nil, socket: nil, addresses: [], timer: nil, connected: false
@@ -73,22 +72,6 @@ defmodule Flipdot.Fluepdot.UDP do
 
   @impl true
   def handle_info(:check_connection, state) do
-    if @set_rendering_mode do
-      case HTTPoison.put(Path.join(["http://", state.host, @rendering_mode_url]), <<?1>>) do
-        {:ok, response} ->
-          case response.status_code do
-            200 ->
-              true
-
-            status_code ->
-              Logger.warning("Call to set rendering mode returned status code #{status_code}")
-          end
-
-        {:error, reason} ->
-          Logger.warning("Could not set rendering mode. Reason: #{inspect(reason)}")
-      end
-    end
-
     {:noreply, state}
   end
 
