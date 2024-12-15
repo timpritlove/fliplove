@@ -32,6 +32,18 @@ defmodule Flipdot.Fluepdot.UDP do
     {:ok, v4_addresses} = :inet.getaddrs(String.to_charlist(host), :inet)
     {:ok, socket} = :gen_udp.open(0)
 
+    # Initialize rendering mode
+    case HTTPoison.put(Path.join(["http://", host, @rendering_mode_url]), <<?1>>) do
+      {:ok, %{status_code: 200}} ->
+        Logger.info("Successfully set UDP rendering mode")
+
+      {:ok, %{status_code: status_code}} ->
+        Logger.warning("Failed to set UDP rendering mode. Status code: #{status_code}")
+
+      {:error, reason} ->
+        Logger.warning("Failed to set UDP rendering mode. Reason: #{inspect(reason)}")
+    end
+
     {:ok, timer} = :timer.send_interval(10_000, self(), :check_connection)
 
     {:ok,

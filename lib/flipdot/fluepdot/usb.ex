@@ -29,7 +29,17 @@ defmodule Flipdot.Fluepdot.USB do
              ) do
           :ok ->
             Logger.info("Successfully opened serial connection to #{device}")
-            {:ok, %{state | counter: 0, device: device, uart: uart_pid}}
+
+            # Initialize rendering mode
+            case Circuits.UART.write(uart_pid, "config_rendering_mode differential\n") do
+              :ok ->
+                Logger.info("Successfully set USB rendering mode")
+                {:ok, %{state | counter: 0, device: device, uart: uart_pid}}
+
+              {:error, reason} ->
+                Logger.error("Failed to set USB rendering mode: #{inspect(reason)}")
+                {:stop, reason}
+            end
 
           {:error, reason} ->
             Logger.error("Failed to open serial connection: #{inspect(reason)}")
