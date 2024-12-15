@@ -29,15 +29,15 @@ defmodule Flipdot.Fluepdot.USB do
              ) do
           :ok ->
             Logger.info("Successfully opened serial connection to #{device}")
+            state = %{state | device: device, uart: uart_pid, counter: 0}
 
-            # Initialize rendering mode
-            case Circuits.UART.write(uart_pid, "config_rendering_mode differential\n") do
-              :ok ->
-                Logger.info("Successfully set USB rendering mode")
-                {:ok, %{state | counter: 0, device: device, uart: uart_pid}}
-
+            with :ok <- write_command(state, "config_rendering_mode differential"),
+                 :ok <- write_command(state, "flipdot_clear") do
+              Logger.info("Successfully initialized USB display")
+              {:ok, state}
+            else
               {:error, reason} ->
-                Logger.error("Failed to set USB rendering mode: #{inspect(reason)}")
+                Logger.error("Failed to initialize USB display: #{inspect(reason)}")
                 {:stop, reason}
             end
 
@@ -50,9 +50,9 @@ defmodule Flipdot.Fluepdot.USB do
 
   @impl true
   def handle_info({:display_updated, bitmap}, state) do
-    cmd = "\nframebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64()) <> "\n"
+    cmd = "\nframebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64())
 
-    case Circuits.UART.write(state.uart, cmd) do
+    case write_command(state, cmd) do
       :ok ->
         counter = state.counter + 1
         Logger.debug("USB: Display updated (##{counter}).")
@@ -62,6 +62,11 @@ defmodule Flipdot.Fluepdot.USB do
         Logger.error("Failed to write to serial port: #{inspect(reason)}")
         {:noreply, state}
     end
+  end
+
+  # Helper function for writing commands
+  defp write_command(state, command) do
+    Circuits.UART.write(state.uart, command <> "\n")
   end
 
   @impl true
