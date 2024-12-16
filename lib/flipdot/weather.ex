@@ -17,12 +17,11 @@ defmodule Flipdot.Weather do
 
   @topic "weather:update"
 
-  @latitude 52.5363101
-  @longitude 13.4273403
-
   @openweathermap_onecall_url "https://api.openweathermap.org/data/3.0/onecall"
   @api_key_file "data/keys/openweathermap.txt"
   @api_key_env "FLIPDOT_OPENWEATHERMAP_API_KEY"
+
+  @ip_geolocation_url "http://ip-api.com/json"
 
   def topic, do: @topic
 
@@ -42,14 +41,13 @@ defmodule Flipdot.Weather do
   @impl true
   def init(state) do
     {:ok, api_key} = get_api_key()
-    latitude = System.get_env(@latitude_env) || @latitude
-    longitude = System.get_env(@longitude_env) || @longitude
+    {latitude, longitude, source} = get_location()
+
+    Logger.info("Weather service started using #{source} location (#{latitude}, #{longitude})")
 
     # update weather information in a second and then every 5 minutes
     {:ok, _} = :timer.send_after(5_000, :update_weather)
     {:ok, timer} = :timer.send_interval(300_000, :update_weather)
-
-    Logger.info("Weather service started (#{latitude}, #{longitude})")
 
     {:ok, %{state | api_key: api_key, latitude: latitude, longitude: longitude, timer: timer}}
   end
@@ -217,6 +215,34 @@ defmodule Flipdot.Weather do
       {:ok, %{status_code: status_code}} ->
         Logger.warning("OpenWeatherMap API call failed (#{status_code})")
         nil
+    end
+  end
+
+  defp get_location do
+    case {System.get_env(@latitude_env), System.get_env(@longitude_env)} do
+      {lat, lon} when is_binary(lat) and is_binary(lon) ->
+        {String.to_float(lat), String.to_float(lon), "environment variables"}
+
+      _ ->
+        Logger.info("No location coordinates in environment, falling back to IP geolocation")
+        get_location_from_ip()
+    end
+  end
+
+  defp get_location_from_ip do
+    case HTTPoison.get(@ip_geolocation_url) do
+      {:ok, %{status_code: 200, body: body}} ->
+        case Jason.decode!(body) do
+          %{"lat" => lat, "lon" => lon} ->
+            {lat, lon, "IP geolocation"}
+          _ ->
+            Logger.error("Invalid response from IP geolocation service")
+            raise "Could not determine location"
+        end
+
+      {:error, reason} ->
+        Logger.error("Failed to get location from IP: #{inspect(reason)}")
+        raise "Could not determine location"
     end
   end
 end
