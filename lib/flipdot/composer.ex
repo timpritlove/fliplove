@@ -19,20 +19,35 @@ defmodule Flipdot.Composer do
 
   def init(state) do
     # Start Registry
-    {:ok, registry_pid} = Registry.start_link(keys: :unique, name: @registry)
+    {:ok, _} = Registry.start_link(keys: :unique, name: @registry)
     Logger.info("Registry started")
 
     Logger.debug("Starting DynamicSupervisor...")
-    {:ok, supervisor_pid} = DynamicSupervisor.start_link(strategy: :one_for_one, name: @supervisor)
+    {:ok, _} = DynamicSupervisor.start_link(strategy: :one_for_one, name: @supervisor)
     Logger.info("DynamicSupervisor started")
 
-    # Ensure both processes are alive before starting the dashboard
-    if Process.alive?(registry_pid) and Process.alive?(supervisor_pid) do
-      Logger.debug("Starting default dashboard composer")
-      start_composer(:dashboard)
+    # Start composer based on environment variable with delay
+    case System.get_env("FLIPDOT_COMPOSER") do
+      nil ->
+        Logger.debug("No default composer specified")
+
+      composer_name ->
+        composer_atom = String.to_existing_atom(composer_name)
+        if Map.has_key?(@composers, composer_atom) do
+          Logger.debug("Starting default composer in 1 second: #{composer_name}")
+          Process.send_after(self(), {:start_default_composer, composer_atom}, 5000)
+        else
+          Logger.error("Invalid composer specified: #{composer_name}")
+        end
     end
 
     {:ok, state}
+  end
+
+  # Add this handle_info callback to handle the delayed start
+  def handle_info({:start_default_composer, composer}, state) do
+    start_composer(composer)
+    {:noreply, state}
   end
 
   # client functions
