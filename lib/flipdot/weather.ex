@@ -12,8 +12,8 @@ defmodule Flipdot.Weather do
 
   defstruct [:timer, :api_key, :latitude, :longitude, :weather]
 
-  @latitude_env "WEATHER_LATITUDE"
-  @longitude_env "WEATHER_LONGITUDE"
+  @latitude_env "FLIPDOT_LATITUDE"
+  @longitude_env "FLIPDOT_LONGITUDE"
 
   @topic "weather:update"
 
