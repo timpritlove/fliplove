@@ -39,7 +39,10 @@ defmodule Flipdot.Fluepdot do
 
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
     Logger.info("Fluepdot server started (mode: #{inspect(mode)}).")
-    send(self(), {:display_updated, Display.get()})
+
+    # Set initial display after driver is started
+    Display.set(Flipdot.Images.images()["space-invaders"])
+
     {:ok, %{state | mode: mode, driver: driver}}
   end
 
