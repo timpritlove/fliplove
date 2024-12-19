@@ -63,7 +63,6 @@ defmodule FlipdotWeb.FlipdotLive do
 
   @impl true
   def handle_info({:running_app, app}, socket) do
-    Logger.debug("Received running_app update: #{inspect(app)}")
     {:noreply,
      socket
      |> assign(:app, app)}
@@ -214,20 +213,14 @@ defmodule FlipdotWeb.FlipdotLive do
   @impl true
   def handle_event("app", params, socket) do
     app = String.to_atom(params["value"])
-    Logger.debug("App click: #{inspect(app)}, currently running: #{inspect(Flipdot.App.running_app())}")
 
     if app == Flipdot.App.running_app() do
-      Logger.debug("Stopping app #{inspect(app)}")
       Flipdot.App.stop_app()
     else
-      Logger.debug("Starting app #{inspect(app)}")
       Flipdot.App.start_app(app)
     end
 
-    current_app = Flipdot.App.running_app()
-    Logger.debug("Current app after action: #{inspect(current_app)}")
-
-    socket = socket |> assign(:app, current_app)
+    socket = socket |> assign(:app, Flipdot.App.running_app())
     {:noreply, socket}
   end
 
@@ -394,10 +387,10 @@ defmodule FlipdotWeb.FlipdotLive do
     </div>
     <div class="mt-4">
       <.image_button tooltip="Space Invaders" image={Flipdot.Images.images()["space-invaders"]} value="space-invaders" />
-      <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["pacman"]} value="pacman" />
+      <.image_button tooltip="Pacman" image={Flipdot.Images.images()["pacman"]} value="pacman" />
       <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["metaebene"]} value="metaebene" />
-      <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["blinkenlights"]} value="blinkenlights" />
-      <.image_button tooltip="Metaebene" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
+      <.image_button tooltip="Blinkenlights" image={Flipdot.Images.images()["blinkenlights"]} value="blinkenlights" />
+      <.image_button tooltip="Fluepdot" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
     </div>
     <div>
       <.link class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" href="/download">
@@ -484,7 +477,7 @@ defmodule FlipdotWeb.FlipdotLive do
     ~H"""
     <button
       title={@tooltip}
-      class={"rounded fill-white text-l bg-indigo-600 p-4 hover:bg-indigo-900 inline-block #{if @app == @self, do: "ring-2 ring-yellow-300"}"}
+      class="rounded fill-white text-l bg-indigo-600 p-4 hover:bg-indigo-900 inline-block"
       phx-click="app"
       value={@value}
     >
