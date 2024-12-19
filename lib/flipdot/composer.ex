@@ -18,10 +18,7 @@ defmodule Flipdot.Composer do
   end
 
   def init(state) do
-    # Start Registry
-    {:ok, _} = Registry.start_link(keys: :unique, name: @registry)
-    Logger.info("Registry started")
-
+    # Start DynamicSupervisor
     Logger.debug("Starting DynamicSupervisor...")
     {:ok, _} = DynamicSupervisor.start_link(strategy: :one_for_one, name: @supervisor)
     Logger.info("DynamicSupervisor started")

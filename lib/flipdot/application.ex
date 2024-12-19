@@ -23,6 +23,8 @@ defmodule Flipdot.Application do
         Flipdot.Weather,
         Flipdot.Fluepdot,
         Flipdot.Font.Library,
+        # Start the Registry for composers
+        {Registry, keys: :unique, name: Flipdot.Composer.Registry},
         Flipdot.Composer
       ] ++
         case System.get_env("FLIPDOT_TELEGRAM_BOT_SECRET") do
