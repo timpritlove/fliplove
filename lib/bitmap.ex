@@ -685,13 +685,14 @@ defmodule Bitmap do
 
     # traverse pixels left to right, top to bottom
     for y <- (height - 1)..0 do
-      for x <- 0..(width - 1) do
+      row = for x <- 0..(width - 1) do
         case get_pixel(bitmap, {x, y}) do
           0 -> options[:off]
           _ -> options[:on]
         end
       end
-      |> Enum.concat("\n")
+
+      row ++ [?\n]  # Append newline character to the row
     end
     |> List.flatten()
     |> List.to_string()
