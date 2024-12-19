@@ -13,19 +13,19 @@ defmodule Flipdot.Application do
         FlipdotWeb.Telemetry,
         # Start the PubSub system
         {Phoenix.PubSub, name: Flipdot.PubSub},
-        # Start Finch
-        {Finch, name: Flipdot.Finch},
         # Start the Endpoint (http/https)
         FlipdotWeb.Endpoint,
-        # Start a worker by calling: Flipdot.Worker.start_link(arg)
-        # {Flipdot.Worker, arg}
+        # Start the Registry for apps
+        {Registry, keys: :unique, name: Flipdot.App.Registry},
+        # Start the DynamicSupervisor for apps
+        {DynamicSupervisor, strategy: :one_for_one, name: Flipdot.App.DynamicSupervisor},
+        # Start the App manager
+        Flipdot.App,
+        # Start other required services
         Flipdot.Display,
         Flipdot.Weather,
         Flipdot.Fluepdot,
-        Flipdot.Font.Library,
-        # Start the Registry for composers
-        {Registry, keys: :unique, name: Flipdot.Composer.Registry},
-        Flipdot.Composer
+        Flipdot.Font.Library
       ] ++
         case System.get_env("FLIPDOT_TELEGRAM_BOT_SECRET") do
           nil -> []

@@ -10,13 +10,14 @@ defmodule FlipdotWeb.FlipdotLive do
 
   require Integer
 
+  @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
       :timer.send_interval(250, self(), :tick)
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Display.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Library.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.TelegramBot.topic())
-      Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.Composer.topic())
+      Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.App.topic())
     end
 
     socket =
@@ -24,7 +25,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(page_title: "Flipdot Display")
       |> assign(:bitmap, Display.get())
       |> assign(:clock, clock())
-      |> assign(:composer, Flipdot.Composer.running_composer())
+      |> assign(:app, Flipdot.App.running_app())
       |> assign(:text, "")
       |> assign(:font_name, nil)
       |> assign(:mode, :pencil)
@@ -35,6 +36,7 @@ defmodule FlipdotWeb.FlipdotLive do
     {:ok, socket}
   end
 
+  @impl true
   def handle_info({:bot_update, update}, socket) do
     Logger.debug("Got message: #{inspect(update)}")
 
@@ -49,18 +51,25 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_info({:display_updated, bitmap}, socket) do
-    {:noreply,
-     socket
-     |> assign(:bitmap, bitmap)}
+    {:noreply, assign(socket, :bitmap, bitmap)}
   end
 
-  def handle_info({:running_composer, composer}, socket) do
-    {:noreply,
-     socket
-     |> assign(:composer, composer)}
+  @impl true
+  def handle_info({:bitmap, bitmap}, socket) do
+    {:noreply, assign(socket, :bitmap, bitmap)}
   end
 
+  @impl true
+  def handle_info({:running_app, app}, socket) do
+    Logger.debug("Received running_app update: #{inspect(app)}")
+    {:noreply,
+     socket
+     |> assign(:app, app)}
+  end
+
+  @impl true
   def handle_info(:font_library_update, socket) do
     font_select = Library.get_fonts() |> build_font_select()
 
@@ -69,73 +78,80 @@ defmodule FlipdotWeb.FlipdotLive do
      |> assign(:font_select, font_select)}
   end
 
+  @impl true
   def handle_info(:tick, socket) do
     {:noreply,
      socket
      |> assign(:clock, clock())}
   end
 
+  @impl true
   def handle_event("translate-up", _params, socket) do
     Display.get() |> Bitmap.translate({0, 1}) |> Display.set()
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("translate-down", _params, socket) do
     Display.get() |> Bitmap.translate({0, -1}) |> Display.set()
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("translate-right", _params, socket) do
     Display.get() |> Bitmap.translate({1, 0}) |> Display.set()
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("translate-left", _params, socket) do
     Display.get() |> Bitmap.translate({-1, 0}) |> Display.set()
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("flip-horizontally", _params, socket) do
     Display.get() |> Bitmap.flip_horizontally() |> Display.set()
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("flip-vertically", _params, socket) do
     Display.get() |> Bitmap.flip_vertically() |> Display.set()
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("invert", _params, socket) do
     Display.get() |> Bitmap.invert() |> Display.set()
     {:noreply, socket}
   end
 
-  # mode selector
-
+  @impl true
   def handle_event("random", _params, socket) do
     Bitmap.random(Display.width(), Display.height()) |> Display.set()
-
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("game-of-life", _params, socket) do
     Display.get() |> GameOfLife.game_of_life() |> Display.set()
-
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("gradient-h", _params, socket) do
     Display.get() |> Bitmap.gradient_h() |> Display.set()
-
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("gradient-v", _params, socket) do
     Display.get() |> Bitmap.gradient_v() |> Display.set()
-
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("maze", _params, socket) do
     display_width = Display.width()
     display_height = Display.height()
@@ -149,6 +165,7 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("render-text", %{"text" => text, "font" => font_name} = _params, socket) do
     Display.clear()
     |> Renderer.render_text({0, 2}, Library.get_font_by_name(font_name), text)
@@ -162,6 +179,7 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("upload", _params, socket) do
     [bitmap] =
       consume_uploaded_entries(socket, :frame, fn %{path: path} = _meta, _entry ->
@@ -172,10 +190,12 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("mode", params, socket) do
     new_mode = String.to_atom(params["value"])
 
@@ -191,19 +211,27 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
-  def handle_event("composer", params, socket) do
-    composer = String.to_atom(params["value"])
+  @impl true
+  def handle_event("app", params, socket) do
+    app = String.to_atom(params["value"])
+    Logger.debug("App click: #{inspect(app)}, currently running: #{inspect(Flipdot.App.running_app())}")
 
-    if composer == Flipdot.Composer.running_composer() do
-      Flipdot.Composer.stop_composer()
+    if app == Flipdot.App.running_app() do
+      Logger.debug("Stopping app #{inspect(app)}")
+      Flipdot.App.stop_app()
     else
-      Flipdot.Composer.start_composer(composer)
+      Logger.debug("Starting app #{inspect(app)}")
+      Flipdot.App.start_app(app)
     end
 
-    socket = socket |> assign(:composer, Flipdot.Composer.running_composer())
+    current_app = Flipdot.App.running_app()
+    Logger.debug("Current app after action: #{inspect(current_app)}")
+
+    socket = socket |> assign(:app, current_app)
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("image", params, socket) do
     image = params["value"]
     Display.set(Flipdot.Images.images()[image])
@@ -211,12 +239,14 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("erase", _params, socket) do
     Bitmap.new(Display.width(), Display.height()) |> Display.set()
 
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("pixel", params, socket) do
     x = String.to_integer(params["x"])
     y = String.to_integer(params["y"])
@@ -327,6 +357,7 @@ defmodule FlipdotWeb.FlipdotLive do
     end
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <.display width={115} height={16} bitmap={@bitmap} />
@@ -350,9 +381,9 @@ defmodule FlipdotWeb.FlipdotLive do
     </div>
 
     <div class="mt-4">
-      <.composer composer={@composer} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
-      <.composer composer={@composer} tooltip="Slideshow" value="slideshow" self={:slideshow} icon="images" />
-      <.composer composer={@composer} tooltip="Maze Solver" value="maze_solver" self={:maze_solver} icon="hat-wizard" />
+      <.app app={@app} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
+      <.app app={@app} tooltip="Slideshow" value="slideshow" self={:slideshow} icon="images" />
+      <.app app={@app} tooltip="Maze Solver" value="maze_solver" self={:maze_solver} icon="hat-wizard" />
       <span class="ml-4" />
 
       <.effect target="random">Noise</.effect>
@@ -449,15 +480,15 @@ defmodule FlipdotWeb.FlipdotLive do
     """
   end
 
-  def composer(assigns) do
+  def app(assigns) do
     ~H"""
     <button
       title={@tooltip}
-      class="fill-white bg-indigo-600 text-l px-4 py-4 rounded hover:bg-indigo-900"
-      phx-click="composer"
+      class={"rounded fill-white text-l bg-indigo-600 p-4 hover:bg-indigo-900 inline-block #{if @app == @self, do: "ring-2 ring-yellow-300"}"}
+      phx-click="app"
       value={@value}
     >
-      <div class={if @composer == @self, do: "fill-yellow-300"}>
+      <div class={if @app == @self, do: "fill-yellow-300"}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-8 w-8" />
       </div>
     </button>

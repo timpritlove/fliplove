@@ -1,4 +1,4 @@
-defmodule Flipdot.Composer.Slideshow do
+defmodule Flipdot.App.Slideshow do
   @moduledoc """
   Show a slide show on the flipboard
   """
@@ -6,7 +6,7 @@ defmodule Flipdot.Composer.Slideshow do
   alias Flipdot.Display
   require Logger
 
-  @registry Flipdot.Composer.Registry
+  @registry Flipdot.App.Registry
 
   defstruct [:all_images, remaining: nil]
 
@@ -18,7 +18,7 @@ defmodule Flipdot.Composer.Slideshow do
 
   @impl true
   def init(state) do
-    Registry.register(@registry, :running_composer, :slideshow)
+    Registry.register(@registry, :running_app, :slideshow)
 
     all_images = Flipdot.Images.load_images(width: Display.width(), height: Display.height())
     remaining = all_images

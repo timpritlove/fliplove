@@ -1,4 +1,4 @@
-defmodule Flipdot.Composer.Dashboard do
+defmodule Flipdot.App.Dashboard do
   @moduledoc """
   Compose a dashboard to show on flipboard
   """
@@ -11,7 +11,7 @@ defmodule Flipdot.Composer.Dashboard do
 
   defstruct font: nil, bitmap: nil
 
-  @registry Flipdot.Composer.Registry
+  @registry Flipdot.App.Registry
 
   @font "flipdot"
   @clock_symbol 0xF017
@@ -26,7 +26,7 @@ defmodule Flipdot.Composer.Dashboard do
   @impl true
   def init(state) do
     Logger.info("Dashboard is starting...")
-    Registry.register(@registry, :running_composer, :dashboard)
+    Registry.register(@registry, :running_app, :dashboard)
 
     state = %{state | font: Library.get_font_by_name(@font)}
     update_dashboard(state)

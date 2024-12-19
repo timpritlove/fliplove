@@ -1,4 +1,4 @@
-defmodule Flipdot.Composer.MazeSolver do
+defmodule Flipdot.App.MazeSolver do
   @moduledoc """
   Show and solve a maze on the flipboard
   """
@@ -6,7 +6,7 @@ defmodule Flipdot.Composer.MazeSolver do
   alias Flipdot.Display
   require Logger
 
-  @registry Flipdot.Composer.Registry
+  @registry Flipdot.App.Registry
 
   @frame_delay 100
   @maze_delay 5_000
@@ -22,7 +22,7 @@ defmodule Flipdot.Composer.MazeSolver do
   @impl true
   def init(state) do
     Logger.info("Starting Maze Solver...")
-    Registry.register(@registry, :running_composer, :maze_solver)
+    Registry.register(@registry, :running_app, :maze_solver)
 
     maze_stream = new_maze_stream()
 
