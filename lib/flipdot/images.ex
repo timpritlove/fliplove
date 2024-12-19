@@ -121,4 +121,35 @@ defmodule Flipdot.Images do
   def images do
     @images
   end
+
+  @doc """
+  Reads all *.txt files from priv/static/slideshow directory and converts them to Bitmaps.
+  Optionally accepts :width and :height parameters to filter images by dimensions.
+
+  Returns a list of Bitmaps that match the specified dimensions (if any).
+  Silently skips files that can't be parsed or don't match the dimensions.
+  """
+  def load_images(opts \\ []) do
+    width = Keyword.get(opts, :width)
+    height = Keyword.get(opts, :height)
+
+    Path.wildcard("priv/static/slideshow/*.txt")
+    |> Enum.reduce([], fn file_path, acc ->
+      try do
+        bitmap = Bitmap.from_file(file_path)
+
+        cond do
+          width && bitmap.width != width -> acc
+          height && bitmap.height != height -> acc
+          true -> [bitmap | acc]
+        end
+      rescue
+        e ->
+          require Logger
+          Logger.error("Failed to load slideshow image #{file_path}: #{Exception.message(e)}")
+          acc
+      end
+    end)
+    |> Enum.reverse()
+  end
 end

@@ -20,7 +20,7 @@ defmodule Flipdot.Composer.Slideshow do
   def init(state) do
     Registry.register(@registry, :running_composer, :slideshow)
 
-    all_images = Flipdot.Images.images() |> Map.values()
+    all_images = Flipdot.Images.load_images(width: Display.width(), height: Display.height())
     remaining = all_images
     :timer.send_after(0, __MODULE__, :next_slide)
     Logger.info("Slideshow has been started.")
