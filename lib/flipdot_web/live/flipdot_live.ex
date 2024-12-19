@@ -166,14 +166,33 @@ defmodule FlipdotWeb.FlipdotLive do
 
   @impl true
   def handle_event("render-text", %{"text" => text, "font" => font_name} = _params, socket) do
-    Display.clear()
-    |> Renderer.render_text({0, 2}, Library.get_font_by_name(font_name), text)
-    |> Display.set()
+    font = Library.get_font_by_name(font_name)
+    display_width = Display.width()
+    display_height = Display.height()
+
+    # Render text into a temporary bitmap with extra space
+    rendered_text =
+      Bitmap.new(1000, 1000)
+      |> Renderer.render_text({10, 10}, font, text)
+      |> Bitmap.clip()
+
+    # Calculate centering positions
+    x_pos = max(0, div(display_width - Bitmap.width(rendered_text), 2))
+    y_pos = max(0, div(display_height - Bitmap.height(rendered_text), 2))
+
+    # Create a new display bitmap and overlay the text
+    bitmap =
+      Bitmap.new(display_width, display_height)
+      |> Bitmap.overlay(rendered_text, cursor_x: x_pos, cursor_y: y_pos)
+
+    # Update the display
+    Display.set(bitmap)
 
     socket =
       socket
       |> assign(:text, text)
-      |> assign(font_name: font_name)
+      |> assign(:font_name, font_name)
+      |> assign(:bitmap, Display.get())
 
     {:noreply, socket}
   end
@@ -424,10 +443,10 @@ defmodule FlipdotWeb.FlipdotLive do
           placeholder="Type some text…"
           autofocus
           autocomplete="off"
-          phx-debounce="500"
+          phx-debounce="300"
         />
 
-        <select :if={@font_select} name="font" id="font-select">
+        <select :if={@font_select} name="font" id="font-select" phx-debounce="300">
           <%= Phoenix.HTML.Form.options_for_select(@font_select, @font_name) %>
         </select>
         <input type="submit" value="Render Text" class="rounded-full" />

@@ -41,4 +41,34 @@ defmodule Flipdot.Font.Renderer do
         )
     end
   end
+
+  @doc """
+  Measure the width of text in pixels when rendered with the given font.
+  """
+  def measure_text(font, text) when is_binary(text) do
+    measure_text(font, String.to_charlist(text))
+  end
+
+  def measure_text(_font, []), do: 0
+
+  def measure_text(font, [character | tail]) do
+    case Map.get(font.characters, character, nil) do
+      nil ->
+        if Map.get(font.characters, 0, nil) do
+          measure_text(font, [0 | tail])
+        else
+          measure_text(font, tail)
+        end
+
+      char ->
+        kerning =
+          case tail do
+            [] -> 0
+            _ -> Kerning.get_kerning(font, [character, hd(tail)])
+          end
+
+        char_width = Map.get(char, :dwx0, Bitmap.width(char.bitmap) + 1)
+        char_width + kerning + measure_text(font, tail)
+    end
+  end
 end
