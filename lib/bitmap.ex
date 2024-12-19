@@ -634,13 +634,14 @@ defmodule Bitmap do
     opts =
       Keyword.validate!(opts,
         width: width,
-        height: height
+        height: height,
+        scale: 1
       )
 
     svg_header = """
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="#{opts[:width]}px" height="#{opts[:height]}px"
+            width="#{opts[:width] * opts[:scale]}px" height="#{opts[:height] * opts[:scale]}px"
             viewbox="0 0 #{width} #{height}">
     """
 

@@ -225,9 +225,26 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   @impl true
-  def handle_event("image", params, socket) do
-    image = params["value"]
-    Display.set(Flipdot.Images.images()[image])
+  def handle_event("image", %{"value" => value}, socket) do
+    case value do
+      "" -> {:noreply, socket}
+      "random" -> Bitmap.random(Display.width(), Display.height()) |> Display.set()
+      "gradient-h" -> Display.get() |> Bitmap.gradient_h() |> Display.set()
+      "gradient-v" -> Display.get() |> Bitmap.gradient_v() |> Display.set()
+      "maze" ->
+        display_width = Display.width()
+        display_height = Display.height()
+        maze_width = if Integer.is_odd(display_width), do: display_width, else: display_width - 1
+        maze_height = if Integer.is_odd(display_height), do: display_height, else: display_height - 1
+
+        Maze.generate_maze(maze_width, maze_height)
+        |> Bitmap.crop_relative(display_width, display_height, rel_y: :top)
+        |> Display.set()
+      "game-of-life" -> Display.get() |> GameOfLife.game_of_life() |> Display.set()
+      image when image in ["space-invaders", "pacman", "metaebene", "blinkenlights", "fluepdot"] ->
+        Display.set(Flipdot.Images.images()[image])
+      _ -> {:noreply, socket}
+    end
 
     {:noreply, socket}
   end
@@ -379,11 +396,11 @@ defmodule FlipdotWeb.FlipdotLive do
       <.app app={@app} tooltip="Maze Solver" value="maze_solver" self={:maze_solver} icon="hat-wizard" />
       <span class="ml-4" />
 
-      <.effect target="random">Noise</.effect>
-      <.effect target="gradient-h">Gradient H</.effect>
-      <.effect target="gradient-v">Gradient V</.effect>
-      <.effect target="maze">Maze</.effect>
-      <.effect target="game-of-life">Game of Life</.effect>
+      <.image_button tooltip="Noise" image={Bitmap.random(16, 16)} value="random" />
+      <.image_button tooltip="Gradient H" image={Bitmap.gradient_h(16, 16)} value="gradient-h" />
+      <.image_button tooltip="Gradient V" image={Bitmap.gradient_v(16, 16)} value="gradient-v" />
+      <.image_button tooltip="Maze" image={Maze.generate_maze(17, 17)} value="maze" />
+      <.image_button tooltip="Game of Life" image={Bitmap.random(16, 16) |> GameOfLife.game_of_life()} value="game-of-life" />
     </div>
     <div class="mt-4">
       <.image_button tooltip="Space Invaders" image={Flipdot.Images.images()["space-invaders"]} value="space-invaders" />
@@ -508,11 +525,13 @@ defmodule FlipdotWeb.FlipdotLive do
     ~H"""
     <button
       title={@tooltip}
-      class="rounded p-4 fill-white bg-indigo-600 hover:bg-indigo-900"
+      class="rounded px-2 py-4 fill-white bg-indigo-600 hover:bg-indigo-900 inline-flex items-center justify-center"
       phx-click="image"
       value={@value}
     >
-      <%= raw(Bitmap.to_svg(@image, width: Display.width(), height: Display.height())) %>
+      <div class="h-8 flex items-center justify-center overflow-visible">
+        <%= raw(Bitmap.to_svg(@image, scale: 2)) %>
+      </div>
     </button>
     """
   end
