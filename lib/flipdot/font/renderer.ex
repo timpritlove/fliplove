@@ -108,7 +108,10 @@ defmodule Flipdot.Font.Renderer do
         kerning =
           case tail do
             [] -> 0
-            _ -> Kerning.get_kerning(font, [character, hd(tail)])
+            _ ->
+              pair = List.to_string([character, hd(tail)])
+              Logger.debug("Checking kerning for pair: #{inspect(pair)}")
+              Kerning.get_kerning(font, pair)
           end
         Logger.debug("Kerning value: #{kerning}")
 
