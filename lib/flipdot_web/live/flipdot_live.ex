@@ -306,6 +306,19 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_event("download", _params, socket) do
+    bitmap_text = Display.get() |> Bitmap.to_text()
+
+    {:noreply,
+     socket
+     |> push_event("download", %{
+       filename: "bitmap.txt",
+       content: bitmap_text,
+       mime_type: "text/plain"
+     })}
+  end
+
   # helper functions
 
   def do_pixel_click(:pencil, {x, y}, _, bitmap) do
@@ -389,6 +402,7 @@ defmodule FlipdotWeb.FlipdotLive do
   @impl true
   def render(assigns) do
     ~H"""
+    <div id="download-hook" phx-hook="Download"></div>
     <.display width={115} height={16} bitmap={@bitmap} />
     <div class="mt-4">
       <.tool mode={@mode} tooltip="Pencil Tool" value="pencil" self={:pencil} icon="pencil" />
@@ -429,9 +443,9 @@ defmodule FlipdotWeb.FlipdotLive do
       <.image_button tooltip="Fluepdot" image={Flipdot.Images.images()["fluepdot"]} value="fluepdot" />
     </div>
     <div>
-      <.link class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" href="/download">
+      <button class="rounded p-4 text-white text-l bg-indigo-600 hover:bg-indigo-900" phx-click="download">
         Download Display
-      </.link>
+      </button>
     </div>
     <hr class="m-4" />
     <div id="text">
