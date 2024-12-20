@@ -9,10 +9,10 @@ defmodule Flipdot.Display do
 
   @topic "display"
 
-  def start_link(bitmap) do
-    bitmap = if bitmap == nil, do: Bitmap.new(width(), height()), else: bitmap
-
-    Agent.start_link(fn -> %__MODULE__{bitmap: bitmap} end, name: __MODULE__)
+  def start_link(_) do
+    # Always initialize with a blank bitmap
+    initial_bitmap = Bitmap.new(width(), height())
+    Agent.start_link(fn -> %__MODULE__{bitmap: initial_bitmap} end, name: __MODULE__)
   end
 
   def topic, do: @topic
@@ -21,7 +21,14 @@ defmodule Flipdot.Display do
   def height, do: Application.fetch_env!(:flipdot, :display)[:height]
 
   def get do
-    Agent.get(__MODULE__, fn state -> state.bitmap end)
+    case Agent.get(__MODULE__, fn state -> state.bitmap end) do
+      nil ->
+        # This should never happen, but just in case
+        bitmap = Bitmap.new(width(), height())
+        set(bitmap)
+        bitmap
+      bitmap -> bitmap
+    end
   end
 
   def clear do
