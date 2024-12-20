@@ -124,7 +124,7 @@ defmodule Bitmap do
     |> Map.keys()
     |> Enum.all?(fn key ->
       case key do
-        {x, y} when is_integer(x) and is_integer(y) and x >= 0 and y >= 0 ->
+        {x, y} when is_integer(x) and is_integer(y) ->
           case Map.get(matrix, key) do
             0 -> true
             1 -> true
@@ -590,16 +590,25 @@ defmodule Bitmap do
     from_lines_of_text(lines, options)
   end
 
+  @doc """
+  Create a bitmap from lines of text, where each character in the line represents a pixel.
+  By default, treats "1" or "X" as on pixels and "0" or " " as off pixels.
+  Can be overridden with :on and :off options which can be single characters or lists of characters.
+  """
   def from_lines_of_text(lines, options \\ []) do
-    on = Keyword.get(options, :on) || ?X
-    off = Keyword.get(options, :off) || ?\s
+    # Allow override but provide smart defaults
     baseline_x = Keyword.get(options, :baseline_x, 0)
     baseline_y = Keyword.get(options, :baseline_y, 0)
+    on = Keyword.get(options, :on, [?X, ?1]) |> List.wrap()
+    off = Keyword.get(options, :off, [?\s, ?0]) |> List.wrap()
 
-    # convert lines provided as strings to charlist
+    # Convert any strings to charlists
     lines =
       Enum.map(lines, fn line ->
-        if is_binary(line), do: to_charlist(line), else: line
+        cond do
+          is_binary(line) -> to_charlist(line)
+          true -> line
+        end
       end)
 
     width = length(List.first(lines))
@@ -616,10 +625,10 @@ defmodule Bitmap do
           {pixel, x} <- Enum.with_index(line, 0),
           into: %{} do
         value =
-          case pixel do
-            ^off -> 0
-            ^on -> 1
-            c -> raise "Invalid pixel character #{c} (#{on},#{off})"
+          cond do
+            pixel in on -> 1
+            pixel in off -> 0
+            true -> raise "Invalid pixel character #{inspect(<<pixel>>)} (expected one of #{inspect(Enum.map(on, &<<&1>>))} for on, one of #{inspect(Enum.map(off, &<<&1>>))} for off)"
           end
 
         {{x, y}, value}
