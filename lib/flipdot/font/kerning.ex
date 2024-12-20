@@ -42,6 +42,11 @@ defmodule Flipdot.Font.Kerning do
     },
     "space-invaders" => %{
       7 => %{}
+    },
+    "flipdot" => %{
+      7 => %{
+        "lt" => -1
+      }
     }
   }
 
