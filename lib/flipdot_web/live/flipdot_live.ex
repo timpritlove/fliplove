@@ -167,25 +167,9 @@ defmodule FlipdotWeb.FlipdotLive do
   @impl true
   def handle_event("render-text", %{"text" => text, "font" => font_name} = _params, socket) do
     font = Library.get_font_by_name(font_name)
-    display_width = Display.width()
-    display_height = Display.height()
 
-    # Render text into a temporary bitmap with extra space
-    rendered_text =
-      Bitmap.new(1000, 1000)
-      |> Renderer.render_text({10, 10}, font, text)
-      |> Bitmap.clip()
-
-    # Calculate centering positions
-    x_pos = max(0, div(display_width - Bitmap.width(rendered_text), 2))
-    y_pos = max(0, div(display_height - Bitmap.height(rendered_text), 2))
-
-    # Create a new display bitmap and overlay the text
-    bitmap =
-      Bitmap.new(display_width, display_height)
-      |> Bitmap.overlay(rendered_text, cursor_x: x_pos, cursor_y: y_pos)
-
-    # Update the display
+    # Create text bitmap directly using create_text
+    bitmap = Renderer.create_text(font, text)
     Display.set(bitmap)
 
     socket =
