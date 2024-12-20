@@ -13,28 +13,28 @@ defmodule Flipdot.Application do
         FlipdotWeb.Telemetry,
         # Start the PubSub system
         {Phoenix.PubSub, name: Flipdot.PubSub},
-        # Start the Endpoint (http/https)
-        FlipdotWeb.Endpoint,
+        # Start core services first
+        Flipdot.Font.Library,
+        Flipdot.Display,
         # Start the Registry for apps
         {Registry, keys: :unique, name: Flipdot.App.Registry},
         # Start the DynamicSupervisor for apps
         {DynamicSupervisor, strategy: :one_for_one, name: Flipdot.App.DynamicSupervisor},
-        # Start the App manager
-        Flipdot.App,
-        # Start other required services
-        Flipdot.Display,
-        Flipdot.Weather,
-        Flipdot.Fluepdot,
-        Flipdot.Font.Library
+        # Start services that depend on core services
+        {Flipdot.App, []},
+        {Flipdot.Weather, []},
+        {Flipdot.Fluepdot, []},
+        # Start the Endpoint last (after all services are ready)
+        {FlipdotWeb.Endpoint, []}
       ] ++
         case System.get_env("FLIPDOT_TELEGRAM_BOT_SECRET") do
           nil -> []
           telegram_bot_secret -> [{Flipdot.TelegramBot, bot_key: telegram_bot_secret}]
         end
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Flipdot.Supervisor]
+    # Use rest_for_one strategy to ensure services start in order and
+    # if a service crashes, all services that depend on it are restarted
+    opts = [strategy: :rest_for_one, name: Flipdot.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
