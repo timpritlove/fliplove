@@ -328,12 +328,12 @@ defmodule Flipdot.Font.Parser do
     if Map.has_key?(char, :bitmap_lines) and Map.has_key?(char, :bb_x_off) and Map.has_key?(char, :bb_y_off) do
       bitmap = Bitmap.from_lines_of_text(
         char.bitmap_lines,
-        on: ?1,
-        off: ?0,
         baseline_x: char.bb_x_off,
         baseline_y: char.bb_y_off
       )
-      %{char | bitmap: bitmap} |> Map.delete(:bitmap_lines)
+      # Remove bb_x_off and bb_y_off from char map since they're now in the bitmap
+      char = Map.drop(char, [:bb_x_off, :bb_y_off, :bitmap_lines])
+      Map.put(char, :bitmap, bitmap)
     else
       char
     end
