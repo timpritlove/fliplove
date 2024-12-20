@@ -8,7 +8,7 @@ defmodule Flipdot.Font.Library do
   require Logger
 
   @topic "font_library_update"
-  defstruct fonts: [], task_supervisor: nil
+  defstruct fonts: [], task_supervisor: nil, parsing_tasks: []
 
   def start_link(_state) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -17,6 +17,8 @@ defmodule Flipdot.Font.Library do
   def topic, do: @topic
 
   def init(_) do
+    Process.flag(:trap_exit, true)
+
     # Start with built-in fonts
     initial_fonts = [
       Flipdot.Font.Fonts.SpaceInvaders.get(),
@@ -25,7 +27,7 @@ defmodule Flipdot.Font.Library do
 
     {:ok, task_supervisor} = Task.Supervisor.start_link()
 
-    state = %__MODULE__{fonts: initial_fonts, task_supervisor: task_supervisor}
+    state = %__MODULE__{fonts: initial_fonts, task_supervisor: task_supervisor, parsing_tasks: []}
     {:ok, state, {:continue, :schedule_font_loading}}
   end
 
@@ -33,14 +35,15 @@ defmodule Flipdot.Font.Library do
     font_dir = Path.join([Flipdot.static_dir(), "fonts"])
 
     # Schedule parsing tasks for each font file
-    File.ls!(font_dir)
-    |> Enum.filter(fn file_name -> String.ends_with?(file_name, ".bdf") end)
-    |> Enum.each(fn font_file ->
-      path = Path.join([font_dir, font_file])
-      Task.Supervisor.async_nolink(state.task_supervisor, Parser, :parse_font, [path])
-    end)
+    parsing_tasks =
+      File.ls!(font_dir)
+      |> Enum.filter(fn file_name -> String.ends_with?(file_name, ".bdf") end)
+      |> Enum.map(fn font_file ->
+        path = Path.join([font_dir, font_file])
+        Task.Supervisor.async_nolink(state.task_supervisor, Parser, :parse_font, [path])
+      end)
 
-    {:noreply, state}
+    {:noreply, %{state | parsing_tasks: parsing_tasks}}
   end
 
   # Handle successful font parsing
@@ -48,24 +51,72 @@ defmodule Flipdot.Font.Library do
     # Flush the DOWN message
     Process.demonitor(ref, [:flush])
 
-    new_state = %{state | fonts: [parsed_font | state.fonts]}
+    # Remove the completed task from parsing_tasks
+    parsing_tasks = Enum.reject(state.parsing_tasks, fn task -> task.ref == ref end)
+
+    new_state = %{state |
+      fonts: [parsed_font | state.fonts],
+      parsing_tasks: parsing_tasks
+    }
+
+    # Only broadcast if we successfully parsed a font
     Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, :font_library_update)
 
     {:noreply, new_state}
   end
 
   # Handle failed parsing tasks
-  def handle_info({:DOWN, _ref, :process, _pid, reason}, state) do
+  def handle_info({:DOWN, ref, :process, _pid, reason}, state) do
     Logger.error("Font parsing failed: #{inspect(reason)}")
+
+    # Remove the failed task from parsing_tasks
+    parsing_tasks = Enum.reject(state.parsing_tasks, fn task -> task.ref == ref end)
+    {:noreply, %{state | parsing_tasks: parsing_tasks}}
+  end
+
+  def handle_info(msg, state) do
+    Logger.warning("Unexpected message in Font Library: #{inspect(msg)}")
     {:noreply, state}
   end
 
+  def terminate(reason, state) do
+    Logger.warning("Font Library terminating: #{inspect(reason)}")
+    # Cancel any ongoing parsing tasks
+    Enum.each(state.parsing_tasks, fn task ->
+      Task.Supervisor.terminate_child(state.task_supervisor, task.pid)
+    end)
+  end
+
   def get_fonts() do
-    GenServer.call(__MODULE__, :get_fonts)
+    try do
+      GenServer.call(__MODULE__, :get_fonts)
+    catch
+      :exit, {:timeout, _} ->
+        Logger.error("Timeout getting fonts, returning built-in fonts")
+        [
+          Flipdot.Font.Fonts.SpaceInvaders.get(),
+          Flipdot.Font.Fonts.Flipdot.get()
+        ]
+      :exit, reason ->
+        Logger.error("Error getting fonts: #{inspect(reason)}, returning built-in fonts")
+        [
+          Flipdot.Font.Fonts.SpaceInvaders.get(),
+          Flipdot.Font.Fonts.Flipdot.get()
+        ]
+    end
   end
 
   def get_font_by_name(font_name) do
-    GenServer.call(__MODULE__, {:get_font_by_name, font_name})
+    try do
+      GenServer.call(__MODULE__, {:get_font_by_name, font_name})
+    catch
+      :exit, {:timeout, _} ->
+        Logger.error("Timeout getting font #{font_name}, returning default font")
+        Flipdot.Font.Fonts.Flipdot.get()
+      :exit, reason ->
+        Logger.error("Error getting font #{font_name}: #{inspect(reason)}, returning default font")
+        Flipdot.Font.Fonts.Flipdot.get()
+    end
   end
 
   # server functions
