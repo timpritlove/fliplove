@@ -10,7 +10,7 @@ defmodule Bitmap do
   as keys. Only 0 and 1 are allowed as values (no greyscaling or color).
   """
 
-  defstruct width: nil, height: nil, matrix: %{}, baseline: 0
+  defstruct width: nil, height: nil, matrix: %{}, baseline_x: 0, baseline_y: 0
 
   @doc """
   Macro to define a monochrome bitmap inline as lines of text.
@@ -21,14 +21,16 @@ defmodule Bitmap do
   Options:
     - on: character to represent 1 (default: 'X')
     - off: character to represent 0 (default: space)
-    - baseline: vertical baseline position (default: 0)
+    - baseline_x: horizontal baseline position (default: 0)
+    - baseline_y: vertical baseline position (default: 0)
   """
   defmacro defbitmap(lines, opts \\ []) do
     quote do
       bitmap = Bitmap.from_lines_of_text(unquote(lines),
         on: Keyword.get(unquote(opts), :on, ?X),
         off: Keyword.get(unquote(opts), :off, ?\s),
-        baseline: Keyword.get(unquote(opts), :baseline, 0)
+        baseline_x: Keyword.get(unquote(opts), :baseline_x, 0),
+        baseline_y: Keyword.get(unquote(opts), :baseline_y, 0)
       )
       # Ensure we return a proper Bitmap struct
       case bitmap do
@@ -43,16 +45,17 @@ defmodule Bitmap do
       # Get actual bounds including negative coordinates
       {min_x, min_y, max_x, max_y} = Bitmap.bbox(bitmap)
 
-      # Calculate actual dimensions including negative space
-      width = max_x - min_x + 1
-
-      # Create top delimiter
-      delimiter = "+" <> String.duplicate("-", width) <> "+\n"
+      # Create top delimiter with baseline marker if needed
+      top_line = for x <- min_x..max_x do
+        if x == -bitmap.baseline_x, do: ?+, else: ?-
+      end
+      delimiter = "+" <> List.to_string(top_line) <> "+\n"
 
       lines =
         for y <- max_y..min_y do
-          # Use '+' for baseline, '|' for other lines
-          border = if y == -bitmap.baseline, do: ?+, else: ?|
+          # Use '+' for baseline markers, '|' for other lines
+          left_border = if y == -bitmap.baseline_y, do: ?+, else: ?|
+          right_border = if y == -bitmap.baseline_y, do: ?+, else: ?|
 
           line =
             for x <- min_x..max_x do
@@ -63,10 +66,16 @@ defmodule Bitmap do
             end
             |> List.to_string()
 
-          <<border>> <> line <> <<border>> <> "\n"
+          <<left_border>> <> line <> <<right_border>> <> "\n"
         end
 
-      delimiter <> Enum.join(lines) <> delimiter
+      # Create bottom delimiter with baseline marker if needed
+      bottom_line = for x <- min_x..max_x do
+        if x == -bitmap.baseline_x, do: ?+, else: ?-
+      end
+      bottom_delimiter = "+" <> List.to_string(bottom_line) <> "+\n"
+
+      delimiter <> Enum.join(lines) <> bottom_delimiter
     end
   end
 
@@ -78,7 +87,8 @@ defmodule Bitmap do
   of 0 or 1.
 
   Options:
-    - baseline: vertical baseline position (default: 0)
+    - baseline_x: horizontal baseline position (default: 0)
+    - baseline_y: vertical baseline position (default: 0)
   """
   def new(width, height) when is_integer(width) and is_integer(height) do
     new(width, height, %{}, [])
@@ -94,14 +104,15 @@ defmodule Bitmap do
 
   def new(width, height, matrix, options)
       when is_integer(width) and is_integer(height) and is_map(matrix) do
-    options = Keyword.validate!(options, baseline: 0)
+    options = Keyword.validate!(options, baseline_x: 0, baseline_y: 0)
 
     if valid_matrix?(matrix) do
       %Bitmap{
         width: width,
         height: height,
         matrix: matrix,
-        baseline: options[:baseline]
+        baseline_x: options[:baseline_x],
+        baseline_y: options[:baseline_y]
       }
     else
       raise "Invalid matrix"
@@ -582,7 +593,8 @@ defmodule Bitmap do
   def from_lines_of_text(lines, options \\ []) do
     on = Keyword.get(options, :on) || ?X
     off = Keyword.get(options, :off) || ?\s
-    baseline = Keyword.get(options, :baseline, 0)
+    baseline_x = Keyword.get(options, :baseline_x, 0)
+    baseline_y = Keyword.get(options, :baseline_y, 0)
 
     # convert lines provided as strings to charlist
     lines =
@@ -600,25 +612,20 @@ defmodule Bitmap do
     height = length(lines)
 
     matrix =
-      for {line, dy} <- Enum.with_index(lines, 1),
+      for {line, y} <- Enum.with_index(Enum.reverse(lines)),
           {pixel, x} <- Enum.with_index(line, 0),
           into: %{} do
         value =
           case pixel do
-            ^off ->
-              0
-
-            ^on ->
-              1
-
-            c ->
-              raise "Invalid pixel character #{c} (#{on},#{off})"
+            ^off -> 0
+            ^on -> 1
+            c -> raise "Invalid pixel character #{c} (#{on},#{off})"
           end
 
-        {{x, height - dy}, value}
+        {{x, y}, value}
       end
 
-    new(width, height, matrix, baseline: baseline)
+    new(width, height, matrix, baseline_x: baseline_x, baseline_y: baseline_y)
   end
 
   def to_file(bitmap, file, options \\ []) do
@@ -864,10 +871,14 @@ defmodule Bitmap do
         offset_y = options[:offset_y]
 
         if options[:preserve_baseline] do
-          # When preserving baseline, keep original coordinates
+          # When preserving baseline, adjust coordinates based on baseline differences
+          baseline_y_diff = bitmap2.baseline_y - bitmap1.baseline_y
+          baseline_x_diff = bitmap2.baseline_x - bitmap1.baseline_x
+
+          # Adjust bitmap2's coordinates by both the explicit offset and baseline differences
           matrix2 =
             bitmap2.matrix
-            |> Enum.map(fn {{x, y}, v} -> {{x + offset_x, y + offset_y}, v} end)
+            |> Enum.map(fn {{x, y}, v} -> {{x + offset_x + baseline_x_diff, y + offset_y + baseline_y_diff}, v} end)
             |> Map.new()
 
           # Merge the matrices, with bitmap2 taking precedence
@@ -881,11 +892,13 @@ defmodule Bitmap do
               {min(x, min_x), min(y, min_y), max(x, max_x), max(y, max_y)}
             end)
 
+          # When preserving baseline, we keep bitmap1's baseline
           %Bitmap{
             width: merged_max_x - merged_min_x + 1,
             height: merged_max_y - merged_min_y + 1,
             matrix: merged_matrix,
-            baseline: max(bitmap1.baseline, bitmap2.baseline + options[:offset_y])
+            baseline_x: bitmap1.baseline_x,
+            baseline_y: bitmap1.baseline_y
           }
         else
           # When not preserving baseline, normalize coordinates to start at 0,0
@@ -906,7 +919,8 @@ defmodule Bitmap do
               width: max_x - min_x + 1,
               height: max_y - min_y + 1,
               matrix: merged_matrix,
-              baseline: 0
+              baseline_x: 0,
+              baseline_y: 0
             }
           )
         end
@@ -920,10 +934,14 @@ defmodule Bitmap do
   def normalize(bitmap) do
     {min_x, min_y, max_x, max_y} = bbox(bitmap)
 
+    # When we shift coordinates up by min_y, the baseline_y should be adjusted down by min_y
+    # When we shift coordinates left by min_x, the baseline_x should be adjusted right by min_x
     new(max_x - min_x + 1, max_y - min_y + 1,
       bitmap.matrix
       |> Enum.map(fn {{x, y}, v} -> {{x - min_x, y - min_y}, v} end)
-      |> Map.new()
+      |> Map.new(),
+      baseline_x: bitmap.baseline_x + min_x,
+      baseline_y: bitmap.baseline_y + min_y
     )
   end
 end

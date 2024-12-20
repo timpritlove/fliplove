@@ -81,7 +81,6 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
       },
       ?$ => %{
         encoding: ?$,
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             "  X  ",
@@ -93,7 +92,7 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
             "X X X",
             " XXX ",
             "  X  "
-          ])
+          ], baseline_y: -1)
       },
       ?% => %{
         encoding: ?%,
@@ -188,12 +187,11 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
       },
       ?, => %{
         encoding: ?,,
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             "  X  ",
             "  X  "
-          ])
+          ], baseline_y: -1)
       },
       ?- => %{
         encoding: ?-,
@@ -372,7 +370,6 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
       },
       ?; => %{
         encoding: ?;,
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             "  X  ",
@@ -382,7 +379,7 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
             "     ",
             "  X  ",
             "  X  "
-          ])
+          ], baseline_y: -1)
       },
       ?< => %{
         encoding: ?<,
@@ -1361,7 +1358,6 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
       ?§ => %{
         encoding: ?§,
         name: "section sign",
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             " XXX ",
@@ -1373,7 +1369,7 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
             "   X ",
             "    X",
             " XXX "
-          ])
+          ], baseline_y: -1)
       },
       ?¨ => %{
         encoding: ?¨,
@@ -1392,7 +1388,6 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
       ?© => %{
         encoding: ?©,
         name: "copyright sign",
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             " XXX ",
@@ -1404,7 +1399,7 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
             "  X  ",
             "X   X",
             " XXX "
-          ])
+          ], baseline_y: -1)
       },
       ?€ => %{
         encoding: ?€,
@@ -1493,17 +1488,15 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
       ?´ => %{
         encoding: ?´,
         name: "acute accent",
-        bb_y_off: 5,
         bitmap:
           defbitmap([
             "   X ",
             "  X  "
-          ])
+          ], baseline_y: 5)
       },
       ?µ => %{
         encoding: ?µ,
         name: "micro sign",
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             "     ",
@@ -1515,7 +1508,7 @@ defmodule Flipdot.Font.Fonts.SpaceInvaders do
             " XXX ",
             " X   ",
             " X   "
-          ])
+          ], baseline_y: -1)
       },
       ?· => %{
         encoding: ?·,

@@ -298,7 +298,7 @@ defmodule Flipdot.Font.Parser do
   bdf_char_bitmap_lines = repeat(bdf_char_bitmap_line) |> wrap()
 
   defp bitmap_map([_, lines]) do
-    %{bitmap: Bitmap.from_lines_of_text(lines, on: ?1, off: ?0)}
+    %{bitmap_lines: lines}
   end
 
   bdf_char_bitmap =
@@ -322,7 +322,21 @@ defmodule Flipdot.Font.Parser do
     |> concat(bdf_char_bitmap)
 
   defp char_map(properties) do
-    Enum.reduce(properties, %{}, fn map, acc -> Map.merge(map, acc) end)
+    # First merge all properties
+    char = Enum.reduce(properties, %{}, fn map, acc -> Map.merge(map, acc) end)
+    # Now create the bitmap with the correct baseline offsets from BBX
+    if Map.has_key?(char, :bitmap_lines) and Map.has_key?(char, :bb_x_off) and Map.has_key?(char, :bb_y_off) do
+      bitmap = Bitmap.from_lines_of_text(
+        char.bitmap_lines,
+        on: ?1,
+        off: ?0,
+        baseline_x: char.bb_x_off,
+        baseline_y: char.bb_y_off
+      )
+      %{char | bitmap: bitmap} |> Map.delete(:bitmap_lines)
+    else
+      char
+    end
   end
 
   bdf_char_section =

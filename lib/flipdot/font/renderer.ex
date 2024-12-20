@@ -32,19 +32,8 @@ defmodule Flipdot.Font.Renderer do
       {min_x, min_y, max_x, max_y} = Bitmap.bbox(bitmap)
       Logger.debug("Bitmap bounds: min_x=#{min_x}, min_y=#{min_y}, max_x=#{max_x}, max_y=#{max_y}")
 
-      # Create a new bitmap with the correct dimensions but preserve baseline
-      # Shift all coordinates to be non-negative while preserving relative positions
-      matrix =
-        bitmap.matrix
-        |> Enum.map(fn {{x, y}, v} -> {{x - min_x, y - min_y}, v} end)
-        |> Map.new()
-
-      result = %Bitmap{
-        width: max_x - min_x + 1,
-        height: max_y - min_y + 1,
-        matrix: matrix,
-        baseline: bitmap.baseline - min_y  # Adjust baseline by the same shift
-      }
+      # Normalize the bitmap while preserving baseline information
+      result = Bitmap.normalize(bitmap)
       Logger.debug("Final bitmap: #{inspect(result)}")
       result
     end
@@ -118,29 +107,18 @@ defmodule Flipdot.Font.Renderer do
           end
         Logger.debug("Kerning value: #{kerning}")
 
-        # Calculate effective position considering all offsets
-        effective_x = cursor_x + Map.get(char, :bb_x_off, 0)
-        effective_y = cursor_y + Map.get(char, :bb_y_off, 0)
-        Logger.debug("Effective position: {#{effective_x}, #{effective_y}}")
-
-        # Ensure character bitmap is a proper Bitmap struct with baseline
-        char_bitmap = case char.bitmap do
-          %Bitmap{} = b -> %{b | baseline: Map.get(char, :bb_y_off, 0)}
-          map when is_map(map) ->
-            struct(Bitmap, Map.merge(%Bitmap{baseline: Map.get(char, :bb_y_off, 0)}, map))
-        end
-
-        # Merge the character bitmap at the calculated position, preserving baseline
-        new_bitmap = Bitmap.merge(bitmap, char_bitmap,
-          offset_x: effective_x,
-          offset_y: effective_y,
+        # Merge the character bitmap at the cursor position
+        # The baseline alignment is handled by Bitmap.merge with preserve_baseline: true
+        new_bitmap = Bitmap.merge(bitmap, char.bitmap,
+          offset_x: cursor_x,
+          offset_y: cursor_y,
           preserve_baseline: true
         )
         Logger.debug("Bitmap after adding character: #{inspect(new_bitmap)}")
 
-        # Calculate next cursor position
+        # Calculate next cursor position - stay on the baseline
         next_x = cursor_x + Map.get(char, :dwx0, Bitmap.width(char.bitmap) + 1) + kerning
-        next_y = cursor_y + Map.get(char, :dwy0, 0)
+        next_y = cursor_y  # Keep cursor at baseline
         Logger.debug("Next cursor position: {#{next_x}, #{next_y}}")
 
         render_text_unconstrained(new_bitmap, {next_x, next_y}, font, tail)

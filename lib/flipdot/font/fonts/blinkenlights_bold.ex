@@ -185,12 +185,11 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
       },
       ?, => %{
         encoding: ?,,
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             " XX",
             "XX "
-          ])
+          ], baseline_y: -1)
       },
       ?- => %{
         encoding: ?-,
@@ -1306,7 +1305,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
       ?§ => %{
         encoding: ?§,
         name: "section sign",
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             " XXX ",
@@ -1318,11 +1316,10 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
             "   X ",
             "    X",
             " XXX "
-          ])
+          ], baseline_y: -1)
       },
       ?ß => %{
         encoding: ?ß,
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             " XXXXX ",
@@ -1333,7 +1330,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
             "XX   XX",
             "XX XXX ",
             "XX     "
-          ])
+          ], baseline_y: -1)
       },
       ?Ä => %{
         encoding: ?Ä,
@@ -1489,7 +1486,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
       ?© => %{
         encoding: ?©,
         name: "copyright sign",
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             " XXX ",
@@ -1501,7 +1497,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
             "  X  ",
             "X   X",
             " XXX "
-          ])
+          ], baseline_y: -1)
       },
       ?€ => %{
         encoding: ?€,
@@ -1590,17 +1586,15 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
       ?´ => %{
         encoding: ?´,
         name: "acute accent",
-        bb_y_off: 5,
         bitmap:
           defbitmap([
             " X",
             "X "
-          ])
+          ], baseline_y: 5)
       },
       ?µ => %{
         encoding: ?µ,
         name: "micro sign",
-        bb_y_off: -1,
         bitmap:
           defbitmap([
             "    ",
@@ -1612,7 +1606,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
             "XXX ",
             "X   ",
             "X   "
-          ])
+          ], baseline_y: -1)
       },
       ?· => %{
         encoding: ?·,
