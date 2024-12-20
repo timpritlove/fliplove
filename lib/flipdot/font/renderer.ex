@@ -86,13 +86,16 @@ defmodule Flipdot.Font.Renderer do
     case Map.get(chars, character) do
       nil ->
         Logger.debug("Character #{character} not found in font")
-        # skip non-existing characters
+        # If character not found and no fallback, just advance cursor with a space
         if Map.has_key?(chars, 0) do
           Logger.debug("Using fallback character 0")
           render_text_unconstrained(bitmap, cursor, font, [0 | tail])
         else
-          Logger.debug("No fallback character available, skipping")
-          render_text_unconstrained(bitmap, cursor, font, tail)
+          Logger.debug("No fallback character available, using space")
+          # Use a typical character width for spacing
+          sample_char = chars |> Map.values() |> List.first()
+          advance = if sample_char, do: Map.get(sample_char, :dwx0, 1), else: 1
+          render_text_unconstrained(bitmap, {cursor_x + advance, cursor_y}, font, tail)
         end
 
       char ->
