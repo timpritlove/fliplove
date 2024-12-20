@@ -65,7 +65,7 @@ defmodule Flipdot.Font.Library do
   end
 
   def get_font_by_name(font_name) do
-    GenServer.call(__MODULE__, {:get_font_by_name, font_name}, 30_000)
+    GenServer.call(__MODULE__, {:get_font_by_name, font_name})
   end
 
   # server functions
@@ -75,7 +75,14 @@ defmodule Flipdot.Font.Library do
   end
 
   def handle_call({:get_font_by_name, font_name}, _, state) do
-    [font] = state.fonts |> Enum.filter(fn font -> font.name == font_name end)
-    {:reply, font, state}
+    case Enum.find(state.fonts, fn font -> font.name == font_name end) do
+      nil ->
+        Logger.warning("Font #{font_name} not found, falling back to default font")
+        # Fall back to first built-in font if requested font not found
+        [default_font | _] = state.fonts
+        {:reply, default_font, state}
+      font ->
+        {:reply, font, state}
+    end
   end
 end
