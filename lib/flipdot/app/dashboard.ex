@@ -126,30 +126,9 @@ defmodule Flipdot.App.Dashboard do
   end
 
   defp place_text(bitmap, font, text, align_vertically, align_horizontally) do
-    rendered_text =
-      Bitmap.new(1000, 1000)
-      |> Renderer.render_text({10, 10}, font, text)
-      |> Bitmap.clip()
-
-    cursor_x =
-      case align_horizontally do
-        :left -> 0
-        :center -> div(Bitmap.width(bitmap) - Bitmap.width(rendered_text), 2)
-        :right -> Bitmap.width(bitmap) - Bitmap.width(rendered_text)
-      end
-
-    cursor_y =
-      case align_vertically do
-        :top -> Bitmap.height(bitmap) - Bitmap.height(rendered_text)
-        :middle -> div(Bitmap.height(bitmap) - Bitmap.height(rendered_text), 2)
-        :bottom -> 0
-      end
-
-    bitmap
-    |> Bitmap.overlay(
-      rendered_text,
-      cursor_x: cursor_x,
-      cursor_y: cursor_y
+    Renderer.place_text(bitmap, font, text,
+      align: align_horizontally,
+      valign: align_vertically
     )
   end
 end

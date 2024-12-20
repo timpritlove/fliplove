@@ -162,22 +162,29 @@ defmodule Bitmap do
   @doc """
   Determine the effective bounding box of the bitmap.
   Returns the bounding box as min/max coordinate in a tuple.
+  Returns {0, 0, 0, 0} for empty bitmaps.
   """
 
   def bbox(bitmap) do
     pixels = Map.filter(bitmap.matrix, fn {_, value} -> value == 1 end) |> Map.keys()
 
-    {min_x, min_y} =
-      Enum.reduce(pixels, fn {x, y}, {min_x, min_y} ->
-        {min(x, min_x), min(y, min_y)}
-      end)
+    if Enum.empty?(pixels) do
+      {0, 0, 0, 0}  # Return zero bounds for empty bitmap
+    else
+      [{first_x, first_y} | rest] = pixels
 
-    {max_x, max_y} =
-      Enum.reduce(pixels, fn {x, y}, {max_x, max_y} ->
-        {max(x, max_x), max(y, max_y)}
-      end)
+      {min_x, min_y} =
+        Enum.reduce(rest, {first_x, first_y}, fn {x, y}, {min_x, min_y} ->
+          {min(x, min_x), min(y, min_y)}
+        end)
 
-    {min_x, min_y, max_x, max_y}
+      {max_x, max_y} =
+        Enum.reduce(rest, {first_x, first_y}, fn {x, y}, {max_x, max_y} ->
+          {max(x, max_x), max(y, max_y)}
+        end)
+
+      {min_x, min_y, max_x, max_y}
+    end
   end
 
   @doc """
@@ -327,8 +334,7 @@ defmodule Bitmap do
         opaque: false
       )
 
-    # create new overlay matrix
-
+    # Create new overlay matrix
     overlay_matrix =
       for x <- 0..(options[:bb_width] - 1),
           y <- 0..(options[:bb_height] - 1),
@@ -337,22 +343,18 @@ defmodule Bitmap do
           bg_x >= 0,
           bg_x < width,
           bg_y >= 0,
-          bg_y < height,
-          into: %{} do
+          bg_y < height do
         pixel = get_pixel(overlay, {x, y})
-
-        cond do
-          pixel == 1 ->
-            {{bg_x, bg_y}, 1}
-
-          pixel == 0 and options[:opaque] ->
-            {{bg_x, bg_y}, 0}
-
-          pixel == 0 and not options[:opaque] ->
-            {{bg_x, bg_y}, get_pixel(bitmap, {bg_x, bg_y})}
+        value = cond do
+          pixel == 1 -> 1
+          pixel == 0 and options[:opaque] -> 0
+          pixel == 0 and not options[:opaque] -> get_pixel(bitmap, {bg_x, bg_y})
         end
+        {{bg_x, bg_y}, value}
       end
+      |> Map.new()
 
+    # Create the final bitmap with the overlaid pixels
     new(width, height, Map.merge(bitmap.matrix, overlay_matrix))
   end
 
@@ -794,6 +796,54 @@ defmodule Bitmap do
         get_pixel(bitmap1, {x, y}) != get_pixel(bitmap2, {x, y}),
         reduce: 0 do
       acc -> acc + 1
+    end
+  end
+
+  @doc """
+  Merge two bitmaps, allowing the result to grow as needed.
+  The second bitmap is positioned relative to the first one using the offset parameters.
+  Returns a new bitmap that encompasses both inputs.
+  """
+  def merge(bitmap1, bitmap2, options \\ []) do
+    options =
+      Keyword.validate!(options,
+        offset_x: 0,
+        offset_y: 0
+      )
+
+    # If either bitmap is empty, return the other one
+    cond do
+      Enum.empty?(bitmap1.matrix) -> bitmap2
+      Enum.empty?(bitmap2.matrix) -> bitmap1
+      true ->
+        # Get the bounds of both bitmaps
+        {min_x1, min_y1, max_x1, max_y1} = bbox(bitmap1)
+        {min_x2, min_y2, max_x2, max_y2} = bbox(bitmap2)
+
+        # Calculate the bounds of the merged bitmap
+        offset_x = options[:offset_x]
+        offset_y = options[:offset_y]
+        min_x = min(min_x1, min_x2 + offset_x)
+        min_y = min(min_y1, min_y2 + offset_y)
+        max_x = max(max_x1, max_x2 + offset_x)
+        max_y = max(max_y1, max_y2 + offset_y)
+
+        # Create the merged matrix
+        matrix1 = bitmap1.matrix
+        matrix2 =
+          bitmap2.matrix
+          |> Enum.map(fn {{x, y}, v} -> {{x + offset_x, y + offset_y}, v} end)
+          |> Map.new()
+
+        # Merge the matrices, with bitmap2 taking precedence
+        merged_matrix = Map.merge(matrix1, matrix2)
+
+        # Create the new bitmap with the merged dimensions
+        new(max_x - min_x + 1, max_y - min_y + 1,
+          merged_matrix
+          |> Enum.map(fn {{x, y}, v} -> {{x - min_x, y - min_y}, v} end)
+          |> Map.new()
+        )
     end
   end
 end
