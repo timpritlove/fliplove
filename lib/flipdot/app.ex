@@ -10,7 +10,8 @@ defmodule Flipdot.App do
   @apps %{
     dashboard: Flipdot.App.Dashboard,
     slideshow: Flipdot.App.Slideshow,
-    maze_solver: Flipdot.App.MazeSolver
+    maze_solver: Flipdot.App.MazeSolver,
+    symbols: Flipdot.App.Symbols
   }
 
   def topic, do: @topic

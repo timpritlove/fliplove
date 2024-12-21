@@ -449,6 +449,7 @@ defmodule FlipdotWeb.FlipdotLive do
               <.app app={@app} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
               <.app app={@app} tooltip="Slideshow" value="slideshow" self={:slideshow} icon="images" />
               <.app app={@app} tooltip="Maze Solver" value="maze_solver" self={:maze_solver} icon="hat-wizard" />
+              <.app app={@app} tooltip="Symbols" value="symbols" self={:symbols} icon="icons" />
             </.button_group>
           </.section>
         </div>
