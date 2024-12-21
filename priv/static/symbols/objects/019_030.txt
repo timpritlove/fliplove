@@ -1,0 +1,16 @@
+ X              
+XX              
+  X   XX        
+   XX XXX       
+   X X          
+    XX XXX      
+  XX   XXXX     
+  XX XX XX X    
+   X XXX XX     
+     XXXX XX    
+      X XX XX   
+       X XX X   
+          XXXX  
+            XXX 
+             XX 
+               X
