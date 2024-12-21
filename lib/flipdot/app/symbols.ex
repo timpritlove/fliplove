@@ -11,10 +11,10 @@ defmodule Flipdot.App.Symbols do
   @display_time 5_000
   @num_symbols 5
 
-  defstruct [:all_symbols, :last_position, current_symbols: []]
+  defstruct all_symbols: nil, last_position: nil, current_symbols: []
 
   def start_link(_opts) do
-    GenServer.start_link(__MODULE__, %__MODULE__{last_position: nil}, name: __MODULE__)
+    GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
   # server functions
