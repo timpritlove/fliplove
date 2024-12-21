@@ -29,8 +29,8 @@ defmodule Flipdot.MixProject do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  defp elixirc_paths(:test), do: ["lib", "test/support", "experimental"]
+  defp elixirc_paths(_), do: ["lib", "experimental"]
 
   # Specifies your project dependencies.
   #
@@ -57,6 +57,7 @@ defmodule Flipdot.MixProject do
       {:telegram, github: "visciang/telegram", tag: "0.22.4"},
       {:httpoison, "~> 2.0"},
       {:pngex, "~> 0.1.0"},
+      {:ex_png, "~> 1.0.0"},
       {:tz, ">= 0.24.0"},
       {:gen_icmp, git: "https://github.com/hauleth/gen_icmp.git"},
       # {:pixel_generator, git: "https://github.com/Reimerei/pixel_generator.git"},
