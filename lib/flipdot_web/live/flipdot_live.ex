@@ -592,7 +592,7 @@ defmodule FlipdotWeb.FlipdotLive do
       phx-click="mode"
       value={@value}
     >
-      <div class={[@mode == @self && "text-yellow-300" || "text-gray-200"]}>
+      <div class={[@mode == @self && "fill-yellow-300" || "fill-gray-200"]}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
       </div>
     </button>
@@ -611,7 +611,7 @@ defmodule FlipdotWeb.FlipdotLive do
       phx-click="app"
       value={@value}
     >
-      <div class={[@app == @self && "text-yellow-300" || "text-gray-200"]}>
+      <div class={[@app == @self && "fill-yellow-300" || "fill-gray-200"]}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
       </div>
     </button>
@@ -622,11 +622,13 @@ defmodule FlipdotWeb.FlipdotLive do
     ~H"""
     <button
       title={@tooltip}
-      class="relative p-3 rounded-lg bg-gray-700 text-gray-200 transition-colors duration-200
+      class="relative p-3 rounded-lg bg-gray-700 transition-colors duration-200
              hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       phx-click={@target}
     >
-      <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
+      <div class="fill-gray-200">
+        <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
+      </div>
     </button>
     """
   end
@@ -641,7 +643,7 @@ defmodule FlipdotWeb.FlipdotLive do
       phx-click="image"
       value={@value}
     >
-      <div class="h-8 w-8 flex items-center justify-center">
+      <div class="h-8 w-8 flex items-center justify-center [&>svg]:fill-gray-200">
         <%= raw(Bitmap.to_svg(@image, scale: 2)) %>
       </div>
     </button>
