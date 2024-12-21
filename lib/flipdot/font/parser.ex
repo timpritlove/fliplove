@@ -1,6 +1,7 @@
 defmodule Flipdot.Font.Parser do
   import NimbleParsec
   alias Flipdot.Font
+  require Logger
 
   @moduledoc """
   Parser for BDF font files. BDF files contain font definitions for low-resolution monochrome
@@ -408,7 +409,15 @@ defmodule Flipdot.Font.Parser do
   defparsec(:parse_bdf, parsec(:bdf))
 
   def parse_font(path) do
-    {:ok, [font], _, _, _, _} = path |> File.read!() |> parse_bdf()
-    font
+    Logger.debug("Parsing font file: #{path}")
+    try do
+      {:ok, [font], _, _, _, _} = path |> File.read!() |> parse_bdf()
+      Logger.debug("Successfully parsed font from #{path}: #{font.name}")
+      font
+    rescue
+      e ->
+        Logger.error("Failed to parse font file #{path}: #{inspect(e)}")
+        reraise e, __STACKTRACE__
+    end
   end
 end
