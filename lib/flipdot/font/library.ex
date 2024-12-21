@@ -11,12 +11,14 @@ defmodule Flipdot.Font.Library do
   defstruct fonts: [], task_supervisor: nil, parsing_tasks: []
 
   def start_link(_state) do
+    Logger.debug("Starting Font Library")
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
   def topic, do: @topic
 
   def init(_) do
+    Logger.debug("Initializing Font Library")
     Process.flag(:trap_exit, true)
 
     # Start with built-in fonts
@@ -24,24 +26,38 @@ defmodule Flipdot.Font.Library do
       Flipdot.Font.Fonts.SpaceInvaders.get(),
       Flipdot.Font.Fonts.Flipdot.get()
     ]
+    Logger.debug("Loaded #{length(initial_fonts)} built-in fonts")
 
     {:ok, task_supervisor} = Task.Supervisor.start_link()
+    Logger.debug("Started Task Supervisor")
 
     state = %__MODULE__{fonts: initial_fonts, task_supervisor: task_supervisor, parsing_tasks: []}
+    Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, :font_library_update)
+
     {:ok, state, {:continue, :schedule_font_loading}}
   end
 
   def handle_continue(:schedule_font_loading, state) do
     font_dir = Path.join([Flipdot.static_dir(), "fonts"])
+    Logger.debug("Loading fonts from #{font_dir}")
 
     # Schedule parsing tasks for each font file
     parsing_tasks =
-      File.ls!(font_dir)
-      |> Enum.filter(fn file_name -> String.ends_with?(file_name, ".bdf") end)
-      |> Enum.map(fn font_file ->
-        path = Path.join([font_dir, font_file])
-        Task.Supervisor.async_nolink(state.task_supervisor, Parser, :parse_font, [path])
-      end)
+      case File.ls(font_dir) do
+        {:ok, files} ->
+          font_files = Enum.filter(files, fn file_name -> String.ends_with?(file_name, ".bdf") end)
+          Logger.debug("Found #{length(font_files)} .bdf files")
+
+          Enum.map(font_files, fn font_file ->
+            path = Path.join([font_dir, font_file])
+            Logger.debug("Scheduling parsing task for #{font_file}")
+            Task.Supervisor.async_nolink(state.task_supervisor, Parser, :parse_font, [path])
+          end)
+
+        {:error, reason} ->
+          Logger.error("Failed to list font directory: #{inspect(reason)}")
+          []
+      end
 
     {:noreply, %{state | parsing_tasks: parsing_tasks}}
   end
@@ -53,6 +69,8 @@ defmodule Flipdot.Font.Library do
 
     # Remove the completed task from parsing_tasks
     parsing_tasks = Enum.reject(state.parsing_tasks, fn task -> task.ref == ref end)
+
+    Logger.debug("Successfully parsed font: #{parsed_font.name}")
 
     new_state = %{state |
       fonts: [parsed_font | state.fonts],
@@ -88,40 +106,20 @@ defmodule Flipdot.Font.Library do
   end
 
   def get_fonts() do
-    try do
-      GenServer.call(__MODULE__, :get_fonts)
-    catch
-      :exit, {:timeout, _} ->
-        Logger.error("Timeout getting fonts, returning built-in fonts")
-        [
-          Flipdot.Font.Fonts.SpaceInvaders.get(),
-          Flipdot.Font.Fonts.Flipdot.get()
-        ]
-      :exit, reason ->
-        Logger.error("Error getting fonts: #{inspect(reason)}, returning built-in fonts")
-        [
-          Flipdot.Font.Fonts.SpaceInvaders.get(),
-          Flipdot.Font.Fonts.Flipdot.get()
-        ]
-    end
+    GenServer.call(__MODULE__, :get_fonts)
   end
 
   def get_font_by_name(font_name) do
-    try do
-      GenServer.call(__MODULE__, {:get_font_by_name, font_name})
-    catch
-      :exit, {:timeout, _} ->
-        Logger.error("Timeout getting font #{font_name}, returning default font")
-        Flipdot.Font.Fonts.Flipdot.get()
-      :exit, reason ->
-        Logger.error("Error getting font #{font_name}: #{inspect(reason)}, returning default font")
-        Flipdot.Font.Fonts.Flipdot.get()
+    case GenServer.call(__MODULE__, {:get_font_by_name, font_name}) do
+      nil -> Flipdot.Font.Fonts.Flipdot.get()  # Fallback to default font
+      font -> font
     end
   end
 
   # server functions
 
   def handle_call(:get_fonts, _, state) do
+    Logger.debug("Getting fonts, #{length(state.fonts)} available")
     {:reply, state.fonts, state}
   end
 
@@ -129,9 +127,7 @@ defmodule Flipdot.Font.Library do
     case Enum.find(state.fonts, fn font -> font.name == font_name end) do
       nil ->
         Logger.warning("Font #{font_name} not found, falling back to default font")
-        # Fall back to first built-in font if requested font not found
-        [default_font | _] = state.fonts
-        {:reply, default_font, state}
+        {:reply, nil, state}
       font ->
         {:reply, font, state}
     end
