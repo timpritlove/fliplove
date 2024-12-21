@@ -17,7 +17,6 @@ defmodule FlipdotWeb.FlipdotLive do
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Display.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Library.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.TelegramBot.topic())
-      Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.App.topic())
     end
 
     socket =
@@ -109,7 +108,8 @@ defmodule FlipdotWeb.FlipdotLive do
   def handle_info(:tick, socket) do
     {:noreply,
      socket
-     |> assign(:clock, clock())}
+     |> assign(:clock, clock())
+     |> assign(:app, Flipdot.App.running_app())}
   end
 
   @impl true

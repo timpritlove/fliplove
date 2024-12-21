@@ -5,16 +5,12 @@ defmodule Flipdot.App do
   @registry Flipdot.App.Registry
   @supervisor Flipdot.App.DynamicSupervisor
 
-  @topic "app"
-
   @apps %{
     dashboard: Flipdot.App.Dashboard,
     slideshow: Flipdot.App.Slideshow,
     maze_solver: Flipdot.App.MazeSolver,
     symbols: Flipdot.App.Symbols
   }
-
-  def topic, do: @topic
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
@@ -83,7 +79,6 @@ defmodule Flipdot.App do
     case DynamicSupervisor.start_child(@supervisor, child_spec) do
       {:ok, _pid} ->
         Logger.info("App #{app} started")
-        Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:running_app, running_app()})
         :ok
 
       {:error, reason} ->
@@ -98,19 +93,8 @@ defmodule Flipdot.App do
         :ok
 
       [{pid, _}] ->
-        ref = Process.monitor(pid)
         DynamicSupervisor.terminate_child(@supervisor, pid)
-
-        receive do
-          {:DOWN, ^ref, :process, ^pid, reason} ->
-            Logger.debug("App has stopped #{reason}")
-            Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:running_app, nil})
-            :ok
-        after
-          5000 ->
-            Process.demonitor(ref)
-            {:error, :app_stop_timeout}
-        end
+        :ok
     end
   end
 end
