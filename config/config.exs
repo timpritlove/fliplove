@@ -31,7 +31,8 @@ config :flipdot, FlipdotWeb.Endpoint,
 config :flipdot, :display,
   width: 115,
   height: 16,
-  host: ["flipdot.local"]
+  host: ["flipdot.local"],
+  welcome_text: "Hello, World!"
 
 # Configure esbuild (the version is required)
 config :esbuild,
