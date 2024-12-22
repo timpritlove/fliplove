@@ -586,13 +586,17 @@ defmodule FlipdotWeb.FlipdotLive do
       title={@tooltip}
       class={[
         "relative p-3 rounded-lg transition-colors duration-200",
-        "hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+        "focus:outline-none focus:ring-2 focus:ring-indigo-500",
         @mode == @self && "bg-indigo-600" || "bg-gray-700"
       ]}
       phx-click="mode"
       value={@value}
     >
-      <div class={[@mode == @self && "fill-yellow-300" || "fill-gray-200"]}>
+      <div class={[
+        "transition-colors duration-200",
+        "hover:fill-yellow-300",
+        @mode == @self && "fill-gray-200" || "fill-gray-200"
+      ]}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
       </div>
     </button>
@@ -605,13 +609,17 @@ defmodule FlipdotWeb.FlipdotLive do
       title={@tooltip}
       class={[
         "relative p-3 rounded-lg transition-colors duration-200",
-        "hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+        "focus:outline-none focus:ring-2 focus:ring-indigo-500",
         @app == @self && "bg-indigo-600" || "bg-gray-700"
       ]}
       phx-click="app"
       value={@value}
     >
-      <div class={[@app == @self && "fill-yellow-300" || "fill-gray-200"]}>
+      <div class={[
+        "transition-colors duration-200",
+        "hover:fill-yellow-300",
+        @app == @self && "fill-gray-200" || "fill-gray-200"
+      ]}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
       </div>
     </button>
