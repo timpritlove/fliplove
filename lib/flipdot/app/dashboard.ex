@@ -15,6 +15,7 @@ defmodule Flipdot.App.Dashboard do
 
   @font "flipdot"
   @clock_symbol 0xF017
+  @ms_symbol 0xF018
   #  @wind_symbol 0xF72E
 
   def start_link(_opts) do
@@ -97,8 +98,8 @@ defmodule Flipdot.App.Dashboard do
     # render wind
     bitmap =
       try do
-        {_wind_speed, wind_force} = Weather.get_wind()
-        place_text(bitmap, state.font, "WS " <> Integer.to_string(wind_force), :bottom, :left)
+        wind_speed  = Weather.get_wind_speed()
+        place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed / 1, decimals: 1) <> " " <> <<@ms_symbol::utf8>>, :bottom, :left)
       rescue
         _ -> bitmap  # Return unchanged bitmap if wind data is unavailable
       end
@@ -117,7 +118,7 @@ defmodule Flipdot.App.Dashboard do
 
     # render time
 
-    bitmap = place_text(bitmap, state.font, "#{[@clock_symbol]}", :top, :right)
+    bitmap = place_text(bitmap, state.font, <<@clock_symbol::utf8>>, :top, :right)
     bitmap = place_text(bitmap, state.font, time_string, :bottom, :right)
 
     if bitmap != state.bitmap do

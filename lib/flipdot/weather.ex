@@ -72,11 +72,9 @@ defmodule Flipdot.Weather do
     weather["current"]["temp"]
   end
 
-  def get_wind() do
+  def get_wind_speed() do
     weather = get_weather()
-    wind_speed = weather["current"]["wind_speed"]
-    wind_force = wind_force(wind_speed)
-    {wind_speed, wind_force}
+    weather["current"]["wind_speed"]
   end
 
   def get_rain() do

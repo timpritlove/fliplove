@@ -1912,6 +1912,20 @@ defmodule Flipdot.Font.Fonts.Flipdot do
             "  XXX  "
           ])
       },
+      0xF018 => %{
+        encoding: 0xF018,
+        name: "m/s",
+        bitmap:
+          defbitmap([
+            "      X     ",
+            "XX X  X  XXX",
+            "X X X X X   ",
+            "X X X X  XX ",
+            "X X X X    X",
+            "X X X X XXX ",
+            "      X     "
+          ])
+      },
       0x1FFF2 => %{
         encoding: 0x1FFF2,
         name: "clock-face-three-oclock",
