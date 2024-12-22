@@ -1912,6 +1912,62 @@ defmodule Flipdot.Font.Fonts.Flipdot do
             "  XXX  "
           ])
       },
+      0x1FFF2 => %{
+        encoding: 0x1FFF2,
+        name: "clock-face-three-oclock",
+        bitmap:
+          defbitmap([
+            "  XXX  ",
+            " X X X ",
+            "X  X  X",
+            "X  XXXX",
+            "X     X",
+            " X   X ",
+            "  XXX  "
+          ])
+      },
+      0x1FFF5 => %{
+        encoding: 0x1FFF5,
+        name: "clock-face-six-oclock",
+        bitmap:
+          defbitmap([
+            "  XXX  ",
+            " X X X ",
+            "X  X  X",
+            "X  X  X",
+            "X  X  X",
+            " X X X ",
+            "  XXX  "
+          ])
+      },
+      0x1FFF8 => %{
+        encoding: 0x1FFF8,
+        name: "clock-face-nine-oclock",
+        bitmap:
+          defbitmap([
+            "  XXX  ",
+            " X X X ",
+            "X  X  X",
+            "XXXX  X",
+            "X     X",
+            " X   X ",
+            "  XXX  "
+          ])
+      },
+      0x1FFFB => %{
+        encoding: 0x1FFFB,
+        name: "clock-face-twelve-oclock",
+        bitmap:
+          defbitmap([
+            "  XXX  ",
+            " X X X ",
+            "X  X  X",
+            "X  X  X",
+            "X     X",
+            " X   X ",
+            "  XXX  "
+          ])
+      },
       0x2744 => %{
         encoding: 0x2744,
         name: "snowflake",
