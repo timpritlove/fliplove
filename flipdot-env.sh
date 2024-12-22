@@ -1,0 +1,10 @@
+export FLIPDOT_OPENWEATHERMAP_API_KEY=`security find-generic-password -a tim@pritlove.org -s "OpenWeatherMap API Key" -w`
+export FLIPDOT_TELEGRAM_BOT_SECRET=6583378464:AAHFnHWF7ebmNdlyyu8r7gFZmnL49fra5ug
+#export FLIPDOT_MODE=NETWORK
+export FLIPDOT_HOST=flipdot_02.local
+export FLIPDOT_MODE=USB
+export FLIPDOT_DEVICE=/dev/tty.usbserial-83420
+export PHX_SERVER=true
+#export FLIPDOT_LATITUDE=52.5363101
+#export FLIPDOT_LONGITUDE=13.4273403
+export FLIPDOT_APP=dashboard
