@@ -14,8 +14,10 @@ defmodule Flipdot.App.Dashboard do
   @registry Flipdot.App.Registry
 
   @font "flipdot"
-
-  #  @wind_symbol 0xF72E
+  #@clock_symbol 0xF017
+  #@ms_symbol 0xF018
+  #@nbs_symbol 160
+  #@wind_symbol 0xF72E
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
