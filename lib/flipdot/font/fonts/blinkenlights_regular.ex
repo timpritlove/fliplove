@@ -14,7 +14,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
     },
     characters: %{
       0 => %{
-        encoding: 0,
         name: "defaultchar",
         bitmap:
           defbitmap([
@@ -28,7 +27,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?\s => %{
-        encoding: ?\s,
+        name: "space",
         bitmap:
           defbitmap([
             "   ",
@@ -41,7 +40,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?! => %{
-        encoding: ?!,
+        name: "exclamation mark",
         bitmap:
           defbitmap([
             "X",
@@ -54,7 +53,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?" => %{
-        encoding: ?",
+        name: "quotation mark",
         bitmap:
           defbitmap([
             "X X",
@@ -67,7 +66,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?# => %{
-        encoding: ?#,
+        name: "number sign",
         bitmap:
           defbitmap([
             " X X ",
@@ -80,7 +79,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?$ => %{
-        encoding: ?$,
+        name: "dollar sign",
         bitmap:
           defbitmap([
             "  X  ",
@@ -93,7 +92,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?% => %{
-        encoding: ?%,
+        name: "percent sign",
         bitmap:
           defbitmap([
             "XX  X",
@@ -106,7 +105,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?& => %{
-        encoding: ?&,
+        name: "ampersand",
         bitmap:
           defbitmap([
             " XX  ",
@@ -119,7 +118,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?' => %{
-        encoding: ?',
+        name: "apostrophe",
         bitmap:
           defbitmap([
             "X",
@@ -132,7 +131,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?( => %{
-        encoding: ?(,
+        name: "left parenthesis",
         bitmap:
           defbitmap([
             "  X",
@@ -145,7 +144,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?) => %{
-        encoding: ?),
+        name: "right parenthesis",
         bitmap:
           defbitmap([
             "X  ",
@@ -158,7 +157,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?* => %{
-        encoding: ?*,
+        name: "asterisk",
         bitmap:
           defbitmap([
             "     ",
@@ -171,7 +170,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?+ => %{
-        encoding: ?1,
+        name: "plus sign",
         bitmap:
           defbitmap([
             "     ",
@@ -184,7 +183,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?, => %{
-        encoding: ?,,
+        name: "comma",
         bitmap:
           defbitmap([
             " X",
@@ -192,7 +191,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ], baseline_y: -1)
       },
       ?- => %{
-        encoding: ?-,
+        name: "hyphen-minus",
         bitmap:
           defbitmap([
             "   ",
@@ -205,14 +204,14 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?. => %{
-        encoding: ?.,
+        name: "full stop",
         bitmap:
           defbitmap([
             "X"
           ])
       },
       ?/ => %{
-        encoding: ?/,
+        name: "slash",
         bitmap:
           defbitmap([
             "    X",
@@ -225,7 +224,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?0 => %{
-        encoding: ?0,
+        name: "zero",
         bitmap:
           defbitmap([
             " XXX ",
@@ -238,7 +237,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?1 => %{
-        encoding: ?1,
+        name: "one",
         bitmap:
           defbitmap([
             " X ",
@@ -251,7 +250,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?2 => %{
-        encoding: ?2,
+        name: "two",
         bitmap:
           defbitmap([
             " XXX ",
@@ -264,7 +263,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?3 => %{
-        encoding: ?3,
+        name: "three",
         bitmap:
           defbitmap([
             " XXX ",
@@ -277,7 +276,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?4 => %{
-        encoding: ?4,
+        name: "four",
         bitmap:
           defbitmap([
             "X    ",
@@ -290,7 +289,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?5 => %{
-        encoding: ?5,
+        name: "five",
         bitmap:
           defbitmap([
             "XXXXX",
@@ -303,7 +302,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?6 => %{
-        encoding: ?6,
+        name: "six",
         bitmap:
           defbitmap([
             " XXX ",
@@ -316,7 +315,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?7 => %{
-        encoding: ?7,
+        name: "seven",
         bitmap:
           defbitmap([
             "XXXXX",
@@ -329,7 +328,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?8 => %{
-        encoding: ?8,
+        name: "eight",
         bitmap:
           defbitmap([
             " XXX ",
@@ -342,7 +341,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?9 => %{
-        encoding: ?9,
+        name: "nine",
         bitmap:
           defbitmap([
             " XXX ",
@@ -355,7 +354,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?: => %{
-        encoding: ?:,
+        name: "colon",
         bitmap:
           defbitmap([
             " ",
@@ -367,7 +366,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?; => %{
-        encoding: ?;,
+        name: "semicolon",
         bitmap:
           defbitmap([
             "  ",
@@ -379,7 +378,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?< => %{
-        encoding: ?<,
         name: "less-than sign",
         bitmap:
           defbitmap([
@@ -393,7 +391,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?= => %{
-        encoding: ?=,
+        name: "equals sign",
         bitmap:
           defbitmap([
             "     ",
@@ -406,7 +404,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?> => %{
-        encoding: ?>,
+        name: "greater-than sign",
         bitmap:
           defbitmap([
             "    ",
@@ -419,7 +417,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?? => %{
-        encoding: ??,
+        name: "question mark",
         bitmap:
           defbitmap([
             " XXX ",
@@ -432,7 +430,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?@ => %{
-        encoding: ?@,
+        name: "at sign",
         bitmap:
           defbitmap([
             "  XXXXXX  ",
@@ -445,7 +443,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?A => %{
-        encoding: ?A,
+        name: "A",
         bitmap:
           defbitmap([
             " XXX ",
@@ -458,7 +456,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?B => %{
-        encoding: ?B,
+        name: "B",
         bitmap:
           defbitmap([
             "XXXX ",
@@ -471,7 +469,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?C => %{
-        encoding: ?C,
+        name: "C",
         bitmap:
           defbitmap([
             " XXXX",
@@ -484,7 +482,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?D => %{
-        encoding: ?D,
+        name: "D",
         bitmap:
           defbitmap([
             "XXXX ",
@@ -497,7 +495,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?E => %{
-        encoding: ?E,
+        name: "E",
         bitmap:
           defbitmap([
             "XXXXX",
@@ -510,7 +508,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?F => %{
-        encoding: ?F,
+        name: "F",
         bitmap:
           defbitmap([
             "XXXXX",
@@ -523,7 +521,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?G => %{
-        encoding: ?G,
+        name: "G",
         bitmap:
           defbitmap([
             " XXX ",
@@ -536,7 +534,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?H => %{
-        encoding: ?H,
+        name: "H",
         bitmap:
           defbitmap([
             "X   X",
@@ -549,7 +547,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?I => %{
-        encoding: ?I,
+        name: "I",
         bitmap:
           defbitmap([
             "XXX",
@@ -562,7 +560,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?J => %{
-        encoding: ?J,
+        name: "J",
         bitmap:
           defbitmap([
             "    X",
@@ -575,7 +573,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?K => %{
-        encoding: ?K,
+        name: "K",
         bitmap:
           defbitmap([
             "X   X",
@@ -588,7 +586,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?L => %{
-        encoding: ?L,
+        name: "L",
         bitmap:
           defbitmap([
             "X    ",
@@ -601,7 +599,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?M => %{
-        encoding: ?M,
+        name: "M",
         bitmap:
           defbitmap([
             "X   X",
@@ -614,7 +612,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?N => %{
-        encoding: ?N,
+        name: "N",
         bitmap:
           defbitmap([
             "X   X",
@@ -627,7 +625,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?O => %{
-        encoding: ?O,
+        name: "O",
         bitmap:
           defbitmap([
             " XXX ",
@@ -640,7 +638,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?P => %{
-        encoding: ?P,
+        name: "P",
         bitmap:
           defbitmap([
             "XXXX ",
@@ -653,7 +651,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?Q => %{
-        encoding: ?Q,
+        name: "Q",
         bitmap:
           defbitmap([
             " XXX ",
@@ -666,7 +664,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?R => %{
-        encoding: ?R,
+        name: "R",
         bitmap:
           defbitmap([
             "XXXX ",
@@ -679,7 +677,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?S => %{
-        encoding: ?S,
+        name: "S",
         bitmap:
           defbitmap([
             " XXX ",
@@ -692,7 +690,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?T => %{
-        encoding: ?T,
+        name: "T",
         bitmap:
           defbitmap([
             "XXXXX",
@@ -705,7 +703,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?U => %{
-        encoding: ?U,
+        name: "U",
         bitmap:
           defbitmap([
             "X   X",
@@ -718,7 +716,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?V => %{
-        encoding: ?V,
+        name: "V",
         bitmap:
           defbitmap([
             "X   X",
@@ -731,7 +729,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?W => %{
-        encoding: ?W,
+        name: "W",
         bitmap:
           defbitmap([
             "X   X",
@@ -744,7 +742,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?X => %{
-        encoding: ?X,
+        name: "X",
         bitmap:
           defbitmap([
             "X   X",
@@ -757,7 +755,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?Y => %{
-        encoding: ?Y,
+        name: "Y",
         bitmap:
           defbitmap([
             "XX  XX",
@@ -770,7 +768,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?Z => %{
-        encoding: ?Z,
+        name: "Z",
         bitmap:
           defbitmap([
             "XXXXXX",
@@ -783,7 +781,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?[ => %{
-        encoding: ?[,
+        name: "left square bracket",
         bitmap:
           defbitmap([
             "XXX",
@@ -796,7 +794,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?\\ => %{
-        encoding: ?\\,
+        name: "backslash",
         bitmap:
           defbitmap([
             "X    ",
@@ -809,7 +807,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?] => %{
-        encoding: ?],
+        name: "right square bracket",
         bitmap:
           defbitmap([
             "XXX",
@@ -822,7 +820,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?^ => %{
-        encoding: ?^,
+        name: "caret",
         bitmap:
           defbitmap([
             "  X  ",
@@ -835,14 +833,14 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?_ => %{
-        encoding: ?_,
+        name: "underscore",
         bitmap:
           defbitmap([
             "XXXXX"
           ])
       },
       ?` => %{
-        encoding: ?`,
+        name: "apostrophe",
         bitmap:
           defbitmap([
             "X ",
@@ -855,7 +853,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?a => %{
-        encoding: ?a,
+        name: "a",
         bitmap:
           defbitmap([
             " XXXX",
@@ -866,7 +864,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?b => %{
-        encoding: ?b,
+        name: "b",
         bitmap:
           defbitmap([
             "X    ",
@@ -879,7 +877,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?c => %{
-        encoding: ?c,
+        name: "c",
         bitmap:
           defbitmap([
             " XXXX",
@@ -890,7 +888,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?d => %{
-        encoding: ?d,
+        name: "d",
         bitmap:
           defbitmap([
             "    X",
@@ -903,7 +901,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?e => %{
-        encoding: ?e,
+        name: "e",
         bitmap:
           defbitmap([
             " XXX ",
@@ -914,7 +912,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?f => %{
-        encoding: ?f,
+        name: "f",
         bitmap:
           defbitmap([
             "  XX",
@@ -927,7 +925,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?g => %{
-        encoding: ?g,
+        name: "g",
         bitmap:
           defbitmap([
             " XXXX",
@@ -938,7 +936,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?h => %{
-        encoding: ?h,
+        name: "h",
         bitmap:
           defbitmap([
             "X    ",
@@ -951,7 +949,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?i => %{
-        encoding: ?i,
+        name: "i",
         bitmap:
           defbitmap([
             "X",
@@ -964,7 +962,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?j => %{
-        encoding: ?j,
+        name: "j",
         bitmap:
           defbitmap([
             "   X",
@@ -977,7 +975,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?k => %{
-        encoding: ?k,
+        name: "k",
         bitmap:
           defbitmap([
             "X   ",
@@ -990,7 +988,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?l => %{
-        encoding: ?l,
+        name: "l",
         bitmap:
           defbitmap([
             "X",
@@ -1003,7 +1001,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?m => %{
-        encoding: ?m,
+        name: "m",
         bitmap:
           defbitmap([
             "XXX XX ",
@@ -1014,7 +1012,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?n => %{
-        encoding: ?n,
+        name: "n",
         bitmap:
           defbitmap([
             "XXXX ",
@@ -1025,7 +1023,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?o => %{
-        encoding: ?o,
+        name: "o",
         bitmap:
           defbitmap([
             " XXX ",
@@ -1036,7 +1034,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?p => %{
-        encoding: ?p,
+        name: "p",
         bitmap:
           defbitmap([
             "XXXX ",
@@ -1047,7 +1045,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?q => %{
-        encoding: ?q,
+        name: "q",
         bitmap:
           defbitmap([
             " XXXX",
@@ -1058,7 +1056,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?r => %{
-        encoding: ?r,
+        name: "r",
         bitmap:
           defbitmap([
             " XXX",
@@ -1069,7 +1067,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?s => %{
-        encoding: ?s,
+        name: "s",
         bitmap:
           defbitmap([
             " XXXX",
@@ -1080,7 +1078,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?t => %{
-        encoding: ?t,
+        name: "t",
         bitmap:
           defbitmap([
             " X ",
@@ -1093,7 +1091,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?u => %{
-        encoding: ?u,
+        name: "u",
         bitmap:
           defbitmap([
             "X   X",
@@ -1104,7 +1102,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?v => %{
-        encoding: ?v,
+        name: "v",
         bitmap:
           defbitmap([
             "X   X",
@@ -1115,7 +1113,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?w => %{
-        encoding: ?w,
+        name: "w",
         bitmap:
           defbitmap([
             "X     X",
@@ -1126,7 +1124,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?x => %{
-        encoding: ?x,
+        name: "x",
         bitmap:
           defbitmap([
             "X   X",
@@ -1137,7 +1135,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?y => %{
-        encoding: ?y,
+        name: "y",
         bitmap:
           defbitmap([
             "X   X",
@@ -1148,7 +1146,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?z => %{
-        encoding: ?z,
+        name: "z",
         bitmap:
           defbitmap([
             "XXXXX",
@@ -1159,7 +1157,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?{ => %{
-        encoding: ?{,
+        name: "left curly brace",
         bitmap:
           defbitmap([
             "  X",
@@ -1172,7 +1170,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?| => %{
-        encoding: ?|,
+        name: "vertical bar",
         bitmap:
           defbitmap([
             "X",
@@ -1185,7 +1183,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?} => %{
-        encoding: ?},
+        name: "right curly brace",
         bitmap:
           defbitmap([
             "X  ",
@@ -1198,7 +1196,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?~ => %{
-        encoding: ?~,
+        name: "tilde",
         bitmap:
           defbitmap([
             " X   ",
@@ -1212,7 +1210,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
       # ISO 8859-1 CHARACTERS
 
       160 => %{
-        encoding: 160,
         name: "no-break space",
         bitmap:
           defbitmap([
@@ -1226,7 +1223,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¡ => %{
-        encoding: ?¡,
         name: "inverted exclamation mark",
         bitmap:
           defbitmap([
@@ -1240,7 +1236,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¢ => %{
-        encoding: ?¢,
         name: "cent sign",
         bitmap:
           defbitmap([
@@ -1254,7 +1249,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?£ => %{
-        encoding: ?£,
         name: "pound sign",
         bitmap:
           defbitmap([
@@ -1268,7 +1262,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¤ => %{
-        encoding: ?¤,
         name: "currency sign",
         bitmap:
           defbitmap([
@@ -1283,7 +1276,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¥ => %{
-        encoding: ?¥,
         name: "yen sign",
         bitmap:
           defbitmap([
@@ -1297,7 +1289,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¦ => %{
-        encoding: ?¦,
         name: "broken bar",
         bitmap:
           defbitmap([
@@ -1311,7 +1302,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?§ => %{
-        encoding: ?§,
         name: "section sign",
         bitmap:
           defbitmap([
@@ -1327,7 +1317,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ], baseline_y: -1)
       },
       ?ß => %{
-        encoding: ?ß,
+        name: "sharp s",
         bitmap:
           defbitmap([
             " XXX ",
@@ -1341,7 +1331,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ], baseline_y: -1)
       },
       ?Ä => %{
-        encoding: ?Ä,
+        name: "A with diaresis",
         bitmap:
           defbitmap([
             "     ",
@@ -1355,7 +1345,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?Á => %{
-        encoding: ?Á,
+        name: "A with acute",
         bitmap:
           defbitmap([
             "   X ",
@@ -1369,7 +1359,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?À => %{
-        encoding: ?À,
+        name: "A with grave",
         bitmap:
           defbitmap([
             " X   ",
@@ -1383,7 +1373,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?Å => %{
-        encoding: ?Å,
+        name: "A with ring",
         bitmap:
           defbitmap([
             " XXX ",
@@ -1397,7 +1387,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?Ã => %{
-        encoding: ?Ã,
+        name: "A with tilde",
         bitmap:
           defbitmap([
             " XX X",
@@ -1411,7 +1401,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?ä => %{
-        encoding: ?ä,
+        name: "a with diaresis",
         bitmap:
           defbitmap([
             "X   X",
@@ -1424,7 +1414,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?Ö => %{
-        encoding: ?Ö,
+        name: "O with diaresis",
         bitmap:
           defbitmap([
             "X   X",
@@ -1438,7 +1428,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?ö => %{
-        encoding: ?ö,
+        name: "o with diaresis",
         bitmap:
           defbitmap([
             " X X ",
@@ -1451,7 +1441,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?Ü => %{
-        encoding: ?Ü,
+        name: "U with diaresis",
         bitmap:
           defbitmap([
             "X   X",
@@ -1465,7 +1455,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?ü => %{
-        encoding: ?ü,
+        name: "u with diaresis",
         bitmap:
           defbitmap([
             " X X ",
@@ -1478,7 +1468,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¨ => %{
-        encoding: ?¨,
         name: "diaresis",
         bitmap:
           defbitmap([
@@ -1492,7 +1481,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?© => %{
-        encoding: ?©,
         name: "copyright sign",
         bitmap:
           defbitmap([
@@ -1508,7 +1496,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ], baseline_y: -1)
       },
       ?€ => %{
-        encoding: ?€,
         name: "euro sign",
         bitmap:
           defbitmap([
@@ -1522,7 +1509,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¯ => %{
-        encoding: ?¯,
         name: "macron",
         bitmap:
           defbitmap([
@@ -1536,7 +1522,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?° => %{
-        encoding: ?°,
         name: "degree sign",
         bitmap:
           defbitmap([
@@ -1550,7 +1535,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?± => %{
-        encoding: ?±,
         name: "plus-minus sign",
         bitmap:
           defbitmap([
@@ -1564,7 +1548,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?² => %{
-        encoding: ?²,
         name: "superscript two",
         bitmap:
           defbitmap([
@@ -1578,7 +1561,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?³ => %{
-        encoding: ?³,
         name: "superscript three",
         bitmap:
           defbitmap([
@@ -1592,7 +1574,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?´ => %{
-        encoding: ?´,
         name: "acute accent",
         bitmap:
           defbitmap([
@@ -1601,7 +1582,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ], baseline_y: 5)
       },
       ?µ => %{
-        encoding: ?µ,
         name: "micro sign",
         bitmap:
           defbitmap([
@@ -1617,7 +1597,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ], baseline_y: -1)
       },
       ?· => %{
-        encoding: ?·,
         name: "middle dot",
         bitmap:
           defbitmap([
@@ -1631,7 +1610,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¹ => %{
-        encoding: ?¹,
         name: "superscript one",
         bitmap:
           defbitmap([
@@ -1645,7 +1623,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?ª => %{
-        encoding: ?ª,
         name: "feminine ordinal indicator",
         bitmap:
           defbitmap([
@@ -1659,7 +1636,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?º => %{
-        encoding: ?º,
         name: "masculine ordinal indicator",
         bitmap:
           defbitmap([
@@ -1673,7 +1649,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?« => %{
-        encoding: ?«,
         name: "left-pointing double angle quotation mark",
         bitmap:
           defbitmap([
@@ -1687,7 +1662,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¬ => %{
-        encoding: ?¬,
         name: "not sign",
         bitmap:
           defbitmap([
@@ -1701,7 +1675,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?» => %{
-        encoding: ?»,
         name: "right-pointing double angle quotation mark",
         bitmap:
           defbitmap([
@@ -1715,7 +1688,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¼ => %{
-        encoding: ?¼,
         name: "vulgar fraction one quarter",
         bitmap:
           defbitmap([
@@ -1729,7 +1701,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?½ => %{
-        encoding: ?½,
         name: "vulgar fraction one half",
         bitmap:
           defbitmap([
@@ -1743,7 +1714,6 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¾ => %{
-        encoding: ?¾,
         name: "vulgar fraction three quarters",
         bitmap:
           defbitmap([
@@ -1757,7 +1727,7 @@ defmodule Flipdot.Font.Fonts.BlinkenlightsRegular do
           ])
       },
       ?¿ => %{
-        encoding: ?¿,
+        name: "question mark",
         bitmap:
           defbitmap([
             "  X  ",

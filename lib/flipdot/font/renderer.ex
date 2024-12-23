@@ -1,4 +1,5 @@
 defmodule Flipdot.Font.Renderer do
+  alias Flipdot.Font
   alias Flipdot.Font.Kerning
   require Logger
 
@@ -57,15 +58,15 @@ defmodule Flipdot.Font.Renderer do
   # Private function that renders text without constraining to bitmap dimensions
   defp render_text_unconstrained(bitmap, _, _, []), do: bitmap
 
-  defp render_text_unconstrained(bitmap, {cursor_x, cursor_y} = cursor, %{characters: chars} = font, [character | tail]) do
-    case Map.get(chars, character) do
+  defp render_text_unconstrained(bitmap, {cursor_x, cursor_y} = cursor, font, [character | tail]) do
+    case Font.get_char_by_encoding(font, character) do
       nil ->
         # If character not found and no fallback, just advance cursor with a space
-        if Map.has_key?(chars, 0) do
+        if Map.has_key?(font.characters, 0) do
           render_text_unconstrained(bitmap, cursor, font, [0 | tail])
         else
           # Use a typical character width for spacing
-          sample_char = chars |> Map.values() |> List.first()
+          sample_char = font.characters |> Map.values() |> List.first()
           advance = if sample_char, do: Map.get(sample_char, :dwx0, 1), else: 1
           render_text_unconstrained(bitmap, {cursor_x + advance, cursor_y}, font, tail)
         end
