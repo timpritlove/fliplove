@@ -85,12 +85,18 @@ defmodule Flipdot.Weather do
   end
 
   def get_48_hour_temperature() do
-    weather = get_weather()
-
-    for {hourly, index} <- Enum.with_index(weather["hourly"]),
-        temperature = hourly["temp"] / 1,
-        datetime = DateTime.from_unix!(hourly["dt"]) do
-      {temperature, datetime, index}
+    case get_weather() do
+      nil -> []
+      weather when is_map(weather) ->
+        case weather["hourly"] do
+          nil -> []
+          hourly when is_list(hourly) ->
+            for {hourly_data, index} <- Enum.with_index(hourly),
+                temperature = hourly_data["temp"] / 1,
+                datetime = DateTime.from_unix!(hourly_data["dt"]) do
+              {temperature, datetime, index}
+            end
+        end
     end
   end
 
