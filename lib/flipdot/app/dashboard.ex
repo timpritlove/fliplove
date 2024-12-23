@@ -85,15 +85,23 @@ defmodule Flipdot.App.Dashboard do
     end
   end
 
+  defp get_max_min_temps do
+    temperatures = Weather.get_48_hour_temperature()
+    temps = Enum.map(temperatures, fn {t, _, _} -> t end)
+    {Enum.max(temps), Enum.min(temps)}
+  end
+
+  defp format_temp(temp) do
+    :erlang.float_to_binary(temp / 1, decimals: 1) <> "°C"
+  end
+
   defp update_dashboard(state) do
-    time_string = get_time_string()
     bitmap = Bitmap.new(Display.width(), Display.height())
 
     # render temperature
     temperature = Weather.get_current_temperature()
     bitmap = if temperature do
-      temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°C"
-      place_text(bitmap, state.font, temp_string, :top, :left)
+      place_text(bitmap, state.font, format_temp(temperature), :top, :left)
     else
       bitmap
     end
@@ -110,10 +118,10 @@ defmodule Flipdot.App.Dashboard do
     # render wind
     bitmap =
       try do
-        wind_speed  = Weather.get_wind_speed()
-        place_text(bitmap, state.font, "#{round(wind_speed)}" <> <<@nbs_symbol::utf8>> <> <<@ms_symbol::utf8>>, :bottom, :left)
+        time_string = get_time_string()
+        place_text(bitmap, state.font, time_string, :bottom, :left)
       rescue
-        _ -> bitmap  # Return unchanged bitmap if wind data is unavailable
+        _ -> bitmap  # Return unchanged bitmap if time formatting fails
       end
 
     bitmap =
@@ -126,9 +134,10 @@ defmodule Flipdot.App.Dashboard do
         _ -> bitmap  # Return unchanged bitmap if weather bitmap creation fails
       end
 
-    # render time
-    bitmap = place_text(bitmap, state.font, <<@clock_symbol::utf8>>, :top, :right)
-    bitmap = place_text(bitmap, state.font, time_string, :bottom, :right)
+    # render max/min temperatures
+    {max_temp, min_temp} = get_max_min_temps()
+    bitmap = place_text(bitmap, state.font, format_temp(max_temp), :top, :right)
+    bitmap = place_text(bitmap, state.font, format_temp(min_temp), :bottom, :right)
 
     if bitmap != state.bitmap do
       Display.set(bitmap)
@@ -152,11 +161,12 @@ defmodule Flipdot.App.Dashboard do
     temps = Enum.map(scaled_temps, fn {t, _, _} -> t end)
     min_temp = Enum.min(temps)
     max_temp = Enum.max(temps)
-    range = (max_temp - min_temp) / height
+    range = max_temp - min_temp
 
     # Scale temperatures to display height
     scaled_temps = Enum.map(scaled_temps, fn {temperature, hour, index} ->
-      temp_y = trunc((temperature - min_temp) / range)
+      # Scale to height-1 to ensure we don't exceed the bitmap bounds
+      temp_y = trunc((temperature - min_temp) * (height - 1) / range)
       {temperature, temp_y, hour, index}
     end)
 
