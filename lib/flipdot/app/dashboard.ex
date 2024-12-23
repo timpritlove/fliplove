@@ -175,7 +175,7 @@ defmodule Flipdot.App.Dashboard do
     midnight_matrix =
       for {{_temp, _temp_y, hour, x}, _index} <- Enum.with_index(scaled_temps),
           hour == 0,
-          y <- 0..(height - 1),
+          y <- Enum.to_list(0..1) ++ Enum.to_list((height - 2)..(height - 1)), # Only top 2 and bottom 2 pixels
           # Check if any neighboring position has a temperature pixel
           not has_neighbor_temp?(temp_matrix, x, y),
           into: %{} do
