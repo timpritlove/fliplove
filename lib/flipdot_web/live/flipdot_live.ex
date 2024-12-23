@@ -196,8 +196,11 @@ defmodule FlipdotWeb.FlipdotLive do
   def handle_event("render-text", %{"text" => text, "font" => font_name} = _params, socket) do
     font = Library.get_font_by_name(font_name)
 
-    # Create text bitmap directly using create_text
-    bitmap = Renderer.create_text(font, text)
+    # Create a fresh display-sized bitmap and place the normalized text centered on it
+    bitmap =
+      Bitmap.new(Display.width(), Display.height())
+      |> Renderer.place_text(font, text, align: :center, valign: :middle)
+
     Display.set(bitmap)
 
     socket =
