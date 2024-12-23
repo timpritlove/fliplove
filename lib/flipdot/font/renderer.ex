@@ -54,11 +54,11 @@ defmodule Flipdot.Font.Renderer do
         :right -> target_bitmap.width - text_bitmap.width - margin_x
       end
 
-      # Calculate y position
+      # Calculate y position - note that higher y values are at the top
       y = case valign do
-        :top -> margin_y
+        :top -> target_bitmap.height - text_bitmap.height - margin_y
         :middle -> div(target_bitmap.height - text_bitmap.height, 2)
-        :bottom -> target_bitmap.height - text_bitmap.height - margin_y
+        :bottom -> margin_y
       end
 
       Logger.debug("Placing text at position x=#{x}, y=#{y}")
