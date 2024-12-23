@@ -14,9 +14,6 @@ defmodule Flipdot.App.Dashboard do
   @registry Flipdot.App.Registry
 
   @font "flipdot"
-  @clock_symbol 0xF017
-  @ms_symbol 0xF018
-  @nbs_symbol 160
 
   #  @wind_symbol 0xF72E
 
