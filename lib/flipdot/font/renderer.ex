@@ -76,8 +76,7 @@ defmodule Flipdot.Font.Renderer do
           case tail do
             [] -> 0
             _ ->
-              pair = List.to_string([character, hd(tail)])
-              Kerning.get_kerning(font, pair)
+              Kerning.get_auto_kerning(font, [character, hd(tail)])
           end
 
         # Merge the character bitmap at the cursor position
