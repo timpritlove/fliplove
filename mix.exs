@@ -24,7 +24,7 @@ defmodule Flipdot.MixProject do
   def application do
     [
       mod: {Flipdot.Application, []},
-      extra_applications: [:logger, :runtime_tools, :os_mon]
+      extra_applications: [:logger, :runtime_tools, :os_mon, :tz, :tzdata]
     ]
   end
 

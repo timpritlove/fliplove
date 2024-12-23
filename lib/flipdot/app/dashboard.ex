@@ -16,6 +16,8 @@ defmodule Flipdot.App.Dashboard do
   @font "flipdot"
   @clock_symbol 0xF017
   @ms_symbol 0xF018
+  @nbs_symbol 160
+
   #  @wind_symbol 0xF72E
 
   def start_link(_opts) do
@@ -69,8 +71,20 @@ defmodule Flipdot.App.Dashboard do
   end
 
   defp get_time_string do
-    DateTime.now!("Europe/Berlin", Tz.TimeZoneDatabase)
+    timezone = get_system_timezone()
+    DateTime.now!(timezone, Tz.TimeZoneDatabase)
     |> Calendar.strftime("%c", preferred_datetime: "%H:%M")
+  end
+
+  defp get_system_timezone do
+    {output, 0} = System.cmd("date", ["+%Z"])
+    tz_abbr = String.trim(output)
+
+    case tz_abbr do
+      "CET" -> "Europe/Berlin"
+      "CEST" -> "Europe/Berlin"
+      _ -> "Etc/UTC"  # Fallback to UTC if timezone is unknown
+    end
   end
 
   defp update_dashboard(state) do
@@ -78,7 +92,7 @@ defmodule Flipdot.App.Dashboard do
     bitmap = Bitmap.new(Display.width(), Display.height())
 
     # render temperature
-    temperature = Weather.get_temperature()
+    temperature = Weather.get_current_temperature()
     bitmap = if temperature do
       temp_string = :erlang.float_to_binary(temperature / 1, decimals: 1) <> "°C"
       place_text(bitmap, state.font, temp_string, :top, :left)
@@ -99,14 +113,14 @@ defmodule Flipdot.App.Dashboard do
     bitmap =
       try do
         wind_speed  = Weather.get_wind_speed()
-        place_text(bitmap, state.font, :erlang.float_to_binary(wind_speed / 1, decimals: 1) <> " " <> <<@ms_symbol::utf8>>, :bottom, :left)
+        place_text(bitmap, state.font, "#{round(wind_speed)}" <> <<@nbs_symbol::utf8>> <> <<@ms_symbol::utf8>>, :bottom, :left)
       rescue
         _ -> bitmap  # Return unchanged bitmap if wind data is unavailable
       end
 
     bitmap =
       try do
-        weather_bitmap = Weather.bitmap_48(Display.height())
+        weather_bitmap = create_48_hour_temperature_chart(Display.height())
         |> Bitmap.crop_relative(Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
 
         Bitmap.overlay(bitmap, weather_bitmap)
@@ -114,16 +128,73 @@ defmodule Flipdot.App.Dashboard do
         _ -> bitmap  # Return unchanged bitmap if weather bitmap creation fails
       end
 
-    # plot temperature hours
-
     # render time
-
     bitmap = place_text(bitmap, state.font, <<@clock_symbol::utf8>>, :top, :right)
     bitmap = place_text(bitmap, state.font, time_string, :bottom, :right)
 
     if bitmap != state.bitmap do
       Display.set(bitmap)
     end
+  end
+
+  # Temperature chart creation functions
+  defp create_48_hour_temperature_chart(height) do
+    temperatures = Weather.get_48_hour_temperature()
+    timezone = get_system_timezone()
+
+    # Convert temperatures to local time and extract hours
+    scaled_temps =
+      for {temperature, datetime, index} <- temperatures do
+        local_datetime = DateTime.shift_zone!(datetime, timezone, Tz.TimeZoneDatabase)
+        hour = local_datetime |> Map.get(:hour)
+        {temperature, hour, index}
+      end
+
+    # Calculate temperature range and scaling
+    temps = Enum.map(scaled_temps, fn {t, _, _} -> t end)
+    min_temp = Enum.min(temps)
+    max_temp = Enum.max(temps)
+    range = (max_temp - min_temp) / height
+
+    # Scale temperatures to display height
+    scaled_temps = Enum.map(scaled_temps, fn {temperature, hour, index} ->
+      temp_y = trunc((temperature - min_temp) / range)
+      {temperature, temp_y, hour, index}
+    end)
+
+    # Create the temperature line bitmap
+    temp_matrix =
+      for {{_temp, temp_y, _hour, x}, _index} <- Enum.with_index(scaled_temps),
+          into: %{} do
+        {{x, temp_y}, 1}
+      end
+
+    temp_bitmap = Bitmap.new(48, height, temp_matrix)
+
+    # Create the midnight columns bitmap
+    midnight_matrix =
+      for {{_temp, _temp_y, hour, x}, _index} <- Enum.with_index(scaled_temps),
+          hour == 0,
+          y <- 0..(height - 1),
+          # Check if any neighboring position has a temperature pixel
+          not has_neighbor_temp?(temp_matrix, x, y),
+          into: %{} do
+        {{x, y}, 1}
+      end
+
+    midnight_bitmap = Bitmap.new(48, height, midnight_matrix)
+
+    # Overlay the bitmaps
+    Bitmap.overlay(midnight_bitmap, temp_bitmap)
+  end
+
+  # Helper to check if any neighboring position has a temperature pixel
+  defp has_neighbor_temp?(temp_matrix, x, y) do
+    Enum.any?(-1..1, fn dx ->
+      Enum.any?(-1..1, fn dy ->
+        Map.get(temp_matrix, {x + dx, y + dy}, 0) == 1
+      end)
+    end)
   end
 
   defp place_text(bitmap, font, text, align_vertically, align_horizontally) do

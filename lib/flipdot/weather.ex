@@ -67,7 +67,7 @@ defmodule Flipdot.Weather do
 
   def get_weather(), do: GenServer.call(__MODULE__, :get_weather)
 
-  def get_temperature() do
+  def get_current_temperature() do
     weather = get_weather()
     weather["current"]["temp"]
   end
@@ -84,61 +84,14 @@ defmodule Flipdot.Weather do
     {rainfall_rate, rainfall_intensity}
   end
 
-  def bitmap_48(height) do
-    list_48 = get_48_hour_temperature(height)
-
-    # Create the temperature line bitmap
-    temp_matrix =
-      for {{_temp, temp_y, _hour, x}, _index} <- Enum.with_index(list_48),
-          into: %{} do
-        {{x, temp_y}, 1}
-      end
-
-    temp_bitmap = Bitmap.new(48, height, temp_matrix)
-
-    # Create the midnight columns bitmap
-    midnight_matrix =
-      for {{_temp, _temp_y, hour, x}, _index} <- Enum.with_index(list_48),
-          hour == 0,
-          y <- 0..(height - 1),
-          # Check if any neighboring position has a temperature pixel
-          not has_neighbor_temp?(temp_matrix, x, y),
-          into: %{} do
-        {{x, y}, 1}
-      end
-
-    midnight_bitmap = Bitmap.new(48, height, midnight_matrix)
-
-    # Overlay the bitmaps
-    Bitmap.overlay(midnight_bitmap, temp_bitmap)
-  end
-
-  # Helper to check if any neighboring position has a temperature pixel
-  defp has_neighbor_temp?(temp_matrix, x, y) do
-    Enum.any?(-1..1, fn dx ->
-      Enum.any?(-1..1, fn dy ->
-        Map.get(temp_matrix, {x + dx, y + dy}, 0) == 1
-      end)
-    end)
-  end
-
-  def get_48_hour_temperature(spread) when is_integer(spread) do
+  def get_48_hour_temperature() do
     weather = get_weather()
 
-    temperatures =
-      for {hourly, index} <- Enum.with_index(weather["hourly"]),
-          temperature = hourly["temp"] / 1,
-          hour = hourly["dt"] |> DateTime.from_unix!() |> Map.get(:hour) do
-        {temperature, hour, index}
-      end
-
-    min_temp = Enum.map(temperatures, fn {t, _, _} -> t end) |> Enum.min()
-    max_temp = Enum.map(temperatures, fn {t, _, _} -> t end) |> Enum.max()
-    range = (max_temp - min_temp) / spread
-
-    Enum.map(temperatures, fn {temperature, hour, index} ->
-      {temperature, trunc((temperature - min_temp) / range), hour, index}
-    end)
+    for {hourly, index} <- Enum.with_index(weather["hourly"]),
+        temperature = hourly["temp"] / 1,
+        datetime = DateTime.from_unix!(hourly["dt"]) do
+      {temperature, datetime, index}
+    end
   end
 
   # server functions
@@ -169,8 +122,6 @@ defmodule Flipdot.Weather do
         %{state | weather: weather}
     end
   end
-
-  # helper functions
 
   # define rainfall intensity based on rainfall intensity
 
