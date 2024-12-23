@@ -557,7 +557,7 @@ defmodule FlipdotWeb.FlipdotLive do
     ~H"""
     <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
       <div id="display" class="bg-gray-900 p-4 rounded-lg">
-        <div :for={y <- (@height - 1)..0} id={"row-#{y}"} class="flex">
+        <div :for={y <- (@height - 1)..0//-1} id={"row-#{y}"} class="flex">
           <div
             :for={x <- 0..(@width - 1)}
             id={"cell-#{x},#{y}"}
