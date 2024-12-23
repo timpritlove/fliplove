@@ -77,13 +77,11 @@ defmodule Flipdot.App.Dashboard do
   end
 
   defp get_system_timezone do
-    {output, 0} = System.cmd("date", ["+%Z"])
-    tz_abbr = String.trim(output)
+    {tz_string, 0} = System.cmd("date", ["+%Z"])
 
-    case tz_abbr do
-      "CET" -> "Europe/Berlin"
-      "CEST" -> "Europe/Berlin"
-      _ -> "Etc/UTC"  # Fallback to UTC if timezone is unknown
+    case String.trim(tz_string) do
+      "" -> "Etc/UTC"  # Fallback to UTC if timezone is empty
+      tz -> tz  # Keep original timezone abbreviation
     end
   end
 
