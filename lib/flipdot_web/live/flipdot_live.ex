@@ -24,7 +24,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(page_title: "Flipdot Display")
       |> assign(:bitmap, Display.get())
       |> assign(:clock, clock())
-      |> assign(:app, Flipdot.App.running_app())
+      |> assign(:app, Flipdot.Apps.running_app())
       |> assign(:text, "")
       |> assign(:font_name, "flipdot")
       |> assign(:mode, :pencil)
@@ -109,7 +109,7 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply,
      socket
      |> assign(:clock, clock())
-     |> assign(:app, Flipdot.App.running_app())}
+     |> assign(:app, Flipdot.Apps.running_app())}
   end
 
   @impl true
@@ -237,13 +237,13 @@ defmodule FlipdotWeb.FlipdotLive do
   def handle_event("app", params, socket) do
     app = String.to_atom(params["value"])
 
-    if app == Flipdot.App.running_app() do
-      Flipdot.App.stop_app()
+    if app == Flipdot.Apps.running_app() do
+      Flipdot.Apps.stop_app()
     else
-      Flipdot.App.start_app(app)
+      Flipdot.Apps.start_app(app)
     end
 
-    socket = socket |> assign(:app, Flipdot.App.running_app())
+    socket = socket |> assign(:app, Flipdot.Apps.running_app())
     {:noreply, socket}
   end
 

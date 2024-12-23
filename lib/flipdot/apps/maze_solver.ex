@@ -1,4 +1,4 @@
-defmodule Flipdot.App.MazeSolver do
+defmodule Flipdot.Apps.MazeSolver do
   alias Flipdot.Bitmap
   alias Flipdot.Bitmap.Maze
 
@@ -9,7 +9,7 @@ defmodule Flipdot.App.MazeSolver do
   alias Flipdot.Display
   require Logger
 
-  @registry Flipdot.App.Registry
+  @registry Flipdot.Apps.Registry
 
   @frame_delay 100
   @maze_delay 5_000

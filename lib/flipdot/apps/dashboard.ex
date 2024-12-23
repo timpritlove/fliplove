@@ -1,4 +1,4 @@
-defmodule Flipdot.App.Dashboard do
+defmodule Flipdot.Apps.Dashboard do
   alias Flipdot.Bitmap
   alias Flipdot.Display
   alias Flipdot.Font.Renderer
@@ -15,7 +15,7 @@ defmodule Flipdot.App.Dashboard do
 
   defstruct font: nil, bitmap: nil
 
-  @registry Flipdot.App.Registry
+  @registry Flipdot.Apps.Registry
 
   @font "flipdot"
   #@clock_symbol 0xF017

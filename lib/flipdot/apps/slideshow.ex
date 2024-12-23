@@ -1,4 +1,4 @@
-defmodule Flipdot.App.Slideshow do
+defmodule Flipdot.Apps.Slideshow do
   @moduledoc """
   Show a slide show on the flipboard
   """
@@ -6,7 +6,7 @@ defmodule Flipdot.App.Slideshow do
   alias Flipdot.Display
   require Logger
 
-  @registry Flipdot.App.Registry
+  @registry Flipdot.Apps.Registry
 
   defstruct [:all_images, remaining: nil]
 

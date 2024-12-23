@@ -1,15 +1,15 @@
-defmodule Flipdot.App do
+defmodule Flipdot.Apps do
   use GenServer
   require Logger
 
-  @registry Flipdot.App.Registry
-  @supervisor Flipdot.App.DynamicSupervisor
+  @registry Flipdot.Apps.Registry
+  @supervisor Flipdot.Apps.DynamicSupervisor
 
   @apps %{
-    dashboard: Flipdot.App.Dashboard,
-    slideshow: Flipdot.App.Slideshow,
-    maze_solver: Flipdot.App.MazeSolver,
-    symbols: Flipdot.App.Symbols
+    dashboard: Flipdot.Apps.Dashboard,
+    slideshow: Flipdot.Apps.Slideshow,
+    maze_solver: Flipdot.Apps.MazeSolver,
+    symbols: Flipdot.Apps.Symbols
   }
 
   def start_link(_) do

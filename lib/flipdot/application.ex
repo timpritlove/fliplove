@@ -17,11 +17,11 @@ defmodule Flipdot.Application do
         Flipdot.Font.Library,
         Flipdot.Display,
         # Start the Registry for apps
-        {Registry, keys: :unique, name: Flipdot.App.Registry},
-        # Start the DynamicSupervisor for apps
-        {DynamicSupervisor, strategy: :one_for_one, name: Flipdot.App.DynamicSupervisor},
-        # Start services that depend on core services
-        {Flipdot.App, []},
+        {Registry, keys: :unique, name: Flipdot.Apps.Registry},
+        # Start the dynamic supervisor for apps
+        {DynamicSupervisor, strategy: :one_for_one, name: Flipdot.Apps.DynamicSupervisor},
+        # Start the app manager
+        {Flipdot.Apps, []},
         {Flipdot.Weather, []},
         {Flipdot.Fluepdot, []},
         # Start the Endpoint last (after all services are ready)

@@ -1,4 +1,4 @@
-defmodule Flipdot.App.Symbols do
+defmodule Flipdot.Apps.Symbols do
   alias Flipdot.Bitmap
   alias Flipdot.Display
 
@@ -8,7 +8,7 @@ defmodule Flipdot.App.Symbols do
   use GenServer
   require Logger
 
-  @registry Flipdot.App.Registry
+  @registry Flipdot.Apps.Registry
   @symbols_dir "priv/static/symbols"
   @display_time 5_000
   @num_symbols 5
