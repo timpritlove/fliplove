@@ -9,3 +9,4 @@ invader = Bitmap.from_lines_of_text([
       "X X     X X",
       "   XX XX   "
     ])
+f = Flipdot.Font.Fonts.Flipdot.get()
