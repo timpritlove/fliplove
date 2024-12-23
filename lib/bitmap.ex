@@ -76,7 +76,7 @@ defmodule Bitmap do
       end
       bottom_delimiter = "+" <> List.to_string(bottom_line) <> "+\n"
 
-      delimiter <> Enum.join(lines) <> bottom_delimiter
+      "\n" <> delimiter <> Enum.join(lines) <> bottom_delimiter
     end
   end
 
