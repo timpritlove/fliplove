@@ -1,5 +1,5 @@
 export FLIPDOT_OPENWEATHERMAP_API_KEY=`security find-generic-password -a tim@pritlove.org -s "OpenWeatherMap API Key" -w`
-export FLIPDOT_TELEGRAM_BOT_SECRET=6583378464:AAHFnHWF7ebmNdlyyu8r7gFZmnL49fra5ug
+export FLIPDOT_TELEGRAM_BOT_SECRET=`security find-generic-password -a flipdot_update_bot -s "Telegram" -w`
 #export FLIPDOT_MODE=NETWORK
 export FLIPDOT_HOST=flipdot_02.local
 export FLIPDOT_MODE=USB
