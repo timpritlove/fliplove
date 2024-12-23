@@ -86,11 +86,15 @@ defmodule Flipdot.App.Dashboard do
   end
 
   defp get_max_min_temps do
-    temperatures = Weather.get_48_hour_temperature()
-    temps = Enum.map(temperatures, fn {t, _, _} -> t end)
-    {Enum.max(temps), Enum.min(temps)}
+    case Weather.get_48_hour_temperature() do
+      [] -> {nil, nil}
+      temperatures ->
+        temps = Enum.map(temperatures, fn {t, _, _} -> t end)
+        {Enum.max(temps), Enum.min(temps)}
+    end
   end
 
+  defp format_temp(nil), do: "N/A"
   defp format_temp(temp) do
     :erlang.float_to_binary(temp / 1, decimals: 1) <> "°C"
   end
