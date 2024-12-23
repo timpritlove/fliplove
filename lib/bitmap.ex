@@ -42,23 +42,24 @@ defmodule Bitmap do
 
   defimpl Inspect, for: Bitmap do
     def inspect(bitmap, _opts) do
-      # Get actual bounds including negative coordinates
-      {min_x, min_y, max_x, max_y} = Bitmap.bbox(bitmap)
+      # Use full dimensions instead of bounding box
+      width = bitmap.width
+      height = bitmap.height
 
       # Create top delimiter with baseline marker if needed
-      top_line = for x <- min_x..max_x do
+      top_line = for x <- 0..(width-1) do
         if x == -bitmap.baseline_x, do: ?+, else: ?-
       end
       delimiter = "+" <> List.to_string(top_line) <> "+\n"
 
       lines =
-        for y <- max_y..min_y do
+        for y <- (height-1)..0 do
           # Use '+' for baseline markers, '|' for other lines
           left_border = if y == -bitmap.baseline_y, do: ?+, else: ?|
           right_border = if y == -bitmap.baseline_y, do: ?+, else: ?|
 
           line =
-            for x <- min_x..max_x do
+            for x <- 0..(width-1) do
               case Map.get(bitmap.matrix, {x, y}, 0) do
                 0 -> ?\s
                 _ -> ?X
@@ -70,7 +71,7 @@ defmodule Bitmap do
         end
 
       # Create bottom delimiter with baseline marker if needed
-      bottom_line = for x <- min_x..max_x do
+      bottom_line = for x <- 0..(width-1) do
         if x == -bitmap.baseline_x, do: ?+, else: ?-
       end
       bottom_delimiter = "+" <> List.to_string(bottom_line) <> "+\n"
@@ -702,7 +703,7 @@ defmodule Bitmap do
 
     # traverse pixels left to right, top to bottom
     svg_pixels =
-      for y <- (height - 1)..0 do
+      for y <- (height - 1)..0//-1 do
         for x <- 0..(width - 1),
             pixel = get_pixel(bitmap, {x, y}),
             pixel == 1 do
