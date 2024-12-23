@@ -152,6 +152,8 @@ defmodule Flipdot.App.Dashboard do
   defp create_48_hour_temperature_chart(height) do
     temperatures = Weather.get_48_hour_temperature()
     timezone = get_system_timezone()
+    chart_height = height - 2  # Reduce height by 2 for frame
+    chart_width = 48
 
     # Convert temperatures to local time and extract hours
     scaled_temps =
@@ -161,43 +163,40 @@ defmodule Flipdot.App.Dashboard do
         {temperature, hour, index}
       end
 
-    # Calculate temperature range and scaling
     temps = Enum.map(scaled_temps, fn {t, _, _} -> t end)
     min_temp = Enum.min(temps)
     max_temp = Enum.max(temps)
     range = max_temp - min_temp
 
-    # Scale temperatures to display height
     scaled_temps = Enum.map(scaled_temps, fn {temperature, hour, index} ->
-      # Scale to height-1 to ensure we don't exceed the bitmap bounds
-      temp_y = trunc((temperature - min_temp) * (height - 1) / range)
+      temp_y = trunc((temperature - min_temp) * (chart_height - 1) / range)
       {temperature, temp_y, hour, index}
     end)
 
-    # Create the temperature line bitmap
     temp_matrix =
       for {{_temp, temp_y, _hour, x}, _index} <- Enum.with_index(scaled_temps),
           into: %{} do
-        {{x, temp_y}, 1}
+        {{x + 1, temp_y + 1}, 1}  # Offset by 1 for frame
       end
 
-    temp_bitmap = Bitmap.new(48, height, temp_matrix)
+    temp_bitmap = Bitmap.new(chart_width + 2, height, temp_matrix)
 
-    # Create the midnight columns bitmap
     midnight_matrix =
       for {{_temp, _temp_y, hour, x}, _index} <- Enum.with_index(scaled_temps),
           hour == 0,
-          y <- Enum.to_list(0..1) ++ Enum.to_list((height - 2)..(height - 1)), # Only top 2 and bottom 2 pixels
-          # Check if any neighboring position has a temperature pixel
-          not has_neighbor_temp?(temp_matrix, x, y),
+          y <- Enum.to_list(1..2) ++ Enum.to_list((chart_height - 1)..chart_height),
+          not has_neighbor_temp?(temp_matrix, x + 1, y),
           into: %{} do
-        {{x, y}, 1}
+        {{x + 1, y}, 1}
       end
 
-    midnight_bitmap = Bitmap.new(48, height, midnight_matrix)
+    midnight_bitmap = Bitmap.new(chart_width + 2, height, midnight_matrix)
 
-    # Overlay the bitmaps
-    Bitmap.overlay(midnight_bitmap, temp_bitmap)
+    frame_bitmap = Bitmap.frame(chart_width + 2, height)
+
+    frame_bitmap
+    |> Bitmap.overlay(midnight_bitmap)
+    |> Bitmap.overlay(temp_bitmap)
   end
 
   # Helper to check if any neighboring position has a temperature pixel
