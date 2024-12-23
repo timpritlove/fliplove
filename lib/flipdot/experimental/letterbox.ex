@@ -1,9 +1,10 @@
 defmodule Flipdot.Experimental.Letterbox do
+  alias Flipdot.Bitmap
+  alias Flipdot.Bitmap.Transition
+  alias Flipdot.Font.Renderer
+
   @transition_ms 100
   @still_ms 1_000
-
-  alias Flipdot.Font.Renderer
-  alias Bitmap.Transition
 
   def render_tla_movie(text) do
     font = Flipdot.Font.Fonts.Letterbox.get()

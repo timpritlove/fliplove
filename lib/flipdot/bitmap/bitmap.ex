@@ -1,4 +1,4 @@
-defmodule Bitmap do
+defmodule Flipdot.Bitmap do
   require Integer
 
   @moduledoc """
@@ -26,7 +26,7 @@ defmodule Bitmap do
   """
   defmacro defbitmap(lines, opts \\ []) do
     quote do
-      bitmap = Bitmap.from_lines_of_text(unquote(lines),
+      bitmap = Flipdot.Bitmap.from_lines_of_text(unquote(lines),
         on: Keyword.get(unquote(opts), :on, ?X),
         off: Keyword.get(unquote(opts), :off, ?\s),
         baseline_x: Keyword.get(unquote(opts), :baseline_x, 0),
@@ -34,13 +34,13 @@ defmodule Bitmap do
       )
       # Ensure we return a proper Bitmap struct
       case bitmap do
-        %Bitmap{} -> bitmap
-        map when is_map(map) -> struct(Bitmap, Map.merge(%Bitmap{}, map))
+        %Flipdot.Bitmap{} -> bitmap
+        map when is_map(map) -> struct(Flipdot.Bitmap, Map.merge(%Flipdot.Bitmap{}, map))
       end
     end
   end
 
-  defimpl Inspect, for: Bitmap do
+  defimpl Inspect, for: Flipdot.Bitmap do
     def inspect(bitmap, _opts) do
       # Use full dimensions instead of bounding box
       width = bitmap.width
@@ -108,7 +108,7 @@ defmodule Bitmap do
     options = Keyword.validate!(options, baseline_x: 0, baseline_y: 0)
 
     if valid_matrix?(matrix) do
-      %Bitmap{
+      %Flipdot.Bitmap{
         width: width,
         height: height,
         matrix: matrix,
@@ -903,7 +903,7 @@ defmodule Bitmap do
             end)
 
           # When preserving baseline, we keep bitmap1's baseline
-          %Bitmap{
+          %Flipdot.Bitmap{
             width: merged_max_x - merged_min_x + 1,
             height: merged_max_y - merged_min_y + 1,
             matrix: merged_matrix,
@@ -925,7 +925,7 @@ defmodule Bitmap do
           merged_matrix = Map.merge(bitmap1.matrix, matrix2)
 
           normalize(
-            %Bitmap{
+            %Flipdot.Bitmap{
               width: max_x - min_x + 1,
               height: max_y - min_y + 1,
               matrix: merged_matrix,

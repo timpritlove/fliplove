@@ -1,6 +1,6 @@
 defmodule Flipdot.Font.Kerning do
   alias Flipdot.Font
-  alias Bitmap
+  alias Flipdot.Bitmap
 
   @kerning %{
     "-Adobe-Helvetica-Bold-O-Normal--17-120-100-100-P-92-ISO8859-1" => %{

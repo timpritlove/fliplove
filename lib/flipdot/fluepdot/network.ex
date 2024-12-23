@@ -1,4 +1,6 @@
 defmodule Flipdot.Fluepdot.Network do
+  alias Flipdot.Bitmap
+
   @doc """
   Driver for Fluepdot Display via Network (UDP + HTTP)
   """

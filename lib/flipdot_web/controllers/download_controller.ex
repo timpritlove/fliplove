@@ -1,5 +1,6 @@
 defmodule FlipdotWeb.DownloadController do
   use FlipdotWeb, :controller
+  alias Flipdot.Bitmap
   alias Flipdot.Display
 
   def download(conn, _params) do

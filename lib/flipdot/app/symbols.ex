@@ -1,9 +1,11 @@
 defmodule Flipdot.App.Symbols do
+  alias Flipdot.Bitmap
+  alias Flipdot.Display
+
   @moduledoc """
   Show random symbols from text files on the flipboard
   """
   use GenServer
-  alias Flipdot.Display
   require Logger
 
   @registry Flipdot.App.Registry

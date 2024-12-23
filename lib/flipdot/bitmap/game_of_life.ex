@@ -1,4 +1,6 @@
-defmodule Bitmap.GameOfLife do
+defmodule Flipdot.Bitmap.GameOfLife do
+  alias Flipdot.Bitmap
+
   @doc """
   Apply Game of Life Algorithm to bitmap
   - a living cell surrounded by less than 2 living cells will die.

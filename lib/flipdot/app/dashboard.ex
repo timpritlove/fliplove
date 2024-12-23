@@ -1,11 +1,15 @@
 defmodule Flipdot.App.Dashboard do
+  alias Flipdot.Bitmap
+  alias Flipdot.Display
+  alias Flipdot.Font.Renderer
+
   @moduledoc """
   Compose a dashboard to show on flipboard
   """
   use GenServer
   alias Phoenix.PubSub
-  alias Flipdot.{Display, Weather}
-  alias Flipdot.Font.{Renderer, Library}
+  alias Flipdot.{Weather}
+  alias Flipdot.Font.{Library}
   require Logger
   # import Flipdot.PrettyDump
 

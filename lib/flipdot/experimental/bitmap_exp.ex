@@ -1,4 +1,6 @@
 defmodule BitmapExp do
+  alias Flipdot.Bitmap
+
   @moduledoc false
 
   @doc """

@@ -1,4 +1,7 @@
 defmodule Flipdot.App.MazeSolver do
+  alias Flipdot.Bitmap
+  alias Flipdot.Bitmap.Maze
+
   @moduledoc """
   Show and solve a maze on the flipboard
   """
@@ -33,9 +36,9 @@ defmodule Flipdot.App.MazeSolver do
   defp new_maze_stream do
     width = make_odd(Display.width())
     height = make_odd(Display.height())
-    maze = Bitmap.Maze.generate_maze(width, height)
+    maze = Maze.generate_maze(width, height)
     Display.set(maze)
-    Bitmap.Maze.solve_maze(maze, mode: :parallel)
+    Maze.solve_maze(maze, mode: :parallel)
   end
 
   @impl true

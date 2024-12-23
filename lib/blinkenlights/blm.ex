@@ -1,4 +1,6 @@
 defmodule Blinkenlights.BLM do
+  alias Flipdot.Bitmap
+
   import NimbleParsec
 
   defstruct [:width, :height, :header, :frames]

@@ -1,4 +1,5 @@
 defmodule Flipdot.Font.Fonts.BlinkenlightsBold do
+  alias Flipdot.Bitmap
   import Bitmap
   alias Flipdot.Font
 

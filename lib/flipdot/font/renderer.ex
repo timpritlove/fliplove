@@ -1,6 +1,7 @@
 defmodule Flipdot.Font.Renderer do
   alias Flipdot.Font
   alias Flipdot.Font.Kerning
+  alias Flipdot.Bitmap
   require Logger
 
   @type alignment :: :left | :center | :right

@@ -1,4 +1,6 @@
 defmodule Flipdot.Fluepdot.USB do
+  alias Flipdot.Bitmap
+
   @doc """
   Driver for Fluepdot Display via USB
   """

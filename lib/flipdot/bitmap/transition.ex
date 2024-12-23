@@ -1,4 +1,5 @@
-defmodule Bitmap.Transition do
+defmodule Flipdot.Bitmap.Transition do
+  alias Flipdot.Bitmap
   # TODO:
   # * slide transitions in all directions
   # * push transitions in all directions

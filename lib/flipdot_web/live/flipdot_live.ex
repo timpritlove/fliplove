@@ -1,13 +1,13 @@
 defmodule FlipdotWeb.FlipdotLive do
   use FlipdotWeb, :live_view
-  require Logger
-
+  alias Flipdot.Bitmap
   alias Flipdot.Display
   alias Flipdot.Font.Renderer
   alias Flipdot.Font.Library
-  alias Bitmap.Maze
-  alias Bitmap.GameOfLife
+  alias Flipdot.Bitmap.Maze
+  alias Flipdot.Bitmap.GameOfLife
 
+  require Logger
   require Integer
 
   @impl true

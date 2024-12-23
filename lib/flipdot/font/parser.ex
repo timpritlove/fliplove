@@ -1,4 +1,5 @@
 defmodule Flipdot.Font.Parser do
+  alias Flipdot.Bitmap
   import NimbleParsec
   alias Flipdot.Font
   require Logger

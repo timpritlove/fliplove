@@ -1,4 +1,5 @@
 defmodule Flipdot.Font.Fonts.Letterbox do
+  alias Flipdot.Bitmap
   import Bitmap
   alias Flipdot.Font
 

@@ -1,4 +1,6 @@
-defmodule Bitmap.Maze do
+defmodule Flipdot.Bitmap.Maze do
+  alias Flipdot.Bitmap
+
   @doc """
   Generate a maze. Both width and height must be odd numbers
   """

@@ -1,4 +1,6 @@
 defmodule SymbolImporter do
+  alias Flipdot.Bitmap
+
   @moduledoc """
   Extracts 16x16 symbols from a PNG file and saves them as individual bitmap text files.
 

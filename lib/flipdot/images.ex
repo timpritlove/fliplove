@@ -1,4 +1,6 @@
 defmodule Flipdot.Images do
+  alias Flipdot.Bitmap
+
   @moduledoc false
 
   import Bitmap
