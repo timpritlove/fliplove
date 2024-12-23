@@ -1,4 +1,4 @@
-defmodule SymbolImporter do
+defmodule Flipdot.CLI.SymbolImporter do
   alias Flipdot.Bitmap
 
   @moduledoc """
@@ -11,17 +11,16 @@ defmodule SymbolImporter do
   - Dark pixels (grayscale value < 128) are treated as "off" state
   - Light pixels (grayscale value >= 128) are treated as "on" state
 
-  ## Example Usage
+  ## Command Line Usage
 
-      # Process a PNG file, saving symbols to the default "symbols" directory
-      SymbolImporter.process_file("path/to/symbols.png")
+      symbol_importer path/to/symbols.png [--output OUTPUT_DIR]
 
-      # Process a PNG file with custom output directory
-      SymbolImporter.process_file("path/to/symbols.png", "output/symbols")
+  Options:
+    -o, --output  Target directory for the bitmap files (default: current directory)
 
-  ## Output Format
+      ## Output Format
 
-  The module will create one text file per non-empty symbol, using the following naming convention:
+  The program will create one text file per non-empty symbol, using the following naming convention:
   - Files are named as "ROW_COL.txt" (e.g., "002_004.txt" for row 2, column 4)
   - Row and column numbers are 1-based and padded with zeros
   - Empty symbols (all dark pixels) are skipped
@@ -58,11 +57,11 @@ defmodule SymbolImporter do
   ## Example
 
       # With default border and distance
-      iex> SymbolImporter.process_file("symbols.png", "output/bitmaps")
+      iex> Flipdot.CLI.SymbolImporter.process_file("symbols.png", "output/bitmaps")
       :ok
 
       # With custom border and distance
-      iex> SymbolImporter.process_file("symbols.png", "output/bitmaps", border: 10, distance: 6)
+      iex> Flipdot.CLI.SymbolImporter.process_file("symbols.png", "output/bitmaps", border: 10, distance: 6)
       :ok
   """
   def process_file(png_path, output_dir \\ "symbols", opts \\ []) do
@@ -183,5 +182,57 @@ defmodule SymbolImporter do
     num
     |> Integer.to_string()
     |> String.pad_leading(3, "0")
+  end
+
+  @doc """
+  Entry point for the escript CLI.
+  """
+  def main([]) do
+    IO.puts(:stderr, """
+    Error: No input file specified
+
+    Usage: symbol_importer PNG_FILE [-o OUTPUT_DIR]
+
+    Arguments:
+      PNG_FILE       Path to the PNG file containing symbols
+
+    Options:
+      -o, --output  Target directory for the bitmap files (default: current directory)
+    """)
+    System.halt(1)
+  end
+
+  def main(args) do
+    {opts, remaining_args, _invalid} = OptionParser.parse(args,
+      strict: [output: :string],
+      aliases: [o: :output]
+    )
+
+    case remaining_args do
+      [png_path] ->
+        output_dir = Keyword.get(opts, :output, ".")
+        case process_file(png_path, output_dir) do
+          :ok ->
+            Logger.info("Successfully processed symbols from #{png_path} to #{output_dir}")
+            System.halt(0)
+          {:error, reason} ->
+            Logger.error("Failed to process file: #{reason}")
+            System.halt(1)
+        end
+
+      _ ->
+        IO.puts(:stderr, """
+        Error: Invalid arguments
+
+        Usage: symbol_importer PNG_FILE [-o OUTPUT_DIR]
+
+        Arguments:
+          PNG_FILE       Path to the PNG file containing symbols
+
+        Options:
+          -o, --output  Target directory for the bitmap files (default: current directory)
+        """)
+        System.halt(1)
+    end
   end
 end

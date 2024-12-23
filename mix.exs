@@ -14,7 +14,14 @@ defmodule Flipdot.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      escript: [
+        main_module: Flipdot.CLI.SymbolImporter,
+        name: "symbol_importer",
+        app: nil,
+        included_applications: [:logger, :ex_png],
+        path: "_build/tools/symbol_importer"
+      ]
     ]
   end
 
