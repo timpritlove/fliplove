@@ -326,8 +326,6 @@ defmodule Flipdot.Font.Parser do
   defp char_map(properties) do
     # First merge all properties
     char = Enum.reduce(properties, %{}, fn map, acc -> Map.merge(map, acc) end)
-    # Remove encoding since it's redundant (it's the key in the characters map)
-    char = Map.drop(char, [:encoding])
     # Now create the bitmap with the correct baseline offsets from BBX
     if Map.has_key?(char, :bitmap_lines) and Map.has_key?(char, :bb_x_off) and Map.has_key?(char, :bb_y_off) do
       bitmap = Bitmap.from_lines_of_text(
@@ -361,8 +359,9 @@ defmodule Flipdot.Font.Parser do
 
   defp characters_map(char_maps) do
     Enum.reduce(char_maps, %{}, fn char_map, acc ->
-      # filtered_char_map = Enum.reject(char_map, fn {key, _value} -> key == :encoding end)
-      Map.put(acc, char_map[:encoding], char_map)
+      encoding = char_map.encoding  # Store the encoding value
+      char_map = Map.drop(char_map, [:encoding])  # Now remove it from the char_map
+      Map.put(acc, encoding, char_map)  # Use the stored encoding as key
     end)
   end
 
