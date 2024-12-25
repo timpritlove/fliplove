@@ -67,3 +67,16 @@ config :phoenix, :json_library, Jason
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
+
+config :mdns_lite,
+  hosts: [:hostname],
+  ttl: 120,
+  instance_name: "Flipdot Controller",
+  services: [
+    %{
+      id: :web_service,
+      protocol: "http",
+      transport: "tcp",
+      port: 4000
+    },
+  ]

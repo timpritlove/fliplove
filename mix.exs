@@ -75,7 +75,8 @@ defmodule Flipdot.MixProject do
       {:easing, "~> 0.3.1"},
       {:logger_file_backend, "~> 0.0.13"},
       {:circuits_uart, "~> 1.5"},
-      {:tzdata, "~> 1.1"}
+      {:tzdata, "~> 1.1"},
+      {:mdns_lite, "~> 0.8.11"}
     ]
   end
 
