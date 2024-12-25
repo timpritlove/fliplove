@@ -9,6 +9,7 @@ defmodule Flipdot.Fluepdot.USB do
 
   @device_env "FLIPDOT_DEVICE"
   @device_bitrate 115_200
+  @retry_interval 5000  # 5 seconds between retries
 
   defstruct [:counter, :device, :uart, :timer, connected: false]
 
@@ -23,35 +24,27 @@ defmodule Flipdot.Fluepdot.USB do
         {:stop, "#{@device_env} environment variable not set"}
 
       device ->
-        {:ok, uart_pid} = Circuits.UART.start_link()
-
-        case Circuits.UART.open(uart_pid, device,
-               speed: @device_bitrate,
-               active: false
-             ) do
-          :ok ->
-            Logger.info("Successfully opened serial connection to #{device}")
-            state = %{state | device: device, uart: uart_pid, counter: 0}
-
-            with :ok <- write_command(state, "config_rendering_mode differential"),
-                 :ok <- write_command(state, "flipdot_clear") do
-              Logger.info("Successfully initialized USB display")
-              {:ok, state}
-            else
-              {:error, reason} ->
-                Logger.error("Failed to initialize USB display: #{inspect(reason)}")
-                {:stop, reason}
-            end
-
-          {:error, reason} ->
-            Logger.error("Failed to open serial connection: #{inspect(reason)}")
-            {:stop, reason}
-        end
+        send(self(), :try_connect)
+        {:ok, %{state | device: device}}
     end
   end
 
   @impl true
-  def handle_info({:display_updated, bitmap}, state) do
+  def handle_info(:try_connect, state) do
+    case initialize_connection(state) do
+      {:ok, new_state} ->
+        Logger.info("Successfully initialized USB display")
+        {:noreply, new_state}
+
+      {:error, reason} ->
+        Logger.error("Failed to initialize USB display: #{inspect(reason)}, retrying in #{@retry_interval}ms")
+        Process.send_after(self(), :try_connect, @retry_interval)
+        {:noreply, state}
+    end
+  end
+
+  @impl true
+  def handle_info({:display_updated, bitmap}, %{connected: true} = state) do
     cmd = "\nframebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64())
 
     case write_command(state, cmd) do
@@ -62,7 +55,35 @@ defmodule Flipdot.Fluepdot.USB do
 
       {:error, reason} ->
         Logger.error("Failed to write to serial port: #{inspect(reason)}")
-        {:noreply, state}
+        # If we fail to write, try reconnecting
+        send(self(), :try_connect)
+        {:noreply, %{state | connected: false}}
+    end
+  end
+
+  def handle_info({:display_updated, _bitmap}, state) do
+    # If not connected, ignore display updates
+    {:noreply, state}
+  end
+
+  # Helper function for initializing the connection
+  defp initialize_connection(state) do
+    with {:ok, uart_pid} <- Circuits.UART.start_link(),
+         :ok <- Circuits.UART.open(uart_pid, state.device,
+                speed: @device_bitrate,
+                active: false
+              ),
+         _ <- Logger.info("Successfully opened serial connection to #{state.device}"),
+         :ok <- write_command(%{state | uart: uart_pid}, "config_rendering_mode differential"),
+         :ok <- write_command(%{state | uart: uart_pid}, "flipdot_clear") do
+      {:ok, %{state | uart: uart_pid, counter: 0, connected: true}}
+    else
+      {:error, reason} = error ->
+        if state.uart do
+          Circuits.UART.close(state.uart)
+        end
+        Logger.error("Failed to initialize USB connection: #{inspect(reason)}")
+        error
     end
   end
 
