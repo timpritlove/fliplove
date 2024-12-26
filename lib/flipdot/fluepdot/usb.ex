@@ -10,7 +10,7 @@ defmodule Flipdot.Fluepdot.USB do
   @device_env "FLIPDOT_DEVICE"
   @device_bitrate 115_200
   @retry_interval 5000  # 5 seconds between retries
-  @prompt_timeout 1000  # 1 second timeout for prompt
+  @prompt_timeout 3000  # 1 second timeout for prompt
   @prompt_regex ~r/\n(?:\e\[\d+(?:;\d+)*m)?[^\s]+>\s*(?:\e\[\d+(?:;\d+)*m)?$/
 
   defstruct [:counter, :device, :uart, :timer, :prompt_timer, :pending_command,
@@ -249,8 +249,11 @@ defmodule Flipdot.Fluepdot.USB do
         {:error, :not_connected}
 
       not state.ready ->
-        Logger.debug("Device not ready, waiting for prompt")
-        {:ok, %{state | pending_command: command}}
+        Logger.debug("Device not ready, sending newline to trigger prompt")
+        # Send newline to try to trigger a prompt
+        Circuits.UART.write(state.uart, "\n")
+        timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
+        {:ok, %{state | pending_command: command, prompt_timer: timer_ref}}
 
       true ->
         case Circuits.UART.write(state.uart, command <> "\n") do
