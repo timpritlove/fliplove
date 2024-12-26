@@ -579,7 +579,7 @@ defmodule FlipdotWeb.FlipdotLive do
     ~H"""
     <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
       <div id="display" class="bg-gray-900 p-4 rounded-lg">
-        <div :for={y <- (@height - 1)..0//-1} id={"row-#{y}"} class="flex">
+        <div :for={y <- Range.new(@height - 1, 0, -1)} id={"row-#{y}"} class="flex">
           <div
             :for={x <- 0..(@width - 1)}
             id={"cell-#{x},#{y}"}
@@ -591,11 +591,11 @@ defmodule FlipdotWeb.FlipdotLive do
               "transition-all duration-200 hover:opacity-75",
               if(Map.get(@bitmap.matrix, {x, y}) == 1,
                 do: "bg-[url('/images/flipdot/flipdot-pixel-on-8x8.png')] " <>
-                    "@2x:bg-[url('/images/flipdot/flipdot-pixel-on-16x16.png')] " <>
-                    "@3x:bg-[url('/images/flipdot/flipdot-pixel-on-24x24.png')]",
+                    "[min-resolution:2x]:bg-[url('/images/flipdot/flipdot-pixel-on-16x16.png')] " <>
+                    "[min-resolution:3x]:bg-[url('/images/flipdot/flipdot-pixel-on-24x24.png')]",
                 else: "bg-[url('/images/flipdot/flipdot-pixel-off-8x8.png')] " <>
-                    "@2x:bg-[url('/images/flipdot/flipdot-pixel-off-16x16.png')] " <>
-                    "@3x:bg-[url('/images/flipdot/flipdot-pixel-off-24x24.png')]"
+                    "[min-resolution:2x]:bg-[url('/images/flipdot/flipdot-pixel-off-16x16.png')] " <>
+                    "[min-resolution:3x]:bg-[url('/images/flipdot/flipdot-pixel-off-24x24.png')]"
               )
             ]}
           >
