@@ -30,6 +30,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:mode, :pencil)
       |> assign(:prev_xy, nil)
       |> assign(:font_select, Library.get_fonts() |> build_font_select())
+      |> assign(:usb_mode?, System.get_env("FLIPDOT_MODE") == "USB")
       |> allow_upload(:frame,
         accept: ~w(.txt),
         max_entries: 1,
@@ -463,7 +464,7 @@ defmodule FlipdotWeb.FlipdotLive do
           </.section>
 
           <%!-- USB Commands Section --%>
-          <.section title="USB Commands">
+          <.section :if={@usb_mode?} title="USB Commands">
             <.button_group>
               <.usb_command tooltip="Clear Display" command="flipdot_clear" icon="eraser" />
               <.usb_command tooltip="Clear Display (Inverted)" command="flipdot_clear --invert" icon="circle-half-stroke" />
