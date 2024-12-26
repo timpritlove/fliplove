@@ -323,6 +323,12 @@ defmodule FlipdotWeb.FlipdotLive do
      })}
   end
 
+  @impl true
+  def handle_event("usb-command", %{"command" => command}, socket) do
+    GenServer.cast(Flipdot.Fluepdot.USB, {:command, command})
+    {:noreply, socket}
+  end
+
   # helper functions
 
   def do_pixel_click(:pencil, {x, y}, _, bitmap) do
@@ -453,6 +459,18 @@ defmodule FlipdotWeb.FlipdotLive do
               <.app app={@app} tooltip="Slideshow" value="slideshow" self={:slideshow} icon="images" />
               <.app app={@app} tooltip="Maze Solver" value="maze_solver" self={:maze_solver} icon="hat-wizard" />
               <.app app={@app} tooltip="Symbols" value="symbols" self={:symbols} icon="icons" />
+            </.button_group>
+          </.section>
+
+          <%!-- USB Commands Section --%>
+          <.section title="USB Commands">
+            <.button_group>
+              <.usb_command tooltip="Clear Display" command="flipdot_clear" icon="eraser" />
+              <.usb_command tooltip="Clear Display (Inverted)" command="flipdot_clear --invert" icon="circle-half-stroke" />
+              <.usb_command tooltip="Reboot Device" command="reboot" icon="power-off" />
+              <.usb_command tooltip="Start WiFi" command="wifi start" icon="signal" />
+              <.usb_command tooltip="Stop WiFi" command="wifi stop" icon="ban" />
+              <.usb_command tooltip="Show Tasks" command="show_tasks" icon="list" />
             </.button_group>
           </.section>
         </div>
@@ -678,6 +696,22 @@ defmodule FlipdotWeb.FlipdotLive do
     <div class="flex flex-wrap gap-2">
       <%= render_slot(@inner_block) %>
     </div>
+    """
+  end
+
+  def usb_command(assigns) do
+    ~H"""
+    <button
+      title={@tooltip}
+      class="relative p-3 rounded-lg bg-gray-700 transition-colors duration-200
+             hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      phx-click="usb-command"
+      phx-value-command={@command}
+    >
+      <div class="fill-gray-200">
+        <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
+      </div>
+    </button>
     """
   end
 end

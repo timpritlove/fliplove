@@ -166,6 +166,18 @@ defmodule Flipdot.Fluepdot.USB do
     end
   end
 
+  @impl true
+  def handle_cast({:command, command}, state) do
+    case write_command(state, command) do
+      {:ok, new_state} ->
+        Logger.debug("USB command sent: #{command}")
+        {:noreply, new_state}
+      {:error, reason} ->
+        Logger.error("Failed to send USB command: #{inspect(reason)}")
+        {:noreply, state}
+    end
+  end
+
   # Initializes USB connection and configures display.
   # State flow:
   # 1. Opens UART connection
