@@ -589,8 +589,12 @@ defmodule FlipdotWeb.FlipdotLive do
               "shrink-0 w-[8px] h-[8px] flex items-center justify-around",
               "transition-all duration-200 hover:opacity-75",
               if(Map.get(@bitmap.matrix, {x, y}) == 1,
-                do: "bg-[url('/images/flipdot/flipdot-pixel-on-8x8.png')]",
-                else: "bg-[url('/images/flipdot/flipdot-pixel-off-8x8.png')]"
+                do: "bg-[url('/images/flipdot/flipdot-pixel-on-8x8.png')] " <>
+                    "@2x:bg-[url('/images/flipdot/flipdot-pixel-on-16x16.png')] " <>
+                    "@3x:bg-[url('/images/flipdot/flipdot-pixel-on-24x24.png')]",
+                else: "bg-[url('/images/flipdot/flipdot-pixel-off-8x8.png')] " <>
+                    "@2x:bg-[url('/images/flipdot/flipdot-pixel-off-16x16.png')] " <>
+                    "@3x:bg-[url('/images/flipdot/flipdot-pixel-off-24x24.png')]"
               )
             ]}
           >
