@@ -14,7 +14,7 @@ defmodule Flipdot.Fluepdot.USB do
   @prompt_regex ~r/\n(?:\e\[\d+(?:;\d+)*m)?[^\s]+>\s*(?:\e\[\d+(?:;\d+)*m)?$/
 
   defstruct [:counter, :device, :uart, :timer, :prompt_timer, :pending_command,
-            connected: false, ready: false, buffer: ""]
+            connected: false, ready: false, buffer: "", log_buffer: ""]
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -75,7 +75,7 @@ defmodule Flipdot.Fluepdot.USB do
         Logger.error("Failed to write to serial port: #{inspect(reason)}")
         # If we fail to write, try reconnecting
         send(self(), :try_connect)
-        {:noreply, %{state | connected: false, ready: false}}
+        {:noreply, %{state | connected: false, ready: false, buffer: "", log_buffer: ""}}
     end
   end
 
@@ -101,6 +101,7 @@ defmodule Flipdot.Fluepdot.USB do
       connected: false, 
       ready: false, 
       buffer: "", 
+      log_buffer: "",
       pending_command: nil
     }
     send(self(), :try_connect)
@@ -109,21 +110,27 @@ defmodule Flipdot.Fluepdot.USB do
 
   @impl true
   def handle_info({:circuits_uart, _port, data}, state) do
-    # Log all incoming data
-    Logger.debug("USB received: #{inspect(data, binaries: :as_strings)}")
-    
+    # Add data to both buffers
     buffer = state.buffer <> data
+    log_buffer = state.log_buffer <> data
 
+    # Process log buffer for complete lines
+    {lines, remaining_log_buffer} = extract_complete_lines(log_buffer)
+    # Log any complete lines
+    for line <- lines do
+      Logger.debug("USB received: #{inspect(line, binaries: :as_strings)}")
+    end
+    
     cond do
       String.contains?(buffer, "Unrecognized command") ->
         Logger.error("Command not recognized: #{inspect(state.pending_command)}")
         if state.prompt_timer, do: Process.cancel_timer(state.prompt_timer)
-        {:noreply, %{state | buffer: "", pending_command: nil, ready: false}}
+        {:noreply, %{state | buffer: "", log_buffer: "", pending_command: nil, ready: false}}
 
       Regex.match?(@prompt_regex, buffer) ->
         if state.prompt_timer, do: Process.cancel_timer(state.prompt_timer)
         Logger.debug("USB prompt detected, setting ready state")
-        new_state = %{state | buffer: "", ready: true, pending_command: nil}
+        new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, pending_command: nil}
 
         # If this is the first prompt after initial connection (not reconnection)
         if state.counter == 0 and not state.connected do
@@ -146,7 +153,18 @@ defmodule Flipdot.Fluepdot.USB do
         end
 
       true ->
-        {:noreply, %{state | buffer: buffer}}
+        {:noreply, %{state | buffer: buffer, log_buffer: remaining_log_buffer}}
+    end
+  end
+
+  # Helper function to extract complete lines from a buffer
+  defp extract_complete_lines(buffer) do
+    case String.split(buffer, "\n", parts: 2) do
+      [line, rest] ->
+        {more_lines, remaining} = extract_complete_lines(rest)
+        {[String.trim_trailing(line) | more_lines], remaining}
+      [incomplete] ->
+        {[], incomplete}
     end
   end
 
@@ -198,7 +216,9 @@ defmodule Flipdot.Fluepdot.USB do
         uart: uart_pid,
         connected: true,  # Mark as connected immediately after open
         counter: 0,
-        ready: false     # Will become ready when we get first prompt
+        ready: false,    # Will become ready when we get first prompt
+        buffer: "",
+        log_buffer: ""
       }
 
       # Send initial newline to trigger prompt
