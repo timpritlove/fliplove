@@ -53,7 +53,7 @@ defmodule Flipdot.Bitmap do
       delimiter = "+" <> List.to_string(top_line) <> "+\n"
 
       lines =
-        for y <- (height-1)..0 do
+        for y <- (height-1)..0//-1 do
           # Use '+' for baseline markers, '|' for other lines
           left_border = if y == -bitmap.baseline_y, do: ?+, else: ?|
           right_border = if y == -bitmap.baseline_y, do: ?+, else: ?|
