@@ -9,8 +9,8 @@ defmodule Flipdot.MixProject do
         authors: ["Tim Pritlove"],
         logo: "data/flipdot-logo-64.jpg"
       ],
-      version: "0.1.0",
-      elixir: "~> 1.14",
+      version: "0.2.0",
+      elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -31,7 +31,7 @@ defmodule Flipdot.MixProject do
   def application do
     [
       mod: {Flipdot.Application, []},
-      extra_applications: [:logger, :runtime_tools, :os_mon, :tz, :tzdata]
+      extra_applications: [:logger, :runtime_tools, :os_mon, :tz]
     ]
   end
 
@@ -71,11 +71,9 @@ defmodule Flipdot.MixProject do
       {:ex_fontawesome, ">= 0.7.2"},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:mix_audit, "~> 2.0", only: [:dev, :test], runtime: false},
-      #      {:circuits_uart, "~> 1.5"},
       {:easing, "~> 0.3.1"},
       {:logger_file_backend, "~> 0.0.13"},
       {:circuits_uart, "~> 1.5"},
-      {:tzdata, "~> 1.1"},
       {:mdns_lite, "~> 0.8.11"}
     ]
   end
