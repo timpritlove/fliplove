@@ -102,7 +102,7 @@ defmodule Flipdot.Font.Renderer do
             [] -> 0
             _ ->
               Logger.debug("Checking kerning for pair: #{inspect([character, hd(tail)])}")
-              k = Kerning.get_auto_kerning(font, [character, hd(tail)])
+              k = Kerning.get_kerning(font, [character, hd(tail)])
               Logger.debug("Kerning value: #{k}")
               k
           end
