@@ -42,10 +42,27 @@ defmodule Flipdot.Display do
     new_bitmap = Bitmap.crop_relative(bitmap, width(), height(), rel_x: :center, rel_y: :middle)
 
     if new_bitmap != old_bitmap do
+      # Count pixels in the new bitmap
+      pixel_count = count_active_pixels(new_bitmap)
+      
+      # Calculate normalized value (0-999)
+      max_pixels = width() * height()
+      normalized_value = trunc(pixel_count / max_pixels * 999)
+      
+      # Update Megabitmeter
+      Flipdot.Megabitmeter.set_level(normalized_value)
+
       Phoenix.PubSub.broadcast(Flipdot.PubSub, @topic, {:display_updated, new_bitmap})
       Agent.update(__MODULE__, fn _ -> %__MODULE__{bitmap: new_bitmap} end)
     end
 
     bitmap
+  end
+
+  # Count active (1) pixels in the bitmap
+  defp count_active_pixels(bitmap) do
+    bitmap.matrix
+    |> Map.values()
+    |> Enum.count(&(&1 == 1))
   end
 end

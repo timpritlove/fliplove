@@ -24,6 +24,7 @@ defmodule Flipdot.Application do
         {Flipdot.Apps, []},
         {Flipdot.Weather, []},
         {Flipdot.Fluepdot, []},
+        {Flipdot.Megabitmeter, []},
         # Start the Endpoint last (after all services are ready)
         {FlipdotWeb.Endpoint, []}
       ] ++
