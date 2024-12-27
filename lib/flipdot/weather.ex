@@ -85,18 +85,34 @@ defmodule Flipdot.Weather do
   end
 
   def get_48_hour_temperature() do
+    with {:ok, weather} <- get_weather_data(),
+         {:ok, hourly} <- get_hourly_data(weather) do
+      parse_hourly_temperatures(hourly)
+    else
+      _ -> []
+    end
+  end
+
+  defp get_weather_data do
     case get_weather() do
-      nil -> []
-      weather when is_map(weather) ->
-        case weather["hourly"] do
-          nil -> []
-          hourly when is_list(hourly) ->
-            for {hourly_data, index} <- Enum.with_index(hourly),
-                temperature = hourly_data["temp"] / 1,
-                datetime = DateTime.from_unix!(hourly_data["dt"]) do
-              {temperature, datetime, index}
-            end
-        end
+      nil -> {:error, :no_weather_data}
+      weather when is_map(weather) -> {:ok, weather}
+    end
+  end
+
+  defp get_hourly_data(weather) do
+    case weather["hourly"] do
+      nil -> {:error, :no_hourly_data}
+      hourly when is_list(hourly) -> {:ok, hourly}
+      _ -> {:error, :invalid_hourly_data}
+    end
+  end
+
+  defp parse_hourly_temperatures(hourly) do
+    for {hourly_data, index} <- Enum.with_index(hourly),
+        temperature = hourly_data["temp"] / 1,
+        datetime = DateTime.from_unix!(hourly_data["dt"]) do
+      {temperature, datetime, index}
     end
   end
 
@@ -129,41 +145,46 @@ defmodule Flipdot.Weather do
     end
   end
 
-  # define rainfall intensity based on rainfall intensity
+  # Rainfall intensity calculation using pattern matching
+  @rainfall_intensity_thresholds [
+    {50.0, 4},
+    {7.6, 3},
+    {2.6, 2},
+    {0.1, 1},
+    {0.0, 0}
+  ]
 
   def rainfall_intensity(rainfall_rate) when rainfall_rate >= 0 do
     rainfall_rate = rainfall_rate / 1
-    rainfall_intensity_scale = [0.1, 2.6, 7.6, 50.0]
-    do_rainfall_intensity(rainfall_rate, 0, rainfall_intensity_scale)
+    {_, intensity} = Enum.find(@rainfall_intensity_thresholds, fn {threshold, _} -> 
+      rainfall_rate >= threshold 
+    end)
+    intensity
   end
 
-  defp do_rainfall_intensity(_, rainfall_level, []), do: rainfall_level
-
-  defp do_rainfall_intensity(rainfall_rate, rainfall_intensity, [threshold | _])
-       when rainfall_rate < threshold do
-    rainfall_intensity
-  end
-
-  defp do_rainfall_intensity(rainfall_rate, rainfall_intensity, [_ | scale]) do
-    do_rainfall_intensity(rainfall_rate, rainfall_intensity + 1, scale)
-  end
-
-  # define wind force based on beaufort scale
+  # Wind force calculation using pattern matching
+  @beaufort_scale_thresholds [
+    {32.7, 12},
+    {28.5, 11},
+    {24.5, 10},
+    {20.8, 9},
+    {17.2, 8},
+    {13.9, 7},
+    {10.8, 6},
+    {8.0, 5},
+    {5.5, 4},
+    {3.4, 3},
+    {1.6, 2},
+    {0.3, 1},
+    {0.0, 0}
+  ]
 
   def wind_force(wind_speed) when wind_speed >= 0 do
     wind_speed = wind_speed / 1
-    beaufort_scale = [0.3, 1.6, 3.4, 5.5, 8.0, 10.8, 13, 9, 17.2, 20.8, 24.5, 28.5, 32.7]
-    do_wind_force(wind_speed, 0, beaufort_scale)
-  end
-
-  defp do_wind_force(_, wind_force, []), do: wind_force
-
-  defp do_wind_force(wind_speed, wind_force, [threshold | _]) when wind_speed < threshold do
-    wind_force
-  end
-
-  defp do_wind_force(wind_speed, wind_force, [_ | scale]) do
-    do_wind_force(wind_speed, wind_force + 1, scale)
+    {_, force} = Enum.find(@beaufort_scale_thresholds, fn {threshold, _} -> 
+      wind_speed >= threshold 
+    end)
+    force
   end
 
   # retrieve OWM API key from either a local config file or from the environment
