@@ -51,7 +51,7 @@ defmodule Flipdot.Fluepdot.USB do
         {:noreply, %{new_state | prompt_timer: timer_ref}}
 
       {:error, reason} ->
-        Logger.error("Failed to initialize USB display: #{inspect(reason)}, retrying in #{@retry_interval}ms")
+        Logger.debug("USB display not available (#{inspect(reason)}), retrying in #{@retry_interval}ms")
         Process.send_after(self(), :try_connect, @retry_interval)
         {:noreply, state}
     end
@@ -97,10 +97,10 @@ defmodule Flipdot.Fluepdot.USB do
       Circuits.UART.close(state.uart)
     end
     # Reset state and try reconnecting
-    new_state = %{state | 
-      connected: false, 
-      ready: false, 
-      buffer: "", 
+    new_state = %{state |
+      connected: false,
+      ready: false,
+      buffer: "",
       log_buffer: "",
       pending_command: nil
     }
@@ -120,7 +120,7 @@ defmodule Flipdot.Fluepdot.USB do
     for line <- lines do
       Logger.debug("USB received: #{inspect(line, binaries: :as_strings)}")
     end
-    
+
     cond do
       String.contains?(buffer, "Unrecognized command") ->
         Logger.error("Command not recognized: #{inspect(state.pending_command)}")
@@ -137,7 +137,7 @@ defmodule Flipdot.Fluepdot.USB do
           case write_command(new_state, "config_rendering_mode differential") do
             {:ok, configured_state} ->
               case write_command(configured_state, "flipdot_clear") do
-                {:ok, final_state} -> 
+                {:ok, final_state} ->
                   # Set counter to 1 to indicate initialization is complete
                   {:noreply, %{final_state | counter: 1}}
                 error ->
@@ -157,17 +157,6 @@ defmodule Flipdot.Fluepdot.USB do
     end
   end
 
-  # Helper function to extract complete lines from a buffer
-  defp extract_complete_lines(buffer) do
-    case String.split(buffer, "\n", parts: 2) do
-      [line, rest] ->
-        {more_lines, remaining} = extract_complete_lines(rest)
-        {[String.trim_trailing(line) | more_lines], remaining}
-      [incomplete] ->
-        {[], incomplete}
-    end
-  end
-
   # Handles prompt timeout events to maintain connection health.
   # State changes:
   # - When connected but not ready: Sends newline to trigger prompt
@@ -181,6 +170,17 @@ defmodule Flipdot.Fluepdot.USB do
       {:noreply, %{state | prompt_timer: timer_ref}}
     else
       {:noreply, state}
+    end
+  end
+
+  # Helper function to extract complete lines from a buffer
+  defp extract_complete_lines(buffer) do
+    case String.split(buffer, "\n", parts: 2) do
+      [line, rest] ->
+        {more_lines, remaining} = extract_complete_lines(rest)
+        {[String.trim_trailing(line) | more_lines], remaining}
+      [incomplete] ->
+        {[], incomplete}
     end
   end
 
@@ -233,7 +233,7 @@ defmodule Flipdot.Fluepdot.USB do
         if state.uart do
           Circuits.UART.close(state.uart)
         end
-        Logger.error("Failed to initialize USB connection: #{inspect(reason)}")
+        Logger.debug("Unable to initialize USB connection: #{inspect(reason)}")
         error
     end
   end
