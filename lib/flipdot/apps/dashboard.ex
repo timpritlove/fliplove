@@ -102,103 +102,132 @@ defmodule Flipdot.Apps.Dashboard do
   end
 
   defp update_dashboard(state) do
-    bitmap = Bitmap.new(Display.width(), Display.height())
+    Bitmap.new(Display.width(), Display.height())
+    |> render_current_temperature(state.font)
+    |> render_time(state.font)
+    |> render_temperature_chart()
+    |> render_temperature_extremes(state.font)
+    |> maybe_update_display(state.bitmap)
+  end
 
-    # render temperature
-    temperature = Weather.get_current_temperature()
-    bitmap = if temperature do
-      place_text(bitmap, state.font, format_temp(temperature), :top, :left)
-    else
-      bitmap
+  defp render_current_temperature(bitmap, font) do
+    case Weather.get_current_temperature() do
+      nil -> bitmap
+      temp -> place_text(bitmap, font, format_temp(temp), :top, :left)
     end
+  end
 
-    # render rain
-    # {rainfall_rate, rainfall_intensity} = Weather.get_rain()
+  defp render_time(bitmap, font) do
+    case safe_get_time_string() do
+      {:ok, time_string} -> place_text(bitmap, font, time_string, :bottom, :left)
+      {:error, _} -> bitmap
+    end
+  end
 
-    # bitmap =
-    #   place_text(bitmap, state.font, "R #{rainfall_rate}  I #{rainfall_intensity}",
-    #     align_vertically: :top,
-    #     align_horizontally: :left
-    #   )
+  defp safe_get_time_string do
+    {:ok, get_time_string()}
+  rescue
+    error -> {:error, error}
+  end
 
-    # render wind
-    bitmap =
-      try do
-        time_string = get_time_string()
-        place_text(bitmap, state.font, time_string, :bottom, :left)
-      rescue
-        _ -> bitmap  # Return unchanged bitmap if time formatting fails
-      end
+  defp render_temperature_chart(bitmap) do
+    case safe_create_temperature_chart() do
+      {:ok, weather_bitmap} -> Bitmap.overlay(bitmap, weather_bitmap)
+      {:error, _} -> bitmap
+    end
+  end
 
-    bitmap =
-      try do
-        weather_bitmap = create_48_hour_temperature_chart(Display.height())
-        |> Bitmap.crop_relative(Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
+  defp safe_create_temperature_chart do
+    weather_bitmap = create_48_hour_temperature_chart(Display.height())
+    |> Bitmap.crop_relative(Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
+    {:ok, weather_bitmap}
+  rescue
+    error -> {:error, error}
+  end
 
-        Bitmap.overlay(bitmap, weather_bitmap)
-      rescue
-        _ -> bitmap  # Return unchanged bitmap if weather bitmap creation fails
-      end
-
-    # render max/min temperatures
+  defp render_temperature_extremes(bitmap, font) do
     {max_temp, min_temp} = get_max_min_temps()
-    bitmap = place_text(bitmap, state.font, format_temp(max_temp), :top, :right)
-    bitmap = place_text(bitmap, state.font, format_temp(min_temp), :bottom, :right)
+    bitmap
+    |> place_text(font, format_temp(max_temp), :top, :right)
+    |> place_text(font, format_temp(min_temp), :bottom, :right)
+  end
 
-    if bitmap != state.bitmap do
-      Display.set(bitmap)
+  defp maybe_update_display(new_bitmap, current_bitmap) do
+    if new_bitmap != current_bitmap do
+      Display.set(new_bitmap)
     end
+    new_bitmap
   end
 
   # Temperature chart creation functions
   defp create_48_hour_temperature_chart(height) do
-    temperatures = Weather.get_48_hour_temperature()
+    chart_dimensions = %{
+      height: height - 2,  # Reduce height by 2 for frame
+      width: 48,
+      total_height: height
+    }
+
+    Weather.get_48_hour_temperature()
+    |> convert_to_local_times()
+    |> scale_temperatures(chart_dimensions.height)
+    |> create_temperature_bitmap(chart_dimensions)
+    |> add_midnight_markers(chart_dimensions)
+    |> add_frame()
+  end
+
+  defp convert_to_local_times(temperatures) do
     timezone = get_system_timezone()
-    chart_height = height - 2  # Reduce height by 2 for frame
-    chart_width = 48
+    
+    Enum.map(temperatures, fn {temperature, datetime, index} ->
+      local_datetime = DateTime.shift_zone!(datetime, timezone, Tz.TimeZoneDatabase)
+      hour = local_datetime |> Map.get(:hour)
+      {temperature, hour, index}
+    end)
+  end
 
-    # Convert temperatures to local time and extract hours
-    scaled_temps =
-      for {temperature, datetime, index} <- temperatures do
-        local_datetime = DateTime.shift_zone!(datetime, timezone, Tz.TimeZoneDatabase)
-        hour = local_datetime |> Map.get(:hour)
-        {temperature, hour, index}
-      end
-
-    temps = Enum.map(scaled_temps, fn {t, _, _} -> t end)
+  defp scale_temperatures(temp_data, chart_height) do
+    temps = Enum.map(temp_data, fn {t, _, _} -> t end)
     min_temp = Enum.min(temps)
     max_temp = Enum.max(temps)
     range = max_temp - min_temp
 
-    scaled_temps = Enum.map(scaled_temps, fn {temperature, hour, index} ->
+    Enum.map(temp_data, fn {temperature, hour, index} ->
       temp_y = trunc((temperature - min_temp) * (chart_height - 1) / range)
       {temperature, temp_y, hour, index}
     end)
+  end
 
+  defp create_temperature_bitmap(scaled_temps, dimensions) do
     temp_matrix =
       for {{_temp, temp_y, _hour, x}, _index} <- Enum.with_index(scaled_temps),
           into: %{} do
         {{x + 1, temp_y + 1}, 1}  # Offset by 1 for frame
       end
 
-    temp_bitmap = Bitmap.new(chart_width + 2, height, temp_matrix)
+    {Bitmap.new(dimensions.width + 2, dimensions.total_height, temp_matrix), scaled_temps}
+  end
 
+  defp add_midnight_markers({bitmap, scaled_temps}, dimensions) do
     midnight_matrix =
       for {{_temp, _temp_y, hour, x}, _index} <- Enum.with_index(scaled_temps),
           hour == 0,
-          y <- Enum.to_list(1..2) ++ Enum.to_list((chart_height - 1)..chart_height),
-          not has_neighbor_temp?(temp_matrix, x + 1, y),
+          y <- get_midnight_marker_positions(dimensions.height),
+          not has_neighbor_temp?(bitmap.matrix, x + 1, y),
           into: %{} do
         {{x + 1, y}, 1}
       end
 
-    midnight_bitmap = Bitmap.new(chart_width + 2, height, midnight_matrix)
+    midnight_bitmap = Bitmap.new(dimensions.width + 2, dimensions.total_height, midnight_matrix)
+    Bitmap.overlay(bitmap, midnight_bitmap)
+  end
 
-    frame_bitmap = Bitmap.frame(chart_width + 2, height)
+  defp get_midnight_marker_positions(chart_height) do
+    Enum.to_list(1..2) ++ Enum.to_list((chart_height - 1)..chart_height)
+  end
 
-    frame_bitmap
-    |> Bitmap.overlay(midnight_bitmap)
-    |> Bitmap.overlay(temp_bitmap)
+  defp add_frame(bitmap) do
+    frame_bitmap = Bitmap.frame(bitmap.width, bitmap.height)
+    Bitmap.overlay(frame_bitmap, bitmap)
   end
 
   # Helper to check if any neighboring position has a temperature pixel
