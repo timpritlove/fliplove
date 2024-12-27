@@ -92,8 +92,9 @@ defmodule Flipdot.Apps do
       [] ->
         :ok
 
-      [{pid, _}] ->
+      [{pid, app}] ->
         DynamicSupervisor.terminate_child(@supervisor, pid)
+        Logger.info("App #{app} has been stopped.")
         :ok
     end
   end

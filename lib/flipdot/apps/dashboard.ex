@@ -31,7 +31,6 @@ defmodule Flipdot.Apps.Dashboard do
 
   @impl true
   def init(state) do
-    Logger.info("Dashboard is starting...")
     Registry.register(@registry, :running_app, :dashboard)
 
     state = %{state | font: Library.get_font_by_name(@font)}

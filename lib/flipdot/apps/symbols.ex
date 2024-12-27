@@ -53,7 +53,6 @@ defmodule Flipdot.Apps.Symbols do
     render_display(state)
     :timer.send_after(@display_time, __MODULE__, :next_display)
 
-    Logger.info("Symbols app has been started.")
     {:ok, state}
   end
 

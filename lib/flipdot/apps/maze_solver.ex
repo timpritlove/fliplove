@@ -24,7 +24,6 @@ defmodule Flipdot.Apps.MazeSolver do
 
   @impl true
   def init(state) do
-    Logger.info("Starting Maze Solver...")
     Registry.register(@registry, :running_app, :maze_solver)
 
     maze_stream = new_maze_stream()

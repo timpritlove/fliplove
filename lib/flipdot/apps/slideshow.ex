@@ -23,7 +23,6 @@ defmodule Flipdot.Apps.Slideshow do
     all_images = Flipdot.Images.load_images(width: Display.width(), height: Display.height())
     remaining = all_images
     :timer.send_after(0, __MODULE__, :next_slide)
-    Logger.info("Slideshow has been started.")
     {:ok, %{state | all_images: all_images, remaining: remaining}}
   end
 
