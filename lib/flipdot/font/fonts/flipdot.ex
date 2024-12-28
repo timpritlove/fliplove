@@ -966,6 +966,19 @@ defmodule Flipdot.Font.Fonts.Flipdot do
             "X   X"
           ])
       },
+      ?ï => %{
+        name: "i diaeresis",
+        bitmap:
+          defbitmap([
+            "X X",
+            "   ",
+            " X ",
+            " X ",
+            " X ",
+            " X ",
+            " X "
+          ])
+      },
       ?i => %{
         name: "i",
         bitmap:
