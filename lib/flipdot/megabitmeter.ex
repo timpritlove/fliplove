@@ -5,9 +5,21 @@ defmodule Flipdot.Megabitmeter do
   @reconnect_interval 5_000 # 5 seconds
   @boot_delay 5_000 # 5 seconds wait for device to boot
   @baud_rate 9600
+  @animation_steps 10
+  @animation_interval 100 # 100ms between steps (2000ms total)
 
   defmodule State do
-    defstruct [:uart_pid, :device, :pending_value, connected?: false, booting?: false]
+    defstruct [
+      :uart_pid,
+      :device,
+      :pending_value,
+      :current_value,
+      :target_value,
+      :animation_timer,
+      :step_size,
+      connected?: false,
+      booting?: false
+    ]
   end
 
   def start_link(_) do
@@ -26,9 +38,15 @@ defmodule Flipdot.Megabitmeter do
 
     if is_nil(device) do
       Logger.warning("FLIPDOT_MEGABITMETER_DEVICE not configured, Megabitmeter will be disabled")
-      {:ok, %State{device: nil}}
+      {:ok, %State{device: nil, current_value: 0, target_value: 0, animation_timer: nil, step_size: nil}}
     else
-      state = %State{device: device}
+      state = %State{
+        device: device,
+        current_value: 0,
+        target_value: 0,
+        animation_timer: nil,
+        step_size: nil
+      }
       {:ok, state, {:continue, :connect}}
     end
   end
@@ -39,20 +57,36 @@ defmodule Flipdot.Megabitmeter do
       {:ok, uart_pid} ->
         Logger.info("Connected to Megabitmeter at #{state.device}, waiting for boot...")
         Process.send_after(self(), :boot_complete, @boot_delay)
-        {:noreply, %State{state | uart_pid: uart_pid, booting?: true}}
+        {:noreply, %State{state |
+          uart_pid: uart_pid,
+          booting?: true,
+          current_value: state.current_value,
+          target_value: state.target_value,
+          animation_timer: state.animation_timer
+        }}
 
       {:error, reason} ->
         Logger.info("Failed to connect to Megabitmeter: #{inspect(reason)}")
         schedule_reconnect()
-        {:noreply, %State{state | connected?: false}}
+        {:noreply, %State{state |
+          connected?: false,
+          current_value: state.current_value,
+          target_value: state.target_value,
+          animation_timer: state.animation_timer
+        }}
     end
   end
 
   @impl true
   def handle_cast({:set_level, value}, %State{connected?: true, booting?: false} = state) do
     Logger.debug("Setting Megabitmeter level to #{value}")
-    write_value(state.uart_pid, value)
-    {:noreply, state}
+
+    # Cancel any existing animation
+    if state.animation_timer, do: Process.cancel_timer(state.animation_timer)
+
+    # Start new animation
+    new_state = start_animation(state, value)
+    {:noreply, new_state}
   end
 
   def handle_cast({:set_level, value}, %State{connected?: true, booting?: true} = state) do
@@ -69,7 +103,7 @@ defmodule Flipdot.Megabitmeter do
   def handle_info(:boot_complete, state) do
     Logger.info("Megabitmeter boot complete at #{state.device}")
     new_state = %State{state | connected?: true, booting?: false}
-    
+
     # Set any pending value that was stored during boot
     case new_state.pending_value do
       nil -> :ok
@@ -77,7 +111,7 @@ defmodule Flipdot.Megabitmeter do
         Logger.debug("Setting pending value #{value} after boot")
         write_value(state.uart_pid, value)
     end
-    
+
     {:noreply, %State{new_state | pending_value: nil}}
   end
 
@@ -100,6 +134,33 @@ defmodule Flipdot.Megabitmeter do
     Circuits.UART.close(state.uart_pid)
     schedule_reconnect()
     {:noreply, %State{state | uart_pid: nil, connected?: false, booting?: false}}
+  end
+
+  def handle_info(:animate_step, %State{current_value: current, target_value: target, step_size: step_size} = state) do
+    if current == target do
+      {:noreply, %State{state | animation_timer: nil, step_size: nil}}
+    else
+      # Use the pre-calculated step size
+      next_value = round(current + step_size)
+
+      # Ensure we don't overshoot
+      next_value = if step_size > 0,
+        do: min(next_value, target),
+        else: max(next_value, target)
+
+      # Send the value to the device
+      write_value(state.uart_pid, next_value)
+
+      # Schedule next step if not at target
+      timer = if next_value != target do
+        Process.send_after(self(), :animate_step, @animation_interval)
+      end
+
+      {:noreply, %State{state |
+        current_value: next_value,
+        animation_timer: timer
+      }}
+    end
   end
 
   defp open_uart(device) do
@@ -125,4 +186,25 @@ defmodule Flipdot.Megabitmeter do
   defp schedule_reconnect do
     Process.send_after(self(), :try_reconnect, @reconnect_interval)
   end
-end 
+
+  defp start_animation(state, target_value) do
+    # If no current value is set, initialize to 0
+    current = state.current_value || 0
+
+    if current != target_value do
+      # Calculate the fixed step size once
+      step_size = (target_value - current) / @animation_steps
+
+      # Start the animation
+      timer = Process.send_after(self(), :animate_step, @animation_interval)
+      %State{state |
+        current_value: current,
+        target_value: target_value,
+        step_size: step_size,
+        animation_timer: timer
+      }
+    else
+      state
+    end
+  end
+end
