@@ -13,8 +13,8 @@ defmodule Flipdot.Fluepdot.USB do
   @prompt_timeout 3000  # 1 second timeout for prompt
   @prompt_regex ~r/\n(?:\e\[\d+(?:;\d+)*m)?[^\s]+>\s*(?:\e\[\d+(?:;\d+)*m)?$/
 
-  defstruct [:counter, :device, :uart, :timer, :prompt_timer, :pending_command,
-            connected: false, ready: false, buffer: "", log_buffer: ""]
+  defstruct [:counter, :device, :uart, :timer, :prompt_timer, :last_sent_command,
+            connected: false, ready: false, buffer: "", log_buffer: "", command_queue: []]
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -102,7 +102,7 @@ defmodule Flipdot.Fluepdot.USB do
       ready: false,
       buffer: "",
       log_buffer: "",
-      pending_command: nil
+      command_queue: []
     }
     send(self(), :try_connect)
     {:noreply, new_state}
@@ -123,33 +123,36 @@ defmodule Flipdot.Fluepdot.USB do
 
     cond do
       String.contains?(buffer, "Unrecognized command") ->
-        Logger.error("Command not recognized: #{inspect(state.pending_command)}")
+        [failed_command | remaining_queue] = state.command_queue
+        Logger.error("Command not recognized: #{inspect(failed_command)}")
         if state.prompt_timer, do: Process.cancel_timer(state.prompt_timer)
-        {:noreply, %{state | buffer: "", log_buffer: "", pending_command: nil, ready: false}}
+        {:noreply, %{state | buffer: "", log_buffer: "", command_queue: remaining_queue, ready: false}}
 
       Regex.match?(@prompt_regex, buffer) ->
         if state.prompt_timer, do: Process.cancel_timer(state.prompt_timer)
+        # Log success of the last command if there was one
+        if state.last_sent_command do
+          Logger.info("Command completed successfully: #{inspect(state.last_sent_command)}")
+        end
         Logger.debug("USB prompt detected, setting ready state")
-        new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, pending_command: nil}
+        new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, last_sent_command: nil}
 
-        # If this is the first prompt after initial connection (not reconnection)
-        if state.counter == 0 and not state.connected do
-          case write_command(new_state, "config_rendering_mode differential") do
-            {:ok, configured_state} ->
-              case write_command(configured_state, "flipdot_clear") do
-                {:ok, final_state} ->
-                  # Set counter to 1 to indicate initialization is complete
-                  {:noreply, %{final_state | counter: 1}}
-                error ->
-                  Logger.error("Failed to clear display: #{inspect(error)}")
-                  {:noreply, new_state}
-              end
-            error ->
-              Logger.error("Failed to set rendering mode: #{inspect(error)}")
-              {:noreply, new_state}
-          end
-        else
-          {:noreply, new_state}
+        case new_state.command_queue do
+          [] ->
+            # No pending commands, just update state
+            {:noreply, %{new_state | connected: true}}
+
+          [next_command | remaining_queue] ->
+            # Send the next command in queue
+            Logger.debug("Processing next command (#{length(state.command_queue)} commands in queue)")
+            case send_command(new_state, next_command) do
+              {:ok, updated_state} ->
+                # Remove the executed command from the queue
+                {:noreply, %{updated_state | command_queue: remaining_queue}}
+              error ->
+                Logger.error("Failed to send command: #{inspect(error)}")
+                {:noreply, new_state}
+            end
         end
 
       true ->
@@ -221,9 +224,21 @@ defmodule Flipdot.Fluepdot.USB do
         log_buffer: ""
       }
 
+      # Queue initialization commands
+      init_commands = [
+        "wifi stop",
+        "config_rendering_mode differential",
+        "flipdot_clear"
+      ]
+
+      queued_state = Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
+        Logger.debug("Queueing init command: #{cmd}")
+        %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
+      end)
+
       # Send initial newline to trigger prompt
       case Circuits.UART.write(uart_pid, "\n") do
-        :ok -> {:ok, initial_state}
+        :ok -> {:ok, queued_state}
         error ->
           Circuits.UART.close(uart_pid)
           error
@@ -238,29 +253,38 @@ defmodule Flipdot.Fluepdot.USB do
     end
   end
 
-  # Manages command writing with prompt-based flow control.
-  # State changes:
-  # - When not connected: Returns error
-  # - When not ready: Stores command as pending
-  # - When ready: Sends command, sets not ready, starts prompt timeout
+  # Queue a command for execution
+  defp queue_command(state, command) do
+    Logger.debug("Queueing command: #{command} (#{length(state.command_queue)} commands in queue)")
+    {:ok, %{state | command_queue: state.command_queue ++ [command]}}
+  end
+
+  # Actually send a command over UART
+  defp send_command(state, command) do
+    case Circuits.UART.write(state.uart, command <> "\n") do
+      :ok ->
+        Logger.debug("Command sent: #{inspect(command)}")
+        timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
+        # Keep the command in queue until we get confirmation and track the sent command
+        {:ok, %{state | ready: false, prompt_timer: timer_ref, last_sent_command: command}}
+      error -> error
+    end
+  end
+
+  # Manages command writing with prompt-based flow control
   defp write_command(state, command) do
     cond do
       not state.connected ->
         {:error, :not_connected}
 
       not state.ready ->
-        Logger.debug("Device not ready, sending newline to trigger prompt")
-        # Send newline to try to trigger a prompt
-        Circuits.UART.write(state.uart, "\n")
-        timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
-        {:ok, %{state | pending_command: command, prompt_timer: timer_ref}}
+        # Queue the command for later execution
+        queue_command(state, command)
 
       true ->
-        case Circuits.UART.write(state.uart, command <> "\n") do
-          :ok ->
-            Logger.debug("Command sent, setting not ready: #{inspect(command)}")
-            timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
-            {:ok, %{state | ready: false, pending_command: command, prompt_timer: timer_ref}}
+        # Can send immediately
+        case send_command(state, command) do
+          {:ok, new_state} -> {:ok, new_state}
           error -> error
         end
     end
