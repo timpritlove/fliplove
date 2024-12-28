@@ -5,26 +5,16 @@ defmodule Flipdot.Apps.Symbols do
   @moduledoc """
   Show random symbols from text files on the flipboard
   """
-  use GenServer
+  use Flipdot.Apps.Base
   require Logger
 
-  @registry Flipdot.Apps.Registry
   @symbols_dir "priv/static/symbols"
   @display_time 5_000
   @num_symbols 5
 
   defstruct all_symbols: nil, last_position: nil, current_symbols: []
 
-  def start_link(_opts) do
-    GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
-  end
-
-  # server functions
-
-  @impl true
-  def init(%__MODULE__{} = state) do
-    Registry.register(@registry, :running_app, :symbols)
-
+  def init_app(_opts) do
     # Load all symbol files recursively
     all_symbols = load_symbols_from_dir(@symbols_dir)
 
@@ -47,7 +37,12 @@ defmodule Flipdot.Apps.Symbols do
       |> elem(0)
       |> Enum.reverse()
 
-    state = %{state | all_symbols: all_symbols, current_symbols: current_symbols}
+    # Initialize state with all required fields
+    state = %__MODULE__{
+      all_symbols: all_symbols,
+      current_symbols: current_symbols,
+      last_position: nil
+    }
 
     # Render initial display
     render_display(state)
@@ -55,6 +50,8 @@ defmodule Flipdot.Apps.Symbols do
 
     {:ok, state}
   end
+
+  # server functions
 
   @impl true
   def terminate(_reason, _state) do

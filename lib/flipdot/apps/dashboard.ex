@@ -6,7 +6,7 @@ defmodule Flipdot.Apps.Dashboard do
   @moduledoc """
   Compose a dashboard to show on flipboard
   """
-  use GenServer
+  use Flipdot.Apps.Base
   alias Phoenix.PubSub
   alias Flipdot.{Weather}
   alias Flipdot.Font.{Library}
@@ -15,25 +15,17 @@ defmodule Flipdot.Apps.Dashboard do
 
   defstruct font: nil, bitmap: nil
 
-  @registry Flipdot.Apps.Registry
-
   @font "flipdot"
   #@clock_symbol 0xF017
   #@ms_symbol 0xF018
   #@nbs_symbol 160
   #@wind_symbol 0xF72E
 
-  def start_link(_opts) do
-    GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
-  end
-
-  # server functions
-
-  @impl true
-  def init(state) do
-    Registry.register(@registry, :running_app, :dashboard)
-
-    state = %{state | font: Library.get_font_by_name(@font)}
+  def init_app(_opts) do
+    state = %__MODULE__{
+      font: Library.get_font_by_name(@font),
+      bitmap: nil
+    }
     update_dashboard(state)
 
     schedule_next_minute(:clock_timer)
@@ -41,6 +33,8 @@ defmodule Flipdot.Apps.Dashboard do
 
     {:ok, state}
   end
+
+  # server functions
 
   @impl true
   def terminate(_reason, _state) do
@@ -177,7 +171,7 @@ defmodule Flipdot.Apps.Dashboard do
 
   defp convert_to_local_times(temperatures) do
     timezone = get_system_timezone()
-    
+
     Enum.map(temperatures, fn {temperature, datetime, index} ->
       local_datetime = DateTime.shift_zone!(datetime, timezone, Tz.TimeZoneDatabase)
       hour = local_datetime |> Map.get(:hour)

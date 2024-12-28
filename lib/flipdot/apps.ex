@@ -71,7 +71,7 @@ defmodule Flipdot.Apps do
   defp start_new_app(app) do
     child_spec = %{
       id: @apps[app],
-      start: {@apps[app], :start_link, [nil]},
+      start: {@apps[app], :start_link, [[app_name: app]]},
       restart: :temporary
     }
 

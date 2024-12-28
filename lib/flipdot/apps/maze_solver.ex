@@ -5,31 +5,20 @@ defmodule Flipdot.Apps.MazeSolver do
   @moduledoc """
   Show and solve a maze on the flipboard
   """
-  use GenServer
+  use Flipdot.Apps.Base
   alias Flipdot.Display
   require Logger
-
-  @registry Flipdot.Apps.Registry
 
   @frame_delay 100
   @maze_delay 5_000
 
   defstruct maze_stream: nil
 
-  def start_link(_opts) do
-    GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
-  end
-
-  # server functions
-
-  @impl true
-  def init(state) do
-    Registry.register(@registry, :running_app, :maze_solver)
-
+  def init_app(_opts) do
     maze_stream = new_maze_stream()
 
     Process.send_after(self(), :next_frame, @maze_delay)
-    {:ok, %{state | maze_stream: maze_stream}}
+    {:ok, %__MODULE__{maze_stream: maze_stream}}
   end
 
   defp new_maze_stream do

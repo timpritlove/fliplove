@@ -2,26 +2,22 @@ defmodule Flipdot.Apps.FluepdotServer do
   @moduledoc """
   Simulates a Fluepdot display server that receives bitmap updates via UDP.
   """
-  use GenServer
+  use Flipdot.Apps.Base
   alias Flipdot.{Bitmap, Display}
   require Logger
 
   @port_env "FLIPDOT_PORT"
   @port_default 1337
 
-  def start_link(_) do
-    # Register as running app
-    Registry.register(Flipdot.Apps.Registry, :running_app, :fluepdot_server)
-    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
-  end
-
-  @impl true
-  def init(_) do
+  def init_app(_opts) do
     port =
       case System.get_env(@port_env) do
         nil -> @port_default
         port -> String.to_integer(port)
       end
+
+    # Clear display on startup
+    Display.clear()
 
     {:ok, socket} = :gen_udp.open(port, [:binary, active: true])
     Logger.info("Fluepdot Server listening on UDP port #{port}")
