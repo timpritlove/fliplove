@@ -9,7 +9,8 @@ defmodule Flipdot.Apps do
     dashboard: Flipdot.Apps.Dashboard,
     slideshow: Flipdot.Apps.Slideshow,
     maze_solver: Flipdot.Apps.MazeSolver,
-    symbols: Flipdot.Apps.Symbols
+    symbols: Flipdot.Apps.Symbols,
+    fluepdot_server: Flipdot.Apps.FluepdotServer
   }
 
   def start_link(_) do
