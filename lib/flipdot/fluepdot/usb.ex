@@ -209,38 +209,52 @@ defmodule Flipdot.Fluepdot.USB do
   # Reverts all changes and returns error if any step fails.
   defp initialize_connection(state) do
     with {:ok, uart_pid} <- Circuits.UART.start_link(),
-         :ok <- Circuits.UART.open(uart_pid, state.device,
+         open_result <- Circuits.UART.open(uart_pid, state.device,
                 speed: @device_bitrate,
-                active: true  # Changed to active mode to receive data
-              ),
-         _ <- Logger.info("Successfully opened serial connection to #{state.device}") do
-      # Mark as connected but not ready, wait for first prompt
-      initial_state = %{state |
-        uart: uart_pid,
-        connected: true,  # Mark as connected immediately after open
-        counter: 0,
-        ready: false,    # Will become ready when we get first prompt
-        buffer: "",
-        log_buffer: ""
-      }
+                active: true
+              ) do
 
-      # Queue initialization commands
-      init_commands = [
-        "wifi stop",
-        "config_rendering_mode differential",
-        "flipdot_clear"
-      ]
+      case open_result do
+        :ok ->
+          Logger.info("Successfully opened serial connection to #{state.device}")
+          # Rest of the initialization code...
+          initial_state = %{state |
+            uart: uart_pid,
+            connected: true,
+            counter: 0,
+            ready: false,
+            buffer: "",
+            log_buffer: ""
+          }
 
-      queued_state = Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
-        Logger.debug("Queueing init command: #{cmd}")
-        %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
-      end)
+          # Queue initialization commands...
+          init_commands = [
+            "wifi stop",
+            "config_rendering_mode differential",
+            "flipdot_clear"
+          ]
 
-      # Send initial newline to trigger prompt
-      case Circuits.UART.write(uart_pid, "\n") do
-        :ok -> {:ok, queued_state}
-        error ->
+          queued_state = Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
+            Logger.debug("Queueing init command: #{cmd}")
+            %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
+          end)
+
+          case Circuits.UART.write(uart_pid, "\n") do
+            :ok -> {:ok, queued_state}
+            error ->
+              Circuits.UART.close(uart_pid)
+              error
+          end
+
+        {:error, :port_timed_out} ->
+          # Clean up the UART process
           Circuits.UART.close(uart_pid)
+          Logger.debug("USB port timed out while opening #{state.device}, will retry")
+          {:error, :port_timed_out}
+
+        {:error, reason} = error ->
+          Circuits.UART.close(uart_pid)
+          Logger.debug("Unable to initialize USB connection: #{inspect(reason)}")
           error
       end
     else
@@ -248,7 +262,7 @@ defmodule Flipdot.Fluepdot.USB do
         if state.uart do
           Circuits.UART.close(state.uart)
         end
-        Logger.debug("Unable to initialize USB connection: #{inspect(reason)}")
+        Logger.debug("Failed to start UART: #{inspect(reason)}")
         error
     end
   end
