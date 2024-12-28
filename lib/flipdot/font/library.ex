@@ -50,7 +50,6 @@ defmodule Flipdot.Font.Library do
 
           Enum.map(font_files, fn font_file ->
             path = Path.join([font_dir, font_file])
-            Logger.debug("Scheduling parsing task for #{font_file}")
             Task.Supervisor.async_nolink(state.task_supervisor, Parser, :parse_font, [path])
           end)
 
@@ -69,8 +68,6 @@ defmodule Flipdot.Font.Library do
 
     # Remove the completed task from parsing_tasks
     parsing_tasks = Enum.reject(state.parsing_tasks, fn task -> task.ref == ref end)
-
-    Logger.debug("Successfully parsed font: #{parsed_font.name}")
 
     new_state = %{state |
       fonts: [parsed_font | state.fonts],

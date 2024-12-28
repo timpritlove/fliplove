@@ -411,10 +411,8 @@ defmodule Flipdot.Font.Parser do
   defparsec(:parse_bdf, parsec(:bdf))
 
   def parse_font(path) do
-    Logger.debug("Parsing font file: #{path}")
     try do
       {:ok, [font], _, _, _, _} = path |> File.read!() |> parse_bdf()
-      Logger.debug("Successfully parsed font from #{path}: #{font.name}")
       font
     rescue
       e ->
