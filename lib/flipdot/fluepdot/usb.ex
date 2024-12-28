@@ -64,7 +64,7 @@ defmodule Flipdot.Fluepdot.USB do
   # - On write failure: Triggers reconnection attempt
   @impl true
   def handle_info({:display_updated, bitmap}, %{connected: true} = state) do
-    cmd = "\nframebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64())
+    cmd = "framebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64())
     case write_command(state, cmd) do
       {:ok, new_state} ->
         counter = new_state.counter + 1
