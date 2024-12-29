@@ -19,6 +19,13 @@ defmodule FlipdotWeb.FlipdotLive do
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.TelegramBot.topic())
     end
 
+    # Get images that match display dimensions
+    display_images = Flipdot.Images.images()
+      |> Enum.filter(fn {_name, bitmap} ->
+        bitmap.width == Display.width() && bitmap.height == Display.height()
+      end)
+      |> Map.new()
+
     socket =
       socket
       |> assign(page_title: "Flipdot Display")
@@ -31,6 +38,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:prev_xy, nil)
       |> assign(:font_select, Library.get_fonts() |> build_font_select())
       |> assign(:usb_mode?, System.get_env("FLIPDOT_MODE") == "USB")
+      |> assign(:display_images, display_images)
       |> allow_upload(:frame,
         accept: ~w(.txt),
         max_entries: 1,
@@ -265,9 +273,10 @@ defmodule FlipdotWeb.FlipdotLive do
         |> Bitmap.crop_relative(display_width, display_height, rel_y: :top)
         |> Display.set()
       "game-of-life" -> Display.get() |> GameOfLife.game_of_life() |> Display.set()
-      image when image in ["space-invaders", "pacman", "metaebene", "blinkenlights", "fluepdot"] ->
-        Display.set(Flipdot.Images.images()[image])
-      _ -> {:noreply, socket}
+      image ->
+        if bitmap = socket.assigns.display_images[image] do
+          Display.set(bitmap)
+        end
     end
 
     {:noreply, socket}
@@ -493,7 +502,7 @@ defmodule FlipdotWeb.FlipdotLive do
           <.section title="Images">
             <div class="overflow-x-auto pb-2">
               <.button_group>
-                <.image_button :for={{name, image} <- Flipdot.Images.images()}
+                <.image_button :for={{name, image} <- @display_images}
                                tooltip={name}
                                image={image}
                                value={name} />
@@ -674,11 +683,11 @@ defmodule FlipdotWeb.FlipdotLive do
       title={@tooltip}
       class="relative p-2 rounded-lg bg-gray-700 transition-colors duration-200
              hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
-             flex items-center justify-center min-w-[48px]"
+             flex items-center justify-center min-w-[96px]"
       phx-click="image"
       value={@value}
     >
-      <div class="h-8 w-8 flex items-center justify-center [&>svg]:fill-gray-200">
+      <div class="h-16 w-32 flex items-center justify-center [&>svg]:fill-gray-200">
         <%= raw(Bitmap.to_svg(@image, scale: 2)) %>
       </div>
     </button>
