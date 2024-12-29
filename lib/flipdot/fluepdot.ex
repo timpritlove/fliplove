@@ -9,7 +9,8 @@ defmodule Flipdot.Fluepdot do
   @driver %{
     network: Flipdot.Fluepdot.Network,
     usb: Flipdot.Fluepdot.USB,
-    dummy: Flipdot.Fluepdot.Dummy
+    dummy: Flipdot.Fluepdot.Dummy,
+    flipflapflop: Flipdot.Fluepdot.Flipflapflop
   }
 
   defstruct mode: :dummy, driver: nil
@@ -23,9 +24,10 @@ defmodule Flipdot.Fluepdot do
     mode_string = System.get_env(@mode_env)
 
     mode =
-      case mode_string do
-        "USB" -> :usb
-        "NETWORK" -> :network
+      case String.downcase(mode_string || "") do
+        "usb" -> :usb
+        "network" -> :network
+        "flipflapflop" -> :flipflapflop
         _ -> :dummy
       end
 
