@@ -7,8 +7,9 @@ if [ -n "$TELEGRAM_BOT_SECRET" ]; then
   export FLIPDOT_TELEGRAM_BOT_SECRET=$TELEGRAM_BOT_SECRET
 fi
 #export FLIPDOT_MODE=NETWORK
-export FLIPDOT_MODE=USB
+#export FLIPDOT_MODE=USB
 #export FLIPDOT_MODE=DUMMY
+FLIPDOT_MODE=FLIPFLAPFLOP
 
 #export FLIPDOT_HOST=flipdot_02.local
 export FLIPDOT_HOST=flipdot_05.local
@@ -19,4 +20,4 @@ export PHX_SERVER=true
 #export FLIPDOT_LONGITUDE=13.4273403
 #export FLIPDOT_APP=dashboard
 
-export FLIPDOT_MEGABITMETER_DEVICE=/dev/tty.usbserial-A700fn51
+#export FLIPDOT_MEGABITMETER_DEVICE=/dev/tty.usbserial-A700fn51

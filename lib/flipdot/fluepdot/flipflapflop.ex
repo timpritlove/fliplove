@@ -15,7 +15,7 @@ defmodule Flipdot.Fluepdot.Flipflapflop do
   @picture_cmd 0b10000001
 
   # Native device dimensions
-  @device_width 126
+  @device_width 112
   @device_height 16
 
   defstruct [:device, :uart, :timer,
