@@ -202,21 +202,30 @@ defmodule Flipdot.Apps.Dashboard do
   end
 
   defp add_midnight_markers({bitmap, scaled_temps}, dimensions) do
-    midnight_matrix =
-      for {{_temp, _temp_y, hour, x}, _index} <- Enum.with_index(scaled_temps),
-          hour == 0,
-          y <- get_midnight_marker_positions(dimensions.height),
-          not has_neighbor_temp?(bitmap.matrix, x + 1, y),
-          into: %{} do
-        {{x + 1, y}, 1}
-      end
+    # Add midnight markers (2 dots from top and bottom)
+    midnight_matrix = create_time_markers(scaled_temps, bitmap, dimensions, 0, 2)
 
-    midnight_bitmap = Bitmap.new(dimensions.width + 2, dimensions.total_height, midnight_matrix)
-    Bitmap.overlay(bitmap, midnight_bitmap)
+    # Add noon markers (1 dot from bottom)
+    noon_matrix = create_time_markers(scaled_temps, bitmap, dimensions, 12, 1)
+
+    # Combine both matrices
+    combined_matrix = Map.merge(midnight_matrix, noon_matrix)
+    marker_bitmap = Bitmap.new(dimensions.width + 2, dimensions.total_height, combined_matrix)
+    Bitmap.overlay(bitmap, marker_bitmap)
   end
 
-  defp get_midnight_marker_positions(chart_height) do
-    Enum.to_list(1..2) ++ Enum.to_list((chart_height - 1)..chart_height)
+  defp create_time_markers(scaled_temps, bitmap, dimensions, hour, dot_count) do
+    for {{_temp, _temp_y, temp_hour, x}, _index} <- Enum.with_index(scaled_temps),
+        temp_hour == hour,
+        y <- get_marker_positions(dimensions.height, dot_count),
+        not has_neighbor_temp?(bitmap.matrix, x + 1, y),
+        into: %{} do
+      {{x + 1, y}, 1}
+    end
+  end
+
+  defp get_marker_positions(chart_height, dot_count) do
+    Enum.to_list(1..dot_count) ++ Enum.to_list((chart_height - (dot_count - 1))..chart_height)
   end
 
   defp add_frame(bitmap) do
