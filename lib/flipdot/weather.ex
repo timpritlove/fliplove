@@ -10,7 +10,7 @@ defmodule Flipdot.Weather do
   require HTTPoison
   require Logger
 
-  defstruct [:timer, :api_key, :latitude, :longitude, :weather]
+  defstruct [:timer, :api_key, :latitude, :longitude, :weather, :weather_timestamp]
 
   @latitude_env "FLIPDOT_LATITUDE"
   @longitude_env "FLIPDOT_LONGITUDE"
@@ -33,7 +33,7 @@ defmodule Flipdot.Weather do
         GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
 
       {:error, reason} ->
-        Logger.warning("Weather service disabled: #{reason}")
+        Logger.error("Weather service disabled: #{reason}")
         :ignore
     end
   end
@@ -41,15 +41,22 @@ defmodule Flipdot.Weather do
   @impl true
   def init(state) do
     {:ok, api_key} = get_api_key()
-    {latitude, longitude, source} = get_location()
 
-    Logger.info("Weather service started using #{source} location (#{latitude}, #{longitude})")
+    # Get location once during initialization
+    case get_location() do
+      {:ok, lat, lon, source} ->
+        Logger.info("Weather service using #{source} location (#{lat}, #{lon})")
 
-    # update weather information in a second and then every 5 minutes
-    {:ok, _} = :timer.send_after(5_000, :update_weather)
-    {:ok, timer} = :timer.send_interval(300_000, :update_weather)
+        # update weather information in a second and then every 5 minutes
+        {:ok, _} = :timer.send_after(5_000, :update_weather)
+        {:ok, timer} = :timer.send_interval(300_000, :update_weather)
 
-    {:ok, %{state | api_key: api_key, latitude: latitude, longitude: longitude, timer: timer}}
+        {:ok, %{state | api_key: api_key, latitude: lat, longitude: lon, timer: timer}}
+
+      {:error, reason} ->
+        Logger.error("Failed to get location: #{reason}")
+        {:stop, :location_not_available}
+    end
   end
 
   @impl true
@@ -116,11 +123,19 @@ defmodule Flipdot.Weather do
     end
   end
 
+  # Move the client function up with other client functions
+  def get_weather_with_timestamp(), do: GenServer.call(__MODULE__, :get_weather_with_timestamp)
+
   # server functions
 
   @impl true
   def handle_call(:get_weather, _, state) do
     {:reply, state.weather, state}
+  end
+
+  @impl true
+  def handle_call(:get_weather_with_timestamp, _, state) do
+    {:reply, {state.weather, state.weather_timestamp}, state}
   end
 
   @impl true
@@ -137,11 +152,13 @@ defmodule Flipdot.Weather do
   defp update_weather(state) do
     case call_openweathermap(state.api_key, state.latitude, state.longitude) do
       nil ->
+        # Keep existing state on error
         state
 
       weather ->
+        timestamp = DateTime.utc_now()
         PubSub.broadcast(Flipdot.PubSub, topic(), {:update_weather, weather})
-        %{state | weather: weather}
+        %{state | weather: weather, weather_timestamp: timestamp}
     end
   end
 
@@ -156,8 +173,8 @@ defmodule Flipdot.Weather do
 
   def rainfall_intensity(rainfall_rate) when rainfall_rate >= 0 do
     rainfall_rate = rainfall_rate / 1
-    {_, intensity} = Enum.find(@rainfall_intensity_thresholds, fn {threshold, _} -> 
-      rainfall_rate >= threshold 
+    {_, intensity} = Enum.find(@rainfall_intensity_thresholds, fn {threshold, _} ->
+      rainfall_rate >= threshold
     end)
     intensity
   end
@@ -181,8 +198,8 @@ defmodule Flipdot.Weather do
 
   def wind_force(wind_speed) when wind_speed >= 0 do
     wind_speed = wind_speed / 1
-    {_, force} = Enum.find(@beaufort_scale_thresholds, fn {threshold, _} -> 
-      wind_speed >= threshold 
+    {_, force} = Enum.find(@beaufort_scale_thresholds, fn {threshold, _} ->
+      wind_speed >= threshold
     end)
     force
   end
@@ -219,14 +236,17 @@ defmodule Flipdot.Weather do
       {:ok, %{status_code: status_code}} ->
         Logger.warning("OpenWeatherMap API call failed (#{status_code})")
         nil
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.warning("OpenWeatherMap API call failed: #{inspect(reason)}")
+        nil
     end
   end
 
   defp get_location do
     case {System.get_env(@latitude_env), System.get_env(@longitude_env)} do
       {lat, lon} when is_binary(lat) and is_binary(lon) ->
-        {String.to_float(lat), String.to_float(lon), "environment variables"}
-
+        {:ok, String.to_float(lat), String.to_float(lon), "environment variables"}
       _ ->
         Logger.info("No location coordinates in environment, falling back to IP geolocation")
         get_location_from_ip()
@@ -238,15 +258,13 @@ defmodule Flipdot.Weather do
       {:ok, %{status_code: 200, body: body}} ->
         case Jason.decode!(body) do
           %{"lat" => lat, "lon" => lon} ->
-            {lat, lon, "IP geolocation"}
+            {:ok, lat, lon, "IP geolocation"}
           _ ->
-            Logger.error("Invalid response from IP geolocation service")
-            raise "Could not determine location"
+            {:error, "Invalid response from IP geolocation service"}
         end
 
       {:error, reason} ->
-        Logger.error("Failed to get location from IP: #{inspect(reason)}")
-        raise "Could not determine location"
+        {:error, "Failed to get location from IP: #{inspect(reason)}"}
     end
   end
 end
