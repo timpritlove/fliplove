@@ -13,10 +13,22 @@ defmodule Flipdot.Fluepdot do
     flipflapflop: Flipdot.Fluepdot.Flipflapflop
   }
 
+  # Default dimensions for most drivers
+  @default_width 115
+  @default_height 16
+
   defstruct mode: :dummy, driver: nil
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
+  end
+
+  def width do
+    GenServer.call(__MODULE__, :get_width)
+  end
+
+  def height do
+    GenServer.call(__MODULE__, :get_height)
   end
 
   @impl true
@@ -42,9 +54,6 @@ defmodule Flipdot.Fluepdot do
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
     Logger.info("Fluepdot server started (mode: #{inspect(mode)}).")
 
-    # Start with a blank display
-    Display.clear()
-
     {:ok, %{state | mode: mode, driver: driver}}
   end
 
@@ -52,5 +61,19 @@ defmodule Flipdot.Fluepdot do
   def handle_info({:display_updated, bitmap}, state) do
     send(state.driver, {:display_updated, bitmap})
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_call(:get_width, _from, state) do
+    width = case state.mode do
+      :flipflapflop -> 112  # Flipflapflop has a different width
+      _ -> @default_width
+    end
+    {:reply, width, state}
+  end
+
+  @impl true
+  def handle_call(:get_height, _from, state) do
+    {:reply, @default_height, state}
   end
 end

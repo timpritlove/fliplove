@@ -15,6 +15,8 @@ defmodule Flipdot.Application do
         {Phoenix.PubSub, name: Flipdot.PubSub},
         # Start core services first
         Flipdot.Font.Library,
+        # Start Fluepdot before Display since Display depends on it
+        {Flipdot.Fluepdot, []},
         Flipdot.Display,
         # Start the Registry for apps
         {Registry, keys: :unique, name: Flipdot.Apps.Registry},
@@ -23,7 +25,6 @@ defmodule Flipdot.Application do
         # Start the app manager
         {Flipdot.Apps, []},
         {Flipdot.Weather, []},
-        {Flipdot.Fluepdot, []},
         {Flipdot.Megabitmeter, []},
         # Start the Endpoint last (after all services are ready)
         {FlipdotWeb.Endpoint, []}
@@ -37,6 +38,9 @@ defmodule Flipdot.Application do
     # if a service crashes, all services that depend on it are restarted
     opts = [strategy: :rest_for_one, name: Flipdot.Supervisor]
     result = Supervisor.start_link(children, opts)
+
+    # Clear the display before showing the welcome message
+    Flipdot.Display.clear()
 
     # After all services have started, display the welcome message
     render_welcome_message()
@@ -56,7 +60,6 @@ defmodule Flipdot.Application do
   defp render_welcome_message do
     welcome_text = Application.fetch_env!(:flipdot, :display)[:welcome_text] || "Hello, World!"
     font = Flipdot.Font.Library.get_font_by_name("flipdot")
-    Flipdot.Display.clear()
     Flipdot.Display.get()
     |> Flipdot.Font.Renderer.place_text(font, welcome_text, align: :center, valign: :middle)
     |> Flipdot.Display.set()

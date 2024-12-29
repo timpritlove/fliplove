@@ -1,5 +1,6 @@
 defmodule Flipdot.Display do
   alias Flipdot.Bitmap
+  alias Flipdot.Fluepdot
 
   @moduledoc """
   Store the current frame buffer of the virtual Bitmap Display. Send PubSub broadcasts
@@ -19,8 +20,8 @@ defmodule Flipdot.Display do
 
   def topic, do: @topic
 
-  def width, do: Application.fetch_env!(:flipdot, :display)[:width]
-  def height, do: Application.fetch_env!(:flipdot, :display)[:height]
+  def width, do: Fluepdot.width()
+  def height, do: Fluepdot.height()
 
   def get do
     case Agent.get(__MODULE__, fn state -> state.bitmap end) do
@@ -44,11 +45,11 @@ defmodule Flipdot.Display do
     if new_bitmap != old_bitmap do
       # Count pixels in the new bitmap
       pixel_count = count_active_pixels(new_bitmap)
-      
+
       # Calculate normalized value (0-999)
       max_pixels = width() * height()
       normalized_value = trunc(pixel_count / max_pixels * 999)
-      
+
       # Update Megabitmeter
       Flipdot.Megabitmeter.set_level(normalized_value)
 

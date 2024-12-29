@@ -426,7 +426,7 @@ defmodule FlipdotWeb.FlipdotLive do
 
       <%!-- Centered Display --%>
       <div class="flex flex-col items-center mb-8">
-        <.display width={115} height={16} bitmap={@bitmap} />
+        <.display width={Display.width()} height={Display.height()} bitmap={@bitmap} />
         <button
           class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-2"
           phx-click="download"
@@ -491,10 +491,13 @@ defmodule FlipdotWeb.FlipdotLive do
           <%!-- Generators Section --%>
           <.section title="Generators">
             <.button_group>
-              <.image_button tooltip="Noise" image={Bitmap.random(16, 16)} value="random" />
-              <.image_button tooltip="Gradient H" image={Bitmap.gradient_h(16, 16)} value="gradient-h" />
-              <.image_button tooltip="Gradient V" image={Bitmap.gradient_v(16, 16)} value="gradient-v" />
-              <.image_button tooltip="Maze" image={Maze.generate_maze(17, 17)} value="maze" />
+              <.image_button tooltip="Noise" image={Bitmap.random(Display.width(), Display.height())} value="random" />
+              <.image_button tooltip="Gradient H" image={Bitmap.gradient_h(Display.width(), Display.height())} value="gradient-h" />
+              <.image_button tooltip="Gradient V" image={Bitmap.gradient_v(Display.width(), Display.height())} value="gradient-v" />
+              <.image_button tooltip="Maze" image={Maze.generate_maze(
+                if(Integer.is_odd(Display.width()), do: Display.width(), else: Display.width() - 1),
+                if(Integer.is_odd(Display.height()), do: Display.height(), else: Display.height() - 1)
+              )} value="maze" />
             </.button_group>
           </.section>
 
