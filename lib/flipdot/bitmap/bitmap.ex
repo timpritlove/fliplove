@@ -737,7 +737,7 @@ defmodule Flipdot.Bitmap do
       )
 
     # traverse pixels left to right, top to bottom
-    for y <- (height - 1)..0 do
+    for y <- (height - 1)..0//-1 do
       row = for x <- 0..(width - 1) do
         case get_pixel(bitmap, {x, y}) do
           0 -> options[:off]
