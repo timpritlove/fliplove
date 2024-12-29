@@ -115,8 +115,7 @@ defmodule Flipdot.Font.Library do
 
   # server functions
 
-  def handle_call(:get_fonts, _, state) do
-    Logger.debug("Getting fonts, #{length(state.fonts)} available")
+  def handle_call(:get_fonts, _from, state) do
     {:reply, state.fonts, state}
   end
 
