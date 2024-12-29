@@ -109,7 +109,14 @@ defmodule Flipdot.Fluepdot.USB do
   end
 
   @impl true
-  def handle_info({:circuits_uart, _port, data}, state) do
+  def handle_info({:circuits_uart, _port, "Unrecognized command" <> _rest}, state) do
+    # Log the unrecognized command but don't crash
+    Logger.warning("Received unrecognized command response from device")
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:circuits_uart, _port, data}, state) when is_binary(data) do
     # Add data to both buffers
     buffer = state.buffer <> data
     log_buffer = state.log_buffer <> data
