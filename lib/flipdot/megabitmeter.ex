@@ -96,8 +96,13 @@ defmodule Flipdot.Megabitmeter do
     {:noreply, %State{state | pending_value: value}}
   end
 
+  def handle_cast({:set_level, value}, %State{device: nil} = state) do
+    # Device not configured, silently store value
+    {:noreply, %State{state | pending_value: value}}
+  end
+
   def handle_cast({:set_level, value}, state) do
-    Logger.debug("Device not connected, storing level #{value} to set after connection")
+    # Device configured but not connected, store value silently
     {:noreply, %State{state | pending_value: value}}
   end
 
