@@ -169,6 +169,11 @@ defmodule Flipdot.Megabitmeter do
     {:noreply, %State{state | uart_pid: nil, connected?: false, booting?: false}}
   end
 
+  def handle_info(:animate_step, %State{connected?: false} = state) do
+    # If we're disconnected, cancel the animation
+    {:noreply, %State{state | animation_timer: nil, step_size: nil}}
+  end
+
   def handle_info(:animate_step, %State{current_value: current, target_value: target, step_size: step_size} = state) do
     if current == target do
       {:noreply, %State{state | animation_timer: nil, step_size: nil}}
@@ -190,7 +195,7 @@ defmodule Flipdot.Megabitmeter do
           }}
 
         {:error, _reason} ->
-          # Keep current state, reconnection will be triggered by handle_write_error
+          # Animation will be cancelled by the disconnect handler
           {:noreply, state}
       end
     end
@@ -214,7 +219,14 @@ defmodule Flipdot.Megabitmeter do
     end
   end
 
-  defp write_value(uart_pid, value, retry_count \\ 0) do
+  defp write_value(uart_pid, value, retry_count \\ 0)
+
+  defp write_value(nil, _value, _retry_count) do
+    # UART is not connected, return error immediately
+    {:error, :not_connected}
+  end
+
+  defp write_value(uart_pid, value, retry_count) do
     message = "#{value}\n"
     try do
       case Circuits.UART.write(uart_pid, message) do
@@ -225,6 +237,10 @@ defmodule Flipdot.Megabitmeter do
     catch
       :exit, {:timeout, _} ->
         handle_write_error(uart_pid, value, :timeout, retry_count)
+      :exit, {:noproc, _} ->
+        # UART process died
+        send(self(), {:circuits_uart, uart_pid, {:error, :noproc}})
+        {:error, :not_connected}
     end
   end
 
@@ -237,7 +253,7 @@ defmodule Flipdot.Megabitmeter do
   defp handle_write_error(uart_pid, _value, reason, _retry_count) do
     Logger.error("Megabitmeter write failed after retries: #{inspect(reason)}")
     # Force reconnection cycle
-    send(self(), {:circuits_uart, uart_pid, {:error, :eio}})
+    send(self(), {:circuits_uart, uart_pid, {:error, reason}})
     {:error, reason}
   end
 
