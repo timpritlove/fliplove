@@ -6,6 +6,8 @@ defmodule FlipdotWeb.FlipdotLive do
   alias Flipdot.Font.Library
   alias Flipdot.Bitmap.Maze
   alias Flipdot.Bitmap.GameOfLife
+  alias FlipdotWeb.VirtualDisplay
+  import FlipdotWeb.VirtualDisplayComponent
 
   require Logger
   require Integer
@@ -17,19 +19,25 @@ defmodule FlipdotWeb.FlipdotLive do
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Display.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Library.topic())
       Phoenix.PubSub.subscribe(Flipdot.PubSub, Flipdot.TelegramBot.topic())
+      VirtualDisplay.subscribe()
     end
 
     # Get images that match display dimensions
-    display_images = Flipdot.Images.images()
+    display_images =
+      Flipdot.Images.images()
       |> Enum.filter(fn {_name, bitmap} ->
         bitmap.width == Display.width() && bitmap.height == Display.height()
       end)
       |> Map.new()
 
+    initial_bitmap = Display.get()
+    VirtualDisplay.update_bitmap(initial_bitmap)
+
     socket =
       socket
       |> assign(page_title: "Flipdot Display")
-      |> assign(:bitmap, Display.get())
+      |> assign(:bitmap, initial_bitmap)
+      |> assign(:virtual_bitmap, initial_bitmap)
       |> assign(:clock, clock())
       |> assign(:app, Flipdot.Apps.running_app())
       |> assign(:text, "")
@@ -54,6 +62,7 @@ defmodule FlipdotWeb.FlipdotLive do
   defp handle_progress(:frame, entry, socket) do
     if entry.done? do
       Logger.debug("Upload completed, processing file...")
+
       consume_uploaded_entries(socket, :frame, fn %{path: path}, _entry ->
         Logger.debug("Reading file from path: #{path}")
         bitmap = Bitmap.from_file(path)
@@ -83,6 +92,7 @@ defmodule FlipdotWeb.FlipdotLive do
 
   @impl true
   def handle_info({:display_updated, bitmap}, socket) do
+    VirtualDisplay.update_bitmap(bitmap)
     {:noreply, assign(socket, :bitmap, bitmap)}
   end
 
@@ -103,9 +113,10 @@ defmodule FlipdotWeb.FlipdotLive do
     fonts = Library.get_fonts()
     font_select = build_font_select(fonts)
 
-    font_name = if Enum.any?(fonts, &(&1.name == socket.assigns.font_name)),
-      do: socket.assigns.font_name,
-      else: "flipdot"
+    font_name =
+      if Enum.any?(fonts, &(&1.name == socket.assigns.font_name)),
+        do: socket.assigns.font_name,
+        else: "flipdot"
 
     {:noreply,
      socket
@@ -119,6 +130,11 @@ defmodule FlipdotWeb.FlipdotLive do
      socket
      |> assign(:clock, clock())
      |> assign(:app, Flipdot.Apps.running_app())}
+  end
+
+  @impl true
+  def handle_info({:virtual_display_updated, bitmap}, socket) do
+    {:noreply, assign(socket, :virtual_bitmap, bitmap)}
   end
 
   @impl true
@@ -259,10 +275,18 @@ defmodule FlipdotWeb.FlipdotLive do
   @impl true
   def handle_event("image", %{"value" => value}, socket) do
     case value do
-      "" -> {:noreply, socket}
-      "random" -> Bitmap.random(Display.width(), Display.height()) |> Display.set()
-      "gradient-h" -> Display.get() |> Bitmap.gradient_h() |> Display.set()
-      "gradient-v" -> Display.get() |> Bitmap.gradient_v() |> Display.set()
+      "" ->
+        {:noreply, socket}
+
+      "random" ->
+        Bitmap.random(Display.width(), Display.height()) |> Display.set()
+
+      "gradient-h" ->
+        Display.get() |> Bitmap.gradient_h() |> Display.set()
+
+      "gradient-v" ->
+        Display.get() |> Bitmap.gradient_v() |> Display.set()
+
       "maze" ->
         display_width = Display.width()
         display_height = Display.height()
@@ -272,7 +296,10 @@ defmodule FlipdotWeb.FlipdotLive do
         Maze.generate_maze(maze_width, maze_height)
         |> Bitmap.crop_relative(display_width, display_height, rel_y: :top)
         |> Display.set()
-      "game-of-life" -> Display.get() |> GameOfLife.game_of_life() |> Display.set()
+
+      "game-of-life" ->
+        Display.get() |> GameOfLife.game_of_life() |> Display.set()
+
       image ->
         if bitmap = socket.assigns.display_images[image] do
           Display.set(bitmap)
@@ -339,6 +366,13 @@ defmodule FlipdotWeb.FlipdotLive do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_event("update_component", %{"module" => module, "id" => id}, socket) do
+    module = String.to_existing_atom(module)
+    send_update(module, id: id, process_next_column: true)
+    {:noreply, socket}
+  end
+
   # helper functions
 
   def do_pixel_click(:pencil, {x, y}, _, bitmap) do
@@ -383,22 +417,23 @@ defmodule FlipdotWeb.FlipdotLive do
     fonts
     |> Enum.map(fn font ->
       # Create a more concise display name
-      display_name = [
-        Map.get(font.properties, :family_name, ""),
-        Map.get(font.properties, :weight_name, ""),
-        case Map.get(font.properties, :slant) do
-          nil -> nil
-          "R" -> nil
-          "I" -> "Italic"
-          "O" -> "Oblique"
-        end,
-        case Map.get(font.properties, :pixel_size) do
-          nil -> nil
-          size -> "#{size}px"
-        end
-      ]
-      |> Enum.reject(&is_nil/1)
-      |> Enum.join(" ")
+      display_name =
+        [
+          Map.get(font.properties, :family_name, ""),
+          Map.get(font.properties, :weight_name, ""),
+          case Map.get(font.properties, :slant) do
+            nil -> nil
+            "R" -> nil
+            "I" -> "Italic"
+            "O" -> "Oblique"
+          end,
+          case Map.get(font.properties, :pixel_size) do
+            nil -> nil
+            size -> "#{size}px"
+          end
+        ]
+        |> Enum.reject(&is_nil/1)
+        |> Enum.join(" ")
 
       # Group by foundry and family name
       group_name = Map.get(font.properties, :foundry, "Other")
@@ -426,7 +461,7 @@ defmodule FlipdotWeb.FlipdotLive do
 
       <%!-- Centered Display --%>
       <div class="flex flex-col items-center mb-8">
-        <.display width={Display.width()} height={Display.height()} bitmap={@bitmap} />
+        <.display bitmap={@virtual_bitmap} width={Display.width()} height={Display.height()} />
         <button
           class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-2"
           phx-click="download"
@@ -492,12 +527,26 @@ defmodule FlipdotWeb.FlipdotLive do
           <.section title="Generators">
             <.button_group>
               <.image_button tooltip="Noise" image={Bitmap.random(Display.width(), Display.height())} value="random" />
-              <.image_button tooltip="Gradient H" image={Bitmap.gradient_h(Display.width(), Display.height())} value="gradient-h" />
-              <.image_button tooltip="Gradient V" image={Bitmap.gradient_v(Display.width(), Display.height())} value="gradient-v" />
-              <.image_button tooltip="Maze" image={Maze.generate_maze(
-                if(Integer.is_odd(Display.width()), do: Display.width(), else: Display.width() - 1),
-                if(Integer.is_odd(Display.height()), do: Display.height(), else: Display.height() - 1)
-              )} value="maze" />
+              <.image_button
+                tooltip="Gradient H"
+                image={Bitmap.gradient_h(Display.width(), Display.height())}
+                value="gradient-h"
+              />
+              <.image_button
+                tooltip="Gradient V"
+                image={Bitmap.gradient_v(Display.width(), Display.height())}
+                value="gradient-v"
+              />
+              <.image_button
+                tooltip="Maze"
+                image={
+                  Maze.generate_maze(
+                    if(Integer.is_odd(Display.width()), do: Display.width(), else: Display.width() - 1),
+                    if(Integer.is_odd(Display.height()), do: Display.height(), else: Display.height() - 1)
+                  )
+                }
+                value="maze"
+              />
             </.button_group>
           </.section>
 
@@ -505,10 +554,7 @@ defmodule FlipdotWeb.FlipdotLive do
           <.section title="Images">
             <div class="overflow-x-auto pb-2">
               <.button_group>
-                <.image_button :for={{name, image} <- @display_images}
-                               tooltip={name}
-                               image={image}
-                               value={name} />
+                <.image_button :for={{name, image} <- @display_images} tooltip={name} image={image} value={name} />
               </.button_group>
             </div>
           </.section>
@@ -547,8 +593,10 @@ defmodule FlipdotWeb.FlipdotLive do
           <.section title="Upload Bitmap">
             <div class="relative">
               <form phx-change="validate" phx-submit="upload">
-                <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-indigo-500 transition-colors duration-200 cursor-pointer"
-                     phx-drop-target={@uploads.frame.ref}>
+                <div
+                  class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-indigo-500 transition-colors duration-200 cursor-pointer"
+                  phx-drop-target={@uploads.frame.ref}
+                >
                   <FontAwesome.LiveView.icon name="file-arrow-up" type="solid" class="h-12 w-12 mx-auto mb-4 text-gray-400" />
                   <p class="text-gray-400">Drag and drop or click to select</p>
                   <.live_file_input upload={@uploads.frame} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
@@ -588,37 +636,6 @@ defmodule FlipdotWeb.FlipdotLive do
     """
   end
 
-  def display(assigns) do
-    ~H"""
-    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <div id="display" class="bg-gray-900 p-4 rounded-lg">
-        <div :for={y <- Range.new(@height - 1, 0, -1)} id={"row-#{y}"} class="flex">
-          <div
-            :for={x <- 0..(@width - 1)}
-            id={"cell-#{x},#{y}"}
-            phx-click="pixel"
-            phx-value-x={x}
-            phx-value-y={y}
-            class={[
-              "shrink-0 w-[8px] h-[8px] flex items-center justify-around",
-              "transition-all duration-200 hover:opacity-75",
-              if(Map.get(@bitmap.matrix, {x, y}) == 1,
-                do: "bg-[url('/images/flipdot/flipdot-pixel-on-8x8.png')] " <>
-                    "[min-resolution:2x]:bg-[url('/images/flipdot/flipdot-pixel-on-16x16.png')] " <>
-                    "[min-resolution:3x]:bg-[url('/images/flipdot/flipdot-pixel-on-24x24.png')]",
-                else: "bg-[url('/images/flipdot/flipdot-pixel-off-8x8.png')] " <>
-                    "[min-resolution:2x]:bg-[url('/images/flipdot/flipdot-pixel-off-16x16.png')] " <>
-                    "[min-resolution:3x]:bg-[url('/images/flipdot/flipdot-pixel-off-24x24.png')]"
-              )
-            ]}
-          >
-          </div>
-        </div>
-      </div>
-    </div>
-    """
-  end
-
   def tool(assigns) do
     ~H"""
     <button
@@ -626,7 +643,7 @@ defmodule FlipdotWeb.FlipdotLive do
       class={[
         "relative p-3 rounded-lg transition-colors duration-200",
         "focus:outline-none focus:ring-2 focus:ring-indigo-500",
-        @mode == @self && "bg-indigo-600" || "bg-gray-700"
+        (@mode == @self && "bg-indigo-600") || "bg-gray-700"
       ]}
       phx-click="mode"
       value={@value}
@@ -634,7 +651,7 @@ defmodule FlipdotWeb.FlipdotLive do
       <div class={[
         "transition-colors duration-200",
         "hover:fill-yellow-300",
-        @mode == @self && "fill-gray-200" || "fill-gray-200"
+        (@mode == @self && "fill-gray-200") || "fill-gray-200"
       ]}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
       </div>
@@ -649,7 +666,7 @@ defmodule FlipdotWeb.FlipdotLive do
       class={[
         "relative p-3 rounded-lg transition-colors duration-200",
         "focus:outline-none focus:ring-2 focus:ring-indigo-500",
-        @app == @self && "bg-indigo-600" || "bg-gray-700"
+        (@app == @self && "bg-indigo-600") || "bg-gray-700"
       ]}
       phx-click="app"
       value={@value}
@@ -657,7 +674,7 @@ defmodule FlipdotWeb.FlipdotLive do
       <div class={[
         "transition-colors duration-200",
         "hover:fill-yellow-300",
-        @app == @self && "fill-gray-200" || "fill-gray-200"
+        (@app == @self && "fill-gray-200") || "fill-gray-200"
       ]}>
         <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
       </div>
@@ -699,6 +716,7 @@ defmodule FlipdotWeb.FlipdotLive do
 
   def section(assigns) do
     assigns = assign_new(assigns, :class, fn -> nil end)
+
     ~H"""
     <div class="bg-gray-800 p-4 rounded-lg">
       <h2 class="text-xl font-bold mb-4"><%= @title %></h2>

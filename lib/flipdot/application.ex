@@ -27,7 +27,9 @@ defmodule Flipdot.Application do
         {Flipdot.Weather, []},
         {Flipdot.Megabitmeter, []},
         # Start the Endpoint last (after all services are ready)
-        {FlipdotWeb.Endpoint, []}
+        {FlipdotWeb.Endpoint, []},
+        # Start the Virtual Display GenServer
+        FlipdotWeb.VirtualDisplay
       ] ++
         case System.get_env("FLIPDOT_TELEGRAM_BOT_SECRET") do
           nil -> []
