@@ -7,7 +7,7 @@ defmodule FlipdotWeb.VirtualDisplay do
   @update_delay 10
 
   defmodule State do
-    defstruct [:current_bitmap, :target_bitmap, :current_column, :width, :height, :timer_ref]
+    defstruct [:current_bitmap, :target_bitmap, :current_column, :width, :height, :timer_ref, delay_enabled: false]
   end
 
   # Client API
@@ -28,6 +28,14 @@ defmodule FlipdotWeb.VirtualDisplay do
     GenServer.cast(__MODULE__, {:update_bitmap, new_bitmap})
   end
 
+  def set_delay_enabled(enabled) do
+    GenServer.cast(__MODULE__, {:set_delay_enabled, enabled})
+  end
+
+  def get_delay_enabled do
+    GenServer.call(__MODULE__, :get_delay_enabled)
+  end
+
   # Server callbacks
 
   @impl true
@@ -42,7 +50,8 @@ defmodule FlipdotWeb.VirtualDisplay do
       current_column: nil,
       width: width,
       height: height,
-      timer_ref: nil
+      timer_ref: nil,
+      delay_enabled: false
     }
 
     {:ok, state}
@@ -54,19 +63,32 @@ defmodule FlipdotWeb.VirtualDisplay do
   end
 
   @impl true
+  def handle_call(:get_delay_enabled, _from, state) do
+    {:reply, state.delay_enabled, state}
+  end
+
+  @impl true
+  def handle_cast({:set_delay_enabled, enabled}, state) do
+    {:noreply, %{state | delay_enabled: enabled}}
+  end
+
+  @impl true
   def handle_cast({:update_bitmap, new_bitmap}, state) do
     # Cancel any ongoing update
     if state.timer_ref do
       Process.cancel_timer(state.timer_ref)
     end
 
-    # Update the target bitmap and reset column position
-    state = %{state | target_bitmap: new_bitmap, current_column: 0, timer_ref: nil}
-
-    # Start processing columns immediately
-    send(self(), :process_next_column)
-
-    {:noreply, state}
+    if state.delay_enabled do
+      # Update with delay
+      state = %{state | target_bitmap: new_bitmap, current_column: 0, timer_ref: nil}
+      send(self(), :process_next_column)
+      {:noreply, state}
+    else
+      # Update immediately
+      broadcast_update(new_bitmap)
+      {:noreply, %{state | current_bitmap: new_bitmap, target_bitmap: new_bitmap, current_column: nil, timer_ref: nil}}
+    end
   end
 
   @impl true
