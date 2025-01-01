@@ -7,8 +7,8 @@ defmodule Flipdot.Driver do
   # network mode
   @mode_env "FLIPDOT_DRIVER"
   @driver %{
-    network: Flipdot.Driver.Network,
-    usb: Flipdot.Driver.USB,
+    fluepdot_wifi: Flipdot.Driver.FluepdotWifi,
+    fluepdot_usb: Flipdot.Driver.FluepdotUsb,
     dummy: Flipdot.Driver.Dummy,
     flipflapflop: Flipdot.Driver.Flipflapflop
   }
@@ -37,8 +37,8 @@ defmodule Flipdot.Driver do
 
     mode =
       case String.downcase(mode_string || "") do
-        "usb" -> :usb
-        "network" -> :network
+        "fluepdot_usb" -> :fluepdot_usb
+        "fluepdot_wifi" -> :fluepdot_wifi
         "flipflapflop" -> :flipflapflop
         _ -> :dummy
       end
@@ -52,7 +52,7 @@ defmodule Flipdot.Driver do
     {:ok, driver} = DynamicSupervisor.start_child(Flipdot.Driver.DriverSupervisor, @driver[mode])
 
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
-    Logger.info("Fluepdot server started (mode: #{inspect(mode)}).")
+    Logger.info("Driver server started (mode: #{inspect(mode)}).")
 
     {:ok, %{state | mode: mode, driver: driver}}
   end

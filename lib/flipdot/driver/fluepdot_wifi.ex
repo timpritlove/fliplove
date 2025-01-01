@@ -1,4 +1,4 @@
-defmodule Flipdot.Driver.Network do
+defmodule Flipdot.Driver.FluepdotWifi do
   alias Flipdot.Bitmap
 
   @doc """

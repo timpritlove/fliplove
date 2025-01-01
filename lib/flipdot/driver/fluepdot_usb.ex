@@ -1,4 +1,4 @@
-defmodule Flipdot.Driver.USB do
+defmodule Flipdot.Driver.FluepdotUsb do
   alias Flipdot.Bitmap
 
   @doc """

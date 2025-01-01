@@ -45,7 +45,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:mode, :pencil)
       |> assign(:prev_xy, nil)
       |> assign(:font_select, Library.get_fonts() |> build_font_select())
-      |> assign(:usb_mode?, System.get_env("FLIPDOT_DRIVER") == "USB")
+      |> assign(:usb_mode?, System.get_env("FLIPDOT_DRIVER") == "FLUEPDOT_USB")
       |> assign(:display_images, display_images)
       |> assign(:delay_enabled, VirtualDisplay.get_delay_enabled())
       |> allow_upload(:frame,
@@ -363,7 +363,7 @@ defmodule FlipdotWeb.FlipdotLive do
 
   @impl true
   def handle_event("usb-command", %{"command" => command}, socket) do
-    GenServer.cast(Flipdot.Fluepdot.USB, {:command, command})
+    GenServer.cast(Flipdot.Driver.FluepdotUsb, {:command, command})
     {:noreply, socket}
   end
 
