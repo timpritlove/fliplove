@@ -104,10 +104,17 @@ defmodule FlipdotWeb.SlidebrowserLive do
     bitmap = Bitmap.from_file(path)
     VirtualDisplay.update_bitmap(bitmap)
 
+    # Find the index of the clicked file
+    clicked_index =
+      Enum.find_index(socket.assigns.image_files, fn {_folder, _filename, file_path} ->
+        file_path == path
+      end)
+
     {:noreply,
      socket
      |> assign(:virtual_bitmap, bitmap)
      |> assign(:selected_file, path)
+     |> assign(:focused_index, clicked_index)
      # Close any open edit field
      |> assign(:editing_file, nil)}
   end
@@ -301,11 +308,15 @@ defmodule FlipdotWeb.SlidebrowserLive do
                   <div
                     class={[
                       "w-full p-4 rounded-lg transition-colors duration-200 text-left outline-none",
-                      if(@selected_file == path, do: "bg-indigo-600", else: "bg-gray-700 hover:bg-gray-600")
+                      cond do
+                        @selected_file == path || @focused_index == index -> "bg-indigo-600"
+                        true -> "bg-gray-700 hover:bg-gray-600"
+                      end
                     ]}
                     phx-click="load_image"
                     phx-value-path={path}
                     tabindex={if(@focused_index == index, do: "0", else: "-1")}
+                    autofocus={@focused_index == index}
                   >
                     <span class="text-gray-400 text-sm"><%= folder %>/</span>
                     <span
