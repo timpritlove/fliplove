@@ -375,8 +375,9 @@ defmodule FlipdotWeb.FlipdotLive do
   end
 
   @impl true
-  def handle_event("toggle-delay", %{"delay-enabled" => value}, socket) do
-    enabled = value == "true"
+  def handle_event("toggle-delay", params, socket) do
+    # When checkbox is checked, we get the value. When unchecked, the param is not present
+    enabled = Map.has_key?(params, "delay-enabled")
     VirtualDisplay.set_delay_enabled(enabled)
     {:noreply, assign(socket, :delay_enabled, enabled)}
   end
@@ -464,7 +465,7 @@ defmodule FlipdotWeb.FlipdotLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="min-h-screen bg-gray-900 text-gray-100 p-8">
+    <div class="min-h-screen bg-gray-900 text-gray-100">
       <div class="max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-8">
           <h1 class="text-3xl font-bold">Flipdot Display</h1>
