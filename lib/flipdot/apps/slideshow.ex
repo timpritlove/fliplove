@@ -9,7 +9,7 @@ defmodule Flipdot.Apps.Slideshow do
   defstruct [:all_images, remaining: nil]
 
   def init_app(_opts) do
-    all_images = Flipdot.Images.load_images(width: Display.width(), height: Display.height())
+    all_images = Flipdot.Images.load_slideshow_images(width: Display.width(), height: Display.height())
     remaining = all_images
     :timer.send_after(0, __MODULE__, :next_slide)
     {:ok, %__MODULE__{all_images: all_images, remaining: remaining}}

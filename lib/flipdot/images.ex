@@ -131,7 +131,7 @@ defmodule Flipdot.Images do
   Returns a list of Bitmaps that match the specified dimensions (if any).
   Silently skips files that can't be parsed or don't match the dimensions.
   """
-  def load_images(opts \\ []) do
+  def load_slideshow_images(opts \\ []) do
     width = Keyword.get(opts, :width)
     height = Keyword.get(opts, :height)
 
