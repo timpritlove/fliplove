@@ -1,4 +1,4 @@
-defmodule Flipdot.Fluepdot.USB do
+defmodule Flipdot.Driver.USB do
   alias Flipdot.Bitmap
 
   @doc """
@@ -9,12 +9,25 @@ defmodule Flipdot.Fluepdot.USB do
 
   @device_env "FLIPDOT_DEVICE"
   @device_bitrate 115_200
-  @retry_interval 5000  # 5 seconds between retries
-  @prompt_timeout 3000  # 1 second timeout for prompt
+  # 5 seconds between retries
+  @retry_interval 5000
+  # 1 second timeout for prompt
+  @prompt_timeout 3000
   @prompt_regex ~r/\n(?:\e\[\d+(?:;\d+)*m)?[^\s]+>\s*(?:\e\[\d+(?:;\d+)*m)?$/
 
-  defstruct [:counter, :device, :uart, :timer, :prompt_timer, :last_sent_command,
-            connected: false, ready: false, buffer: "", log_buffer: "", command_queue: []]
+  defstruct [
+    :counter,
+    :device,
+    :uart,
+    :timer,
+    :prompt_timer,
+    :last_sent_command,
+    connected: false,
+    ready: false,
+    buffer: "",
+    log_buffer: "",
+    command_queue: []
+  ]
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -65,6 +78,7 @@ defmodule Flipdot.Fluepdot.USB do
   @impl true
   def handle_info({:display_updated, bitmap}, %{connected: true} = state) do
     cmd = "framebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64())
+
     case write_command(state, cmd) do
       {:ok, new_state} ->
         counter = new_state.counter + 1
@@ -96,14 +110,9 @@ defmodule Flipdot.Fluepdot.USB do
     if state.uart do
       Circuits.UART.close(state.uart)
     end
+
     # Reset state and try reconnecting
-    new_state = %{state |
-      connected: false,
-      ready: false,
-      buffer: "",
-      log_buffer: "",
-      command_queue: []
-    }
+    new_state = %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: []}
     send(self(), :try_connect)
     {:noreply, new_state}
   end
@@ -141,6 +150,7 @@ defmodule Flipdot.Fluepdot.USB do
         if state.last_sent_command do
           Logger.info("Command completed successfully: #{inspect(state.last_sent_command)}")
         end
+
         Logger.debug("USB prompt detected, setting ready state")
         new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, last_sent_command: nil}
 
@@ -152,10 +162,12 @@ defmodule Flipdot.Fluepdot.USB do
           [next_command | remaining_queue] ->
             # Send the next command in queue
             Logger.debug("Processing next command (#{length(state.command_queue)} commands in queue)")
+
             case send_command(new_state, next_command) do
               {:ok, updated_state} ->
                 # Remove the executed command from the queue
                 {:noreply, %{updated_state | command_queue: remaining_queue}}
+
               error ->
                 Logger.error("Failed to send command: #{inspect(error)}")
                 {:noreply, new_state}
@@ -189,6 +201,7 @@ defmodule Flipdot.Fluepdot.USB do
       [line, rest] ->
         {more_lines, remaining} = extract_complete_lines(rest)
         {[String.trim_trailing(line) | more_lines], remaining}
+
       [incomplete] ->
         {[], incomplete}
     end
@@ -200,6 +213,7 @@ defmodule Flipdot.Fluepdot.USB do
       {:ok, new_state} ->
         Logger.debug("USB command sent: #{command}")
         {:noreply, new_state}
+
       {:error, reason} ->
         Logger.error("Failed to send USB command: #{inspect(reason)}")
         {:noreply, state}
@@ -216,22 +230,23 @@ defmodule Flipdot.Fluepdot.USB do
   # Reverts all changes and returns error if any step fails.
   defp initialize_connection(state) do
     with {:ok, uart_pid} <- Circuits.UART.start_link(),
-         open_result <- Circuits.UART.open(uart_pid, state.device,
-                speed: @device_bitrate,
-                active: true
-              ) do
-
+         open_result <-
+           Circuits.UART.open(uart_pid, state.device,
+             speed: @device_bitrate,
+             active: true
+           ) do
       case open_result do
         :ok ->
           Logger.info("Successfully opened serial connection to #{state.device}")
           # Rest of the initialization code...
-          initial_state = %{state |
-            uart: uart_pid,
-            connected: true,
-            counter: 0,
-            ready: false,
-            buffer: "",
-            log_buffer: ""
+          initial_state = %{
+            state
+            | uart: uart_pid,
+              connected: true,
+              counter: 0,
+              ready: false,
+              buffer: "",
+              log_buffer: ""
           }
 
           # Queue initialization commands...
@@ -241,13 +256,16 @@ defmodule Flipdot.Fluepdot.USB do
             "flipdot_clear"
           ]
 
-          queued_state = Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
-            Logger.debug("Queueing init command: #{cmd}")
-            %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
-          end)
+          queued_state =
+            Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
+              Logger.debug("Queueing init command: #{cmd}")
+              %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
+            end)
 
           case Circuits.UART.write(uart_pid, "\n") do
-            :ok -> {:ok, queued_state}
+            :ok ->
+              {:ok, queued_state}
+
             error ->
               Circuits.UART.close(uart_pid)
               error
@@ -269,6 +287,7 @@ defmodule Flipdot.Fluepdot.USB do
         if state.uart do
           Circuits.UART.close(state.uart)
         end
+
         Logger.debug("Failed to start UART: #{inspect(reason)}")
         error
     end
@@ -288,7 +307,9 @@ defmodule Flipdot.Fluepdot.USB do
         timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
         # Keep the command in queue until we get confirmation and track the sent command
         {:ok, %{state | ready: false, prompt_timer: timer_ref, last_sent_command: command}}
-      error -> error
+
+      error ->
+        error
     end
   end
 

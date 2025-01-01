@@ -1,4 +1,4 @@
-defmodule Flipdot.Fluepdot.Flipflapflop do
+defmodule Flipdot.Driver.Flipflapflop do
   @moduledoc """
   Driver for Flipflapflop Display via USB serial interface.
   Implements one-way communication sending full frame updates.
@@ -9,7 +9,8 @@ defmodule Flipdot.Fluepdot.Flipflapflop do
 
   @device_env "FLIPDOT_DEVICE"
   @device_bitrate 115_200
-  @retry_interval 5000  # 5 seconds between retries
+  # 5 seconds between retries
+  @retry_interval 5000
 
   # Command bytes from Python implementation
   @picture_cmd 0b10000001
@@ -18,8 +19,7 @@ defmodule Flipdot.Fluepdot.Flipflapflop do
   @device_width 112
   @device_height 16
 
-  defstruct [:device, :uart, :timer,
-            connected: false]
+  defstruct [:device, :uart, :timer, connected: false]
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
@@ -76,9 +76,11 @@ defmodule Flipdot.Fluepdot.Flipflapflop do
   @impl true
   def handle_info({:circuits_uart, _port, {:error, :einval}}, state) do
     Logger.info("Flipflapflop USB device physically disconnected")
+
     if state.uart do
       Circuits.UART.close(state.uart)
     end
+
     # Reset state and try reconnecting
     new_state = %{state | connected: false}
     send(self(), :try_connect)
@@ -93,10 +95,11 @@ defmodule Flipdot.Fluepdot.Flipflapflop do
 
   defp initialize_connection(state) do
     with {:ok, uart_pid} <- Circuits.UART.start_link(),
-         :ok <- Circuits.UART.open(uart_pid, state.device,
-                speed: @device_bitrate,
-                active: true
-              ) do
+         :ok <-
+           Circuits.UART.open(uart_pid, state.device,
+             speed: @device_bitrate,
+             active: true
+           ) do
       Logger.info("Successfully opened serial connection to #{state.device}")
       {:ok, %{state | uart: uart_pid, connected: true}}
     else
@@ -104,6 +107,7 @@ defmodule Flipdot.Fluepdot.Flipflapflop do
         if state.uart do
           Circuits.UART.close(state.uart)
         end
+
         Logger.debug("Failed to start UART: #{inspect(reason)}")
         error
     end
@@ -137,23 +141,25 @@ defmodule Flipdot.Fluepdot.Flipflapflop do
     frame = <<@picture_cmd>>
 
     # Convert bitmap to list of bits, row by row (bottom to top)
-    bits = for y <- (@device_height-1)..0//-1,
-               x <- 0..(@device_width-1) do
-      if Bitmap.get_pixel(bitmap, {x, y}) == 1, do: "1", else: "0"
-    end
+    bits =
+      for y <- (@device_height - 1)..0//-1,
+          x <- 0..(@device_width - 1) do
+        if Bitmap.get_pixel(bitmap, {x, y}) == 1, do: "1", else: "0"
+      end
 
     # Join all bits into a single string
     bit_string = Enum.join(bits)
 
     # Split into 7-bit chunks and pack each with leading 0
-    chunks = bit_string
-    |> String.graphemes()
-    |> Enum.chunk_every(7, 7, :discard)
-    |> Enum.map(fn chunk ->
-      # Add leading 0 and convert to byte
-      ("0" <> Enum.join(chunk))
-      |> String.to_integer(2)
-    end)
+    chunks =
+      bit_string
+      |> String.graphemes()
+      |> Enum.chunk_every(7, 7, :discard)
+      |> Enum.map(fn chunk ->
+        # Add leading 0 and convert to byte
+        ("0" <> Enum.join(chunk))
+        |> String.to_integer(2)
+      end)
 
     # Convert chunks to binary
     frame <> :binary.list_to_bin(chunks)

@@ -1,6 +1,6 @@
 defmodule Flipdot.Display do
   alias Flipdot.Bitmap
-  alias Flipdot.Fluepdot
+  alias Flipdot.Driver
 
   @moduledoc """
   Store the current frame buffer of the virtual Bitmap Display. Send PubSub broadcasts
@@ -20,8 +20,8 @@ defmodule Flipdot.Display do
 
   def topic, do: @topic
 
-  def width, do: Fluepdot.width()
-  def height, do: Fluepdot.height()
+  def width, do: Driver.width()
+  def height, do: Driver.height()
 
   def get do
     case Agent.get(__MODULE__, fn state -> state.bitmap end) do
@@ -30,7 +30,9 @@ defmodule Flipdot.Display do
         bitmap = Bitmap.new(width(), height())
         set(bitmap)
         bitmap
-      bitmap -> bitmap
+
+      bitmap ->
+        bitmap
     end
   end
 

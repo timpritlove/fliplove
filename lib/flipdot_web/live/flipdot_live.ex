@@ -45,7 +45,7 @@ defmodule FlipdotWeb.FlipdotLive do
       |> assign(:mode, :pencil)
       |> assign(:prev_xy, nil)
       |> assign(:font_select, Library.get_fonts() |> build_font_select())
-      |> assign(:usb_mode?, System.get_env("FLIPDOT_MODE") == "USB")
+      |> assign(:usb_mode?, System.get_env("FLIPDOT_DRIVER") == "USB")
       |> assign(:display_images, display_images)
       |> assign(:delay_enabled, VirtualDisplay.get_delay_enabled())
       |> allow_upload(:frame,

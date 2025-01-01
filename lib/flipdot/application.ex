@@ -16,7 +16,7 @@ defmodule Flipdot.Application do
         # Start core services first
         Flipdot.Font.Library,
         # Start Fluepdot before Display since Display depends on it
-        {Flipdot.Fluepdot, []},
+        {Flipdot.Driver, []},
         Flipdot.Display,
         # Start the Registry for apps
         {Registry, keys: :unique, name: Flipdot.Apps.Registry},
@@ -62,6 +62,7 @@ defmodule Flipdot.Application do
   defp render_welcome_message do
     welcome_text = Application.fetch_env!(:flipdot, :display)[:welcome_text] || "Hello, World!"
     font = Flipdot.Font.Library.get_font_by_name("flipdot")
+
     Flipdot.Display.get()
     |> Flipdot.Font.Renderer.place_text(font, welcome_text, align: :center, valign: :middle)
     |> Flipdot.Display.set()

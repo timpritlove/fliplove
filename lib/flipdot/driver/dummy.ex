@@ -1,4 +1,4 @@
-defmodule Flipdot.Fluepdot.Dummy do
+defmodule Flipdot.Driver.Dummy do
   @doc """
   Dummy driver for Fluepdot Display that does nothing but logging
   """
