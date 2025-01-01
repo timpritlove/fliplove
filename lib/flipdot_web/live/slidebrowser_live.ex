@@ -47,19 +47,6 @@ defmodule FlipdotWeb.SlidebrowserLive do
   end
 
   @impl true
-  def handle_event("load_image", %{"path" => path}, socket) do
-    bitmap = Bitmap.from_file(path)
-    VirtualDisplay.update_bitmap(bitmap)
-
-    {:noreply,
-     socket
-     |> assign(:virtual_bitmap, bitmap)
-     |> assign(:selected_file, path)
-     # Close any open edit field
-     |> assign(:editing_file, nil)}
-  end
-
-  @impl true
   def handle_event("edit_filename", %{"path" => path}, socket) do
     # Load the image if it's not already selected
     socket =
@@ -72,6 +59,57 @@ defmodule FlipdotWeb.SlidebrowserLive do
       end
 
     {:noreply, assign(socket, :editing_file, path)}
+  end
+
+  @impl true
+  def handle_event("keydown", %{"key" => key}, socket) do
+    # Ignore navigation keys when editing a filename
+    if socket.assigns.editing_file do
+      {:noreply, socket}
+    else
+      case key do
+        "ArrowUp" ->
+          new_index = max(0, socket.assigns.focused_index - 3)
+          {:noreply, handle_focus_change(socket, new_index)}
+
+        "ArrowDown" ->
+          new_index = min(length(socket.assigns.image_files) - 1, socket.assigns.focused_index + 3)
+          {:noreply, handle_focus_change(socket, new_index)}
+
+        "ArrowLeft" ->
+          new_index = max(0, socket.assigns.focused_index - 1)
+          {:noreply, handle_focus_change(socket, new_index)}
+
+        "ArrowRight" ->
+          new_index = min(length(socket.assigns.image_files) - 1, socket.assigns.focused_index + 1)
+          {:noreply, handle_focus_change(socket, new_index)}
+
+        # Space key
+        " " ->
+          if socket.assigns.focused_index >= 0 do
+            {_folder, _filename, path} = Enum.at(socket.assigns.image_files, socket.assigns.focused_index)
+            {:noreply, assign(socket, :editing_file, path)}
+          else
+            {:noreply, socket}
+          end
+
+        _ ->
+          {:noreply, socket}
+      end
+    end
+  end
+
+  @impl true
+  def handle_event("load_image", %{"path" => path}, socket) do
+    bitmap = Bitmap.from_file(path)
+    VirtualDisplay.update_bitmap(bitmap)
+
+    {:noreply,
+     socket
+     |> assign(:virtual_bitmap, bitmap)
+     |> assign(:selected_file, path)
+     # Close any open edit field
+     |> assign(:editing_file, nil)}
   end
 
   @impl true
@@ -134,6 +172,11 @@ defmodule FlipdotWeb.SlidebrowserLive do
   end
 
   @impl true
+  def handle_event("stop_propagation", _params, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("toggle-delay", params, socket) do
     # When checkbox is checked, we get the value. When unchecked, the param is not present
     enabled = Map.has_key?(params, "delay-enabled")
@@ -144,44 +187,6 @@ defmodule FlipdotWeb.SlidebrowserLive do
   @impl true
   def handle_info({:virtual_display_updated, bitmap}, socket) do
     {:noreply, assign(socket, :virtual_bitmap, bitmap)}
-  end
-
-  @impl true
-  def handle_event("keydown", %{"key" => key}, socket) do
-    # Ignore navigation keys when editing a filename
-    if socket.assigns.editing_file do
-      {:noreply, socket}
-    else
-      case key do
-        "ArrowUp" ->
-          new_index = max(0, socket.assigns.focused_index - 3)
-          {:noreply, handle_focus_change(socket, new_index)}
-
-        "ArrowDown" ->
-          new_index = min(length(socket.assigns.image_files) - 1, socket.assigns.focused_index + 3)
-          {:noreply, handle_focus_change(socket, new_index)}
-
-        "ArrowLeft" ->
-          new_index = max(0, socket.assigns.focused_index - 1)
-          {:noreply, handle_focus_change(socket, new_index)}
-
-        "ArrowRight" ->
-          new_index = min(length(socket.assigns.image_files) - 1, socket.assigns.focused_index + 1)
-          {:noreply, handle_focus_change(socket, new_index)}
-
-        # Space key
-        " " ->
-          if socket.assigns.focused_index >= 0 do
-            {_folder, _filename, path} = Enum.at(socket.assigns.image_files, socket.assigns.focused_index)
-            {:noreply, assign(socket, :editing_file, path)}
-          else
-            {:noreply, socket}
-          end
-
-        _ ->
-          {:noreply, socket}
-      end
-    end
   end
 
   defp handle_focus_change(socket, new_index) do
@@ -319,10 +324,5 @@ defmodule FlipdotWeb.SlidebrowserLive do
       </div>
     </div>
     """
-  end
-
-  @impl true
-  def handle_event("stop_propagation", _params, socket) do
-    {:noreply, socket}
   end
 end
