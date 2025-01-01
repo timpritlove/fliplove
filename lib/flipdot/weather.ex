@@ -33,7 +33,7 @@ defmodule Flipdot.Weather do
         GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
 
       {:error, reason} ->
-        Logger.error("Weather service disabled: #{reason}")
+        Logger.warning("Weather service disabled: #{reason}")
         :ignore
     end
   end
@@ -173,9 +173,12 @@ defmodule Flipdot.Weather do
 
   def rainfall_intensity(rainfall_rate) when rainfall_rate >= 0 do
     rainfall_rate = rainfall_rate / 1
-    {_, intensity} = Enum.find(@rainfall_intensity_thresholds, fn {threshold, _} ->
-      rainfall_rate >= threshold
-    end)
+
+    {_, intensity} =
+      Enum.find(@rainfall_intensity_thresholds, fn {threshold, _} ->
+        rainfall_rate >= threshold
+      end)
+
     intensity
   end
 
@@ -198,9 +201,12 @@ defmodule Flipdot.Weather do
 
   def wind_force(wind_speed) when wind_speed >= 0 do
     wind_speed = wind_speed / 1
-    {_, force} = Enum.find(@beaufort_scale_thresholds, fn {threshold, _} ->
-      wind_speed >= threshold
-    end)
+
+    {_, force} =
+      Enum.find(@beaufort_scale_thresholds, fn {threshold, _} ->
+        wind_speed >= threshold
+      end)
+
     force
   end
 
@@ -247,6 +253,7 @@ defmodule Flipdot.Weather do
     case {System.get_env(@latitude_env), System.get_env(@longitude_env)} do
       {lat, lon} when is_binary(lat) and is_binary(lon) ->
         {:ok, String.to_float(lat), String.to_float(lon), "environment variables"}
+
       _ ->
         Logger.info("No location coordinates in environment, falling back to IP geolocation")
         get_location_from_ip()
@@ -259,6 +266,7 @@ defmodule Flipdot.Weather do
         case Jason.decode!(body) do
           %{"lat" => lat, "lon" => lon} ->
             {:ok, lat, lon, "IP geolocation"}
+
           _ ->
             {:error, "Invalid response from IP geolocation service"}
         end
