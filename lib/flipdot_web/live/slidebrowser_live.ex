@@ -41,6 +41,7 @@ defmodule FlipdotWeb.SlidebrowserLive do
       |> assign(:delay_enabled, VirtualDisplay.get_delay_enabled())
       |> assign(:editing_file, nil)
       |> assign(:selected_file, nil)
+      |> assign(:focused_index, 0)
 
     {:ok, socket}
   end
@@ -49,7 +50,13 @@ defmodule FlipdotWeb.SlidebrowserLive do
   def handle_event("load_image", %{"path" => path}, socket) do
     bitmap = Bitmap.from_file(path)
     VirtualDisplay.update_bitmap(bitmap)
-    {:noreply, assign(socket, :virtual_bitmap, bitmap) |> assign(:selected_file, path)}
+
+    {:noreply,
+     socket
+     |> assign(:virtual_bitmap, bitmap)
+     |> assign(:selected_file, path)
+     # Close any open edit field
+     |> assign(:editing_file, nil)}
   end
 
   @impl true
@@ -140,9 +147,102 @@ defmodule FlipdotWeb.SlidebrowserLive do
   end
 
   @impl true
+  def handle_event("keydown", %{"key" => key}, socket) do
+    # Ignore navigation keys when editing a filename
+    if socket.assigns.editing_file do
+      {:noreply, socket}
+    else
+      case key do
+        "ArrowUp" ->
+          new_index = max(0, socket.assigns.focused_index - 3)
+          {:noreply, handle_focus_change(socket, new_index)}
+
+        "ArrowDown" ->
+          new_index = min(length(socket.assigns.image_files) - 1, socket.assigns.focused_index + 3)
+          {:noreply, handle_focus_change(socket, new_index)}
+
+        "ArrowLeft" ->
+          new_index = max(0, socket.assigns.focused_index - 1)
+          {:noreply, handle_focus_change(socket, new_index)}
+
+        "ArrowRight" ->
+          new_index = min(length(socket.assigns.image_files) - 1, socket.assigns.focused_index + 1)
+          {:noreply, handle_focus_change(socket, new_index)}
+
+        # Space key
+        " " ->
+          if socket.assigns.focused_index >= 0 do
+            {_folder, _filename, path} = Enum.at(socket.assigns.image_files, socket.assigns.focused_index)
+            {:noreply, assign(socket, :editing_file, path)}
+          else
+            {:noreply, socket}
+          end
+
+        _ ->
+          {:noreply, socket}
+      end
+    end
+  end
+
+  defp handle_focus_change(socket, new_index) do
+    if new_index != socket.assigns.focused_index do
+      {_folder, _filename, path} = Enum.at(socket.assigns.image_files, new_index)
+
+      # First ensure the file exists in the build directory
+      source_dir = Path.join(File.cwd!(), @images_path)
+      build_dir = Application.app_dir(:flipdot, @images_path)
+      relative_path = Path.relative_to(path, build_dir)
+      source_path = Path.join(source_dir, relative_path)
+
+      try do
+        cond do
+          File.exists?(path) ->
+            # File exists in build dir, use it directly
+            bitmap = Bitmap.from_file(path)
+            VirtualDisplay.update_bitmap(bitmap)
+
+            socket
+            |> assign(:focused_index, new_index)
+            |> assign(:virtual_bitmap, bitmap)
+            |> assign(:selected_file, path)
+
+          File.exists?(source_path) ->
+            # File exists in source but not in build, copy it
+            file_content = File.read!(source_path)
+            File.mkdir_p!(Path.dirname(path))
+            File.write!(path, file_content)
+
+            bitmap = Bitmap.from_file(path)
+            VirtualDisplay.update_bitmap(bitmap)
+
+            socket
+            |> assign(:focused_index, new_index)
+            |> assign(:virtual_bitmap, bitmap)
+            |> assign(:selected_file, path)
+
+          true ->
+            # File doesn't exist in either location, just update focus
+            Logger.warning("File not found in either location: #{path}")
+
+            assign(socket, :focused_index, new_index)
+            |> assign(:selected_file, path)
+        end
+      rescue
+        e ->
+          Logger.error("Error loading file: #{Exception.message(e)}")
+
+          assign(socket, :focused_index, new_index)
+          |> assign(:selected_file, path)
+      end
+    else
+      socket
+    end
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
-    <div class="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+    <div class="min-h-screen bg-gray-900 text-gray-100 flex flex-col" phx-window-keydown="keydown">
       <div class="max-w-7xl w-full mx-auto flex-none">
         <div class="flex justify-between items-center mb-8 p-4">
           <h1 class="text-3xl font-bold">Flipdot Slide Browser</h1>
@@ -171,7 +271,7 @@ defmodule FlipdotWeb.SlidebrowserLive do
           <div class="bg-gray-800 rounded-lg p-4 h-full">
             <h2 class="text-xl font-bold mb-4 sticky top-0 bg-gray-800 py-2">Available Slides</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto max-h-[calc(100vh-24rem)]">
-              <%= for {folder, filename, path} <- @image_files do %>
+              <%= for {{folder, filename, path}, index} <- Enum.with_index(@image_files) do %>
                 <%= if @editing_file == path do %>
                   <div class={[
                     "p-4 rounded-lg transition-colors duration-200",
@@ -195,11 +295,12 @@ defmodule FlipdotWeb.SlidebrowserLive do
                 <% else %>
                   <div
                     class={[
-                      "w-full p-4 rounded-lg transition-colors duration-200 text-left",
+                      "w-full p-4 rounded-lg transition-colors duration-200 text-left outline-none",
                       if(@selected_file == path, do: "bg-indigo-600", else: "bg-gray-700 hover:bg-gray-600")
                     ]}
                     phx-click="load_image"
                     phx-value-path={path}
+                    tabindex={if(@focused_index == index, do: "0", else: "-1")}
                   >
                     <span class="text-gray-400 text-sm"><%= folder %>/</span>
                     <span
