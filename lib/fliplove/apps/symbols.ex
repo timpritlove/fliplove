@@ -90,12 +90,11 @@ defmodule Fliplove.Apps.Symbols do
   defp render_display(state) do
     result = Bitmap.new(Display.width(), Display.height())
 
-    final_bitmap =
-      Enum.reduce(state.current_symbols, result, fn {symbol, x_pos}, bitmap ->
-        Bitmap.overlay(bitmap, symbol, cursor_x: x_pos)
-      end)
+    Enum.reduce(state.current_symbols, result, fn {symbol, x_pos}, bitmap ->
+      Bitmap.overlay(bitmap, symbol, cursor_x: x_pos)
+    end)
+    |> Display.set()
 
-    Display.set(final_bitmap)
   end
 
   # Helper to recursively load symbols from a directory
