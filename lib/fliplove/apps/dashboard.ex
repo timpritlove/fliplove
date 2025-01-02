@@ -13,41 +13,23 @@ defmodule Fliplove.Apps.Dashboard do
   require Logger
   # import Fliplove.PrettyDump
 
-  defstruct font: nil, bitmap: nil, weather_available: false
+  defstruct font: nil, bitmap: nil
 
   @font "flipdot"
-  # @clock_symbol 0xF017
-  # @ms_symbol 0xF018
-  # @nbs_symbol 160
-  # @wind_symbol 0xF72E
+  #@clock_symbol 0xF017
+  #@ms_symbol 0xF018
+  #@nbs_symbol 160
+  #@wind_symbol 0xF72E
 
   def init_app(_opts) do
-    # Check if weather service is available
-    weather_available =
-      try do
-        Weather.get_weather()
-        true
-      rescue
-        _ -> false
-      end
-
-    if not weather_available do
-      Logger.warning("Weather service not available, dashboard will run with limited functionality")
-    end
-
     state = %__MODULE__{
       font: Library.get_font_by_name(@font),
-      bitmap: nil,
-      weather_available: weather_available
+      bitmap: nil
     }
-
     update_dashboard(state)
 
     schedule_next_minute(:clock_timer)
-
-    if weather_available do
-      PubSub.subscribe(Fliplove.PubSub, Weather.topic())
-    end
+    PubSub.subscribe(Fliplove.PubSub, Weather.topic())
 
     {:ok, state}
   end
@@ -86,7 +68,6 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp get_time_string do
     timezone = get_system_timezone()
-
     DateTime.now!(timezone, Tz.TimeZoneDatabase)
     |> Calendar.strftime("%c", preferred_datetime: "%H:%M")
   end
@@ -95,18 +76,14 @@ defmodule Fliplove.Apps.Dashboard do
     {tz_string, 0} = System.cmd("date", ["+%Z"])
 
     case String.trim(tz_string) do
-      # Fallback to UTC if timezone is empty
-      "" -> "Etc/UTC"
-      # Keep original timezone abbreviation
-      tz -> tz
+      "" -> "Etc/UTC"  # Fallback to UTC if timezone is empty
+      tz -> tz  # Keep original timezone abbreviation
     end
   end
 
   defp get_max_min_temps do
     case Weather.get_48_hour_temperature() do
-      [] ->
-        {nil, nil}
-
+      [] -> {nil, nil}
       temperatures ->
         temps = Enum.map(temperatures, fn {t, _, _} -> t end)
         {Enum.max(temps), Enum.min(temps)}
@@ -114,25 +91,20 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp format_temp(nil), do: "N/A"
-
   defp format_temp(temp) do
     :erlang.float_to_binary(temp / 1, decimals: 1) <> "°C"
   end
 
   defp update_dashboard(state) do
     Bitmap.new(Display.width(), Display.height())
-    |> render_current_temperature(state)
+    |> render_current_temperature(state.font)
     |> render_time(state.font)
-    |> render_temperature_chart(state)
-    |> render_temperature_extremes(state)
+    |> render_temperature_chart()
+    |> render_temperature_extremes(state.font)
     |> maybe_update_display(state.bitmap)
   end
 
-  defp render_current_temperature(bitmap, %{weather_available: false, font: font}) do
-    place_text(bitmap, font, "No weather", :top, :left)
-  end
-
-  defp render_current_temperature(bitmap, %{weather_available: true, font: font}) do
+  defp render_current_temperature(bitmap, font) do
     case Weather.get_current_temperature() do
       nil -> bitmap
       temp -> place_text(bitmap, font, format_temp(temp), :top, :left)
@@ -144,26 +116,6 @@ defmodule Fliplove.Apps.Dashboard do
       {:ok, time_string} -> place_text(bitmap, font, time_string, :bottom, :left)
       {:error, _} -> bitmap
     end
-  end
-
-  defp render_temperature_chart(bitmap, %{weather_available: false}) do
-    bitmap
-  end
-
-  defp render_temperature_chart(bitmap, %{weather_available: true}) do
-    render_temperature_chart(bitmap)
-  end
-
-  defp render_temperature_extremes(bitmap, %{weather_available: false, font: font}) do
-    place_text(bitmap, font, "---", :top, :right)
-  end
-
-  defp render_temperature_extremes(bitmap, %{weather_available: true, font: font}) do
-    {max_temp, min_temp} = get_max_min_temps()
-
-    bitmap
-    |> place_text(font, format_temp(max_temp), :top, :right)
-    |> place_text(font, format_temp(min_temp), :bottom, :right)
   end
 
   defp safe_get_time_string do
@@ -180,28 +132,31 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp safe_create_temperature_chart do
-    weather_bitmap =
-      create_48_hour_temperature_chart(Display.height())
-      |> Bitmap.crop_relative(Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
-
+    weather_bitmap = create_48_hour_temperature_chart(Display.height())
+    |> Bitmap.crop_relative(Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
     {:ok, weather_bitmap}
   rescue
     error -> {:error, error}
+  end
+
+  defp render_temperature_extremes(bitmap, font) do
+    {max_temp, min_temp} = get_max_min_temps()
+    bitmap
+    |> place_text(font, format_temp(max_temp), :top, :right)
+    |> place_text(font, format_temp(min_temp), :bottom, :right)
   end
 
   defp maybe_update_display(new_bitmap, current_bitmap) do
     if new_bitmap != current_bitmap do
       Display.set(new_bitmap)
     end
-
     new_bitmap
   end
 
   # Temperature chart creation functions
   defp create_48_hour_temperature_chart(height) do
     chart_dimensions = %{
-      # Reduce height by 2 for frame
-      height: height - 2,
+      height: height - 2,  # Reduce height by 2 for frame
       width: 48,
       total_height: height
     }
@@ -240,8 +195,7 @@ defmodule Fliplove.Apps.Dashboard do
     temp_matrix =
       for {{_temp, temp_y, _hour, x}, _index} <- Enum.with_index(scaled_temps),
           into: %{} do
-        # Offset by 1 for frame
-        {{x + 1, temp_y + 1}, 1}
+        {{x + 1, temp_y + 1}, 1}  # Offset by 1 for frame
       end
 
     {Bitmap.new(dimensions.width + 2, dimensions.total_height, temp_matrix), scaled_temps}
