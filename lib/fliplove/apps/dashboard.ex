@@ -158,7 +158,7 @@ defmodule Fliplove.Apps.Dashboard do
     place_text(bitmap, font, "---", :top, :right)
   end
 
-  defp render_temperature_extremes(bitmap, font) do
+  defp render_temperature_extremes(bitmap, %{weather_available: true, font: font}) do
     {max_temp, min_temp} = get_max_min_temps()
 
     bitmap
