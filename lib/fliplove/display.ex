@@ -27,9 +27,7 @@ defmodule Fliplove.Display do
     case Agent.get(__MODULE__, fn state -> state.bitmap end) do
       nil ->
         # This should never happen, but just in case
-        bitmap = Bitmap.new(width(), height())
-        set(bitmap)
-        bitmap
+        Bitmap.new(width(), height()) |> set()
 
       bitmap ->
         bitmap
@@ -61,7 +59,7 @@ defmodule Fliplove.Display do
       Phoenix.PubSub.broadcast(Fliplove.PubSub, @topic, {:display_updated, new_bitmap})
     end
 
-    :ok
+    new_bitmap
   end
 
   defp count_active_pixels(bitmap) do
