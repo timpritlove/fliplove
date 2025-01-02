@@ -8,7 +8,7 @@ defmodule Fliplove.Apps.Dashboard do
   """
   use Fliplove.Apps.Base
   alias Phoenix.PubSub
-  alias Fliplove.{Weather}
+  alias Fliplove.{Weather, TimezoneHelper}
   alias Fliplove.Font.{Library}
   require Logger
   # import Fliplove.PrettyDump
@@ -67,18 +67,9 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp get_time_string do
-    timezone = get_system_timezone()
+    timezone = TimezoneHelper.get_system_timezone()
     DateTime.now!(timezone, Tz.TimeZoneDatabase)
     |> Calendar.strftime("%c", preferred_datetime: "%H:%M")
-  end
-
-  defp get_system_timezone do
-    {tz_string, 0} = System.cmd("date", ["+%Z"])
-
-    case String.trim(tz_string) do
-      "" -> "Etc/UTC"  # Fallback to UTC if timezone is empty
-      tz -> tz  # Keep original timezone abbreviation
-    end
   end
 
   defp get_max_min_temps do
@@ -170,7 +161,7 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp convert_to_local_times(temperatures) do
-    timezone = get_system_timezone()
+    timezone = TimezoneHelper.get_system_timezone()
 
     Enum.map(temperatures, fn {temperature, datetime, index} ->
       local_datetime = DateTime.shift_zone!(datetime, timezone, Tz.TimeZoneDatabase)

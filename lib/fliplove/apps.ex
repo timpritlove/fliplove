@@ -10,7 +10,8 @@ defmodule Fliplove.Apps do
     slideshow: Fliplove.Apps.Slideshow,
     maze_solver: Fliplove.Apps.MazeSolver,
     symbols: Fliplove.Apps.Symbols,
-    fluepdot_server: Fliplove.Apps.FluepdotServer
+    fluepdot_server: Fliplove.Apps.FluepdotServer,
+    datetime: Fliplove.Apps.Datetime
   }
 
   def start_link(_) do
