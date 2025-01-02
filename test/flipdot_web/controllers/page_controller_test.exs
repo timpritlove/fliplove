@@ -1,5 +1,5 @@
-defmodule FlipdotWeb.PageControllerTest do
-  use FlipdotWeb.ConnCase
+defmodule FliploveWeb.PageControllerTest do
+  use FliploveWeb.ConnCase
 
   test "GET /hello", %{conn: conn} do
     conn = get(conn, ~p"/hello")

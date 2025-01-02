@@ -23,7 +23,7 @@ erl_crash.dump
 /tmp/
 
 # Ignore package tarball (built via "mix hex.build").
-flipdot-*.tar
+fliplove-*.tar
 
 # Ignore assets that are produced by build tools.
 /priv/static/assets/
@@ -41,4 +41,5 @@ npm-debug.log
 /.vscode/
 .DS_Store
 .tool-versions
-.flipdotrc
+fliplove-*.tar
+.fliploverc

@@ -1,12 +1,12 @@
-defmodule FlipdotWeb.ErrorJSONTest do
-  use FlipdotWeb.ConnCase, async: true
+defmodule FliploveWeb.ErrorJSONTest do
+  use FliploveWeb.ConnCase, async: true
 
   test "renders 404" do
-    assert FlipdotWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}
+    assert FliploveWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}
   end
 
   test "renders 500" do
-    assert FlipdotWeb.ErrorJSON.render("500.json", %{}) ==
+    assert FliploveWeb.ErrorJSON.render("500.json", %{}) ==
              %{errors: %{detail: "Internal Server Error"}}
   end
 end

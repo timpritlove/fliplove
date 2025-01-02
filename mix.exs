@@ -1,13 +1,13 @@
-defmodule Flipdot.MixProject do
+defmodule Fliplove.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :flipdot,
+      app: :fliplove,
       name: "The Flipdot Controller Project",
       docs: [
         authors: ["Tim Pritlove"],
-        logo: "data/flipdot-logo-64.jpg"
+        logo: "data/fliplove-logo-64.jpg"
       ],
       version: "0.2.0",
       elixir: "~> 1.17",
@@ -16,7 +16,7 @@ defmodule Flipdot.MixProject do
       aliases: aliases(),
       deps: deps(),
       escript: [
-        main_module: Flipdot.CLI.SymbolImporter,
+        main_module: Fliplove.CLI.SymbolImporter,
         name: "symbol_importer",
         app: nil,
         included_applications: [:logger, :ex_png],
@@ -30,7 +30,7 @@ defmodule Flipdot.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Flipdot.Application, []},
+      mod: {Fliplove.Application, []},
       extra_applications: [:logger, :runtime_tools, :os_mon, :tz]
     ]
   end

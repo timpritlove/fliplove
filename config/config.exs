@@ -10,15 +10,15 @@ import Config
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 
 # Configures the endpoint
-config :flipdot, FlipdotWeb.Endpoint,
+config :fliplove, FliploveWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost"],
   server: true,
   render_errors: [
-    formats: [html: FlipdotWeb.ErrorHTML, json: FlipdotWeb.ErrorJSON],
+    formats: [html: FliploveWeb.ErrorHTML, json: FliploveWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: Flipdot.PubSub,
+  pubsub_server: Fliplove.PubSub,
   live_view: [signing_salt: "xJ5q7C8F"]
 
 # Configures the mailer
@@ -29,7 +29,7 @@ config :flipdot, FlipdotWeb.Endpoint,
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
 
-config :flipdot, :display,
+config :fliplove, :display,
   width: 115,
   height: 16,
   host: ["flipdot.local"],
@@ -72,12 +72,12 @@ import_config "#{config_env()}.exs"
 config :mdns_lite,
   hosts: [:hostname],
   ttl: 120,
-  instance_name: "Flipdot Controller",
+  instance_name: "Fliplove Controller",
   services: [
     %{
       id: :web_service,
       protocol: "http",
       transport: "tcp",
       port: 4000
-    },
+    }
   ]
