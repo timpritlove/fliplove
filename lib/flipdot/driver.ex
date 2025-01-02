@@ -13,29 +13,25 @@ defmodule Flipdot.Driver do
     flipflapflop: Flipdot.Driver.Flipflapflop
   }
 
-  # Default dimensions for most drivers
-  @default_width 115
-  @default_height 16
-
-  defstruct mode: :dummy, driver: nil
+  defstruct driver_module: :dummy, driver_pid: nil
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
   def width do
-    GenServer.call(__MODULE__, :get_width)
+    GenServer.call(__MODULE__, :width)
   end
 
   def height do
-    GenServer.call(__MODULE__, :get_height)
+    GenServer.call(__MODULE__, :height)
   end
 
   @impl true
   def init(state) do
     mode_string = System.get_env(@mode_env)
 
-    mode =
+    driver_module =
       case String.downcase(mode_string || "") do
         "fluepdot_usb" -> :fluepdot_usb
         "fluepdot_wifi" -> :fluepdot_wifi
@@ -49,34 +45,29 @@ defmodule Flipdot.Driver do
         name: Flipdot.Driver.DriverSupervisor
       )
 
-    {:ok, driver} = DynamicSupervisor.start_child(Flipdot.Driver.DriverSupervisor, @driver[mode])
+    {:ok, driver_pid} = DynamicSupervisor.start_child(Flipdot.Driver.DriverSupervisor, @driver[driver_module])
 
     Phoenix.PubSub.subscribe(PubSub, Display.topic())
-    Logger.info("Driver server started (mode: #{inspect(mode)}).")
+    Logger.info("Driver server started (driver: #{inspect(driver_module)}).")
 
-    {:ok, %{state | mode: mode, driver: driver}}
+    {:ok, %{state | driver_module: driver_module, driver_pid: driver_pid}}
   end
 
   @impl true
   def handle_info({:display_updated, bitmap}, state) do
-    send(state.driver, {:display_updated, bitmap})
+    send(state.driver_pid, {:display_updated, bitmap})
     {:noreply, state}
   end
 
   @impl true
-  def handle_call(:get_width, _from, state) do
-    width =
-      case state.mode do
-        # Flipflapflop has a different width
-        :flipflapflop -> 112
-        _ -> @default_width
-      end
-
-    {:reply, width, state}
+  def handle_call(:width, _from, state) do
+    driver_module = @driver[state.driver_module]
+    {:reply, driver_module.width(), state}
   end
 
   @impl true
-  def handle_call(:get_height, _from, state) do
-    {:reply, @default_height, state}
+  def handle_call(:height, _from, state) do
+    driver_module = @driver[state.driver_module]
+    {:reply, driver_module.height(), state}
   end
 end

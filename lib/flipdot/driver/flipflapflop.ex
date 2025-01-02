@@ -19,6 +19,9 @@ defmodule Flipdot.Driver.Flipflapflop do
   @device_width 112
   @device_height 16
 
+  def width, do: @device_width
+  def height, do: @device_height
+
   defstruct [:device, :uart, :timer, connected: false]
 
   def start_link(_) do

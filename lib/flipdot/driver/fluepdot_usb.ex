@@ -15,6 +15,12 @@ defmodule Flipdot.Driver.FluepdotUsb do
   @prompt_timeout 3000
   @prompt_regex ~r/\n(?:\e\[\d+(?:;\d+)*m)?[^\s]+>\s*(?:\e\[\d+(?:;\d+)*m)?$/
 
+  @device_width 115
+  @device_height 16
+
+  def width, do: @device_width
+  def height, do: @device_height
+
   defstruct [
     :counter,
     :device,

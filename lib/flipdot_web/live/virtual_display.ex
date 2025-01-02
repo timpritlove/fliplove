@@ -40,8 +40,8 @@ defmodule FlipdotWeb.VirtualDisplay do
 
   @impl true
   def init(_opts) do
-    width = Flipdot.Display.width()
-    height = Flipdot.Display.height()
+    width = Flipdot.Driver.width()
+    height = Flipdot.Driver.height()
     initial_bitmap = Bitmap.new(width, height)
 
     state = %State{

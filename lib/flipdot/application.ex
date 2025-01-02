@@ -15,21 +15,20 @@ defmodule Flipdot.Application do
         {Phoenix.PubSub, name: Flipdot.PubSub},
         # Start core services first
         Flipdot.Font.Library,
-        # Start Fluepdot before Display since Display depends on it
+        # Start hardware-related services first since they define display dimensions
         {Flipdot.Driver, []},
         Flipdot.Display,
+        # Start web-related services after display is ready
+        FlipdotWeb.VirtualDisplay,
+        {FlipdotWeb.Endpoint, []},
         # Start the Registry for apps
         {Registry, keys: :unique, name: Flipdot.Apps.Registry},
         # Start the dynamic supervisor for apps
         {DynamicSupervisor, strategy: :one_for_one, name: Flipdot.Apps.DynamicSupervisor},
-        # Start the app manager
+        # Start the app manager and apps
         {Flipdot.Apps, []},
         {Flipdot.Weather, []},
-        {Flipdot.Megabitmeter, []},
-        # Start the Endpoint last (after all services are ready)
-        {FlipdotWeb.Endpoint, []},
-        # Start the Virtual Display GenServer
-        FlipdotWeb.VirtualDisplay
+        {Flipdot.Megabitmeter, []}
       ] ++
         case System.get_env("FLIPDOT_TELEGRAM_BOT_SECRET") do
           nil -> []

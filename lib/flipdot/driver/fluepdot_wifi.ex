@@ -15,6 +15,12 @@ defmodule Flipdot.Driver.FluepdotWifi do
 
   @rendering_mode_url "/rendering/mode"
 
+  @device_width 115
+  @device_height 16
+
+  def width, do: @device_width
+  def height, do: @device_height
+
   defstruct counter: 0,
             host: nil,
             port: nil,

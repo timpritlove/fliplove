@@ -1,9 +1,16 @@
 defmodule Flipdot.Driver.Dummy do
+
   @doc """
-  Dummy driver for Fluepdot Display that does nothing but logging
+  Dummy driver that just logs updates
   """
   use GenServer
   require Logger
+
+  @device_width 115
+  @device_height 16
+
+  def width, do: @device_width
+  def height, do: @device_height
 
   defstruct [:counter]
 
