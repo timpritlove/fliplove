@@ -13,6 +13,7 @@ config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 config :flipdot, FlipdotWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost"],
+  server: true,
   render_errors: [
     formats: [html: FlipdotWeb.ErrorHTML, json: FlipdotWeb.ErrorJSON],
     layout: false
