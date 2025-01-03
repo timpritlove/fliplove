@@ -6,6 +6,7 @@ defmodule FliploveWeb.FlipdotLive do
   alias Fliplove.Font.Library
   alias Fliplove.Bitmap.Maze
   alias Fliplove.Bitmap.GameOfLife
+  alias Fliplove.Bitmap.Generator
   alias FliploveWeb.VirtualDisplay
   import FliploveWeb.VirtualDisplayComponent
 
@@ -182,7 +183,7 @@ defmodule FliploveWeb.FlipdotLive do
 
   @impl true
   def handle_event("random", _params, socket) do
-    Bitmap.random(Display.width(), Display.height()) |> Display.set()
+    Generator.random(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
@@ -194,13 +195,13 @@ defmodule FliploveWeb.FlipdotLive do
 
   @impl true
   def handle_event("gradient-h", _params, socket) do
-    Display.get() |> Bitmap.gradient_h() |> Display.set()
+    Generator.gradient_h(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("gradient-v", _params, socket) do
-    Display.get() |> Bitmap.gradient_v() |> Display.set()
+    Generator.gradient_v(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
@@ -280,13 +281,16 @@ defmodule FliploveWeb.FlipdotLive do
         {:noreply, socket}
 
       "random" ->
-        Bitmap.random(Display.width(), Display.height()) |> Display.set()
+        Generator.random(Display.width(), Display.height()) |> Display.set()
+
+      "perlin" ->
+        Generator.random_perlin_noise(Display.width(), Display.height()) |> Display.set()
 
       "gradient-h" ->
-        Display.get() |> Bitmap.gradient_h() |> Display.set()
+        Generator.gradient_h(Display.width(), Display.height()) |> Display.set()
 
       "gradient-v" ->
-        Display.get() |> Bitmap.gradient_v() |> Display.set()
+        Generator.gradient_v(Display.width(), Display.height()) |> Display.set()
 
       "maze" ->
         display_width = Display.width()
@@ -557,15 +561,20 @@ defmodule FliploveWeb.FlipdotLive do
             <%!-- Generators Section --%>
             <.section title="Generators">
               <.button_group>
-                <.image_button tooltip="Noise" image={Bitmap.random(Display.width(), Display.height())} value="random" />
+                <.image_button tooltip="Noise" image={Generator.random(Display.width(), Display.height())} value="random" />
+                <.image_button
+                  tooltip="Perlin Noise"
+                  image={Generator.random_perlin_noise(Display.width(), Display.height())}
+                  value="perlin"
+                />
                 <.image_button
                   tooltip="Gradient H"
-                  image={Bitmap.gradient_h(Display.width(), Display.height())}
+                  image={Generator.gradient_h(Display.width(), Display.height())}
                   value="gradient-h"
                 />
                 <.image_button
                   tooltip="Gradient V"
-                  image={Bitmap.gradient_v(Display.width(), Display.height())}
+                  image={Generator.gradient_v(Display.width(), Display.height())}
                   value="gradient-v"
                 />
                 <.image_button

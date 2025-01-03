@@ -814,59 +814,6 @@ defmodule Fliplove.Bitmap do
   end
 
   @doc """
-  Draw a gradient from left to right using randomized dithering
-  """
-  def gradient_h(bitmap) do
-    gradient_h(bitmap.width, bitmap.height)
-  end
-
-  def gradient_h(width, height) do
-    matrix =
-      for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
-        value = if Enum.random(0..(width - 1)) <= x, do: 0, else: 1
-        {{x, y}, value}
-      end
-
-    new(width, height, matrix)
-  end
-
-  @doc """
-  Draw a gradient from top to bottom using randomized dithering
-  """
-  def gradient_v(bitmap) do
-    gradient_v(bitmap.width, bitmap.height)
-  end
-
-  def gradient_v(width, height) do
-    matrix =
-      for y <- 0..(height - 1), x <- 0..(width - 1), into: %{} do
-        value = if Enum.random(0..(height - 1)) <= y, do: 0, else: 1
-        {{x, y}, value}
-      end
-
-    new(width, height, matrix)
-  end
-
-  @doc """
-  Returns the number of pixels that differ between two bitmaps.
-  Both bitmaps must have the same dimensions.
-  """
-  def diff_count(bitmap1, bitmap2) do
-    if dimensions(bitmap1) != dimensions(bitmap2) do
-      raise "Bitmaps must have the same dimensions"
-    end
-
-    {width, height} = dimensions(bitmap1)
-
-    for x <- 0..(width - 1),
-        y <- 0..(height - 1),
-        get_pixel(bitmap1, {x, y}) != get_pixel(bitmap2, {x, y}),
-        reduce: 0 do
-      acc -> acc + 1
-    end
-  end
-
-  @doc """
   Merge two bitmaps, allowing the result to grow as needed.
   The second bitmap is positioned relative to the first one using the offset parameters.
   Returns a new bitmap that encompasses both inputs.
@@ -974,5 +921,24 @@ defmodule Fliplove.Bitmap do
       baseline_x: bitmap.baseline_x + min_x,
       baseline_y: bitmap.baseline_y + min_y
     )
+  end
+
+  @doc """
+  Returns the number of pixels that differ between two bitmaps.
+  Both bitmaps must have the same dimensions.
+  """
+  def diff_count(bitmap1, bitmap2) do
+    if dimensions(bitmap1) != dimensions(bitmap2) do
+      raise "Bitmaps must have the same dimensions"
+    end
+
+    {width, height} = dimensions(bitmap1)
+
+    for x <- 0..(width - 1),
+        y <- 0..(height - 1),
+        get_pixel(bitmap1, {x, y}) != get_pixel(bitmap2, {x, y}),
+        reduce: 0 do
+      acc -> acc + 1
+    end
   end
 end
