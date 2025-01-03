@@ -286,6 +286,18 @@ defmodule FliploveWeb.FlipdotLive do
       "perlin" ->
         Generator.random_perlin_noise(Display.width(), Display.height()) |> Display.set()
 
+      "flow-field" ->
+        Generator.flow_field(Display.width(), Display.height()) |> Display.set()
+
+      "wave-interference" ->
+        Generator.wave_interference(Display.width(), Display.height()) |> Display.set()
+
+      "recursive-subdivision" ->
+        Generator.recursive_subdivision(Display.width(), Display.height()) |> Display.set()
+
+      "mandelbrot" ->
+        Generator.mandelbrot(Display.width(), Display.height()) |> Display.set()
+
       "gradient-h" ->
         Generator.gradient_h(Display.width(), Display.height()) |> Display.set()
 
@@ -566,6 +578,26 @@ defmodule FliploveWeb.FlipdotLive do
                   tooltip="Perlin Noise"
                   image={Generator.random_perlin_noise(Display.width(), Display.height())}
                   value="perlin"
+                />
+                <.image_button
+                  tooltip="Flow Field"
+                  image={Generator.flow_field(Display.width(), Display.height())}
+                  value="flow-field"
+                />
+                <.image_button
+                  tooltip="Wave Interference"
+                  image={Generator.wave_interference(Display.width(), Display.height())}
+                  value="wave-interference"
+                />
+                <.image_button
+                  tooltip="Recursive Subdivision"
+                  image={Generator.recursive_subdivision(Display.width(), Display.height())}
+                  value="recursive-subdivision"
+                />
+                <.image_button
+                  tooltip="Mandelbrot"
+                  image={Generator.mandelbrot(Display.width(), Display.height())}
+                  value="mandelbrot"
                 />
                 <.image_button
                   tooltip="Gradient H"
