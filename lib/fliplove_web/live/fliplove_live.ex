@@ -273,56 +273,84 @@ defmodule FliploveWeb.FlipdotLive do
     socket = socket |> assign(:app, Fliplove.Apps.running_app())
     {:noreply, socket}
   end
+  @impl true
+  def handle_event("image", %{"value" => ""}, socket) do
+    {:noreply, socket}
+  end
 
   @impl true
-  def handle_event("image", %{"value" => value}, socket) do
-    case value do
-      "" ->
-        {:noreply, socket}
+  def handle_event("image", %{"value" => "random"}, socket) do
+    Generator.random(Display.width(), Display.height()) |> Display.set()
+    {:noreply, socket}
+  end
 
-      "random" ->
-        Generator.random(Display.width(), Display.height()) |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "perlin"}, socket) do
+    Generator.random_perlin_noise(Display.width(), Display.height()) |> Display.set()
+    {:noreply, socket}
+  end
 
-      "perlin" ->
-        Generator.random_perlin_noise(Display.width(), Display.height()) |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "flow-field"}, socket) do
+    Generator.flow_field(Display.width(), Display.height()) |> Display.set()
+    {:noreply, socket}
+  end
 
-      "flow-field" ->
-        Generator.flow_field(Display.width(), Display.height()) |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "wave-interference"}, socket) do
+    Generator.wave_interference(Display.width(), Display.height()) |> Display.set()
+    {:noreply, socket}
+  end
 
-      "wave-interference" ->
-        Generator.wave_interference(Display.width(), Display.height()) |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "recursive-subdivision"}, socket) do
+    Generator.recursive_subdivision(Display.width(), Display.height()) |> Display.set()
+    {:noreply, socket}
+  end
 
-      "recursive-subdivision" ->
-        Generator.recursive_subdivision(Display.width(), Display.height()) |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "mandelbrot"}, socket) do
+    Generator.mandelbrot(Display.width(), Display.height()) |> Display.set()
+    {:noreply, socket}
+  end
 
-      "mandelbrot" ->
-        Generator.mandelbrot(Display.width(), Display.height()) |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "gradient-h"}, socket) do
+    Generator.gradient_h(Display.width(), Display.height()) |> Display.set()
+    {:noreply, socket}
+  end
 
-      "gradient-h" ->
-        Generator.gradient_h(Display.width(), Display.height()) |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "gradient-v"}, socket) do
+    Generator.gradient_v(Display.width(), Display.height()) |> Display.set()
+    {:noreply, socket}
+  end
 
-      "gradient-v" ->
-        Generator.gradient_v(Display.width(), Display.height()) |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "maze"}, socket) do
+    display_width = Display.width()
+    display_height = Display.height()
+    maze_width = if Integer.is_odd(display_width), do: display_width, else: display_width - 1
+    maze_height = if Integer.is_odd(display_height), do: display_height, else: display_height - 1
 
-      "maze" ->
-        display_width = Display.width()
-        display_height = Display.height()
-        maze_width = if Integer.is_odd(display_width), do: display_width, else: display_width - 1
-        maze_height = if Integer.is_odd(display_height), do: display_height, else: display_height - 1
+    Maze.generate_maze(maze_width, maze_height)
+    |> Bitmap.crop_relative(display_width, display_height, rel_y: :top)
+    |> Display.set()
 
-        Maze.generate_maze(maze_width, maze_height)
-        |> Bitmap.crop_relative(display_width, display_height, rel_y: :top)
-        |> Display.set()
+    {:noreply, socket}
+  end
 
-      "game-of-life" ->
-        Display.get() |> GameOfLife.game_of_life() |> Display.set()
+  @impl true
+  def handle_event("image", %{"value" => "game-of-life"}, socket) do
+    Display.get() |> GameOfLife.game_of_life() |> Display.set()
+    {:noreply, socket}
+  end
 
-      image ->
-        if bitmap = socket.assigns.display_images[image] do
-          Display.set(bitmap)
-        end
+  @impl true
+  def handle_event("image", %{"value" => image}, socket) do
+    if bitmap = socket.assigns.display_images[image] do
+      Display.set(bitmap)
     end
-
     {:noreply, socket}
   end
 
