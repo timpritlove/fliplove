@@ -45,12 +45,10 @@ defmodule Fliplove.Display do
     if new_bitmap != old_bitmap do
       # Count pixels in the new bitmap
       pixel_count = count_active_pixels(new_bitmap)
+      total_pixels = width() * height()
 
-      # Calculate normalized value (0.0 - 1.0)
-      normalized_value = pixel_count / (width() * height())
-
-      # Update megabitmeter
-      Fliplove.Megabitmeter.set_level(normalized_value)
+      # Update megabitmeter with absolute values instead of normalized
+      Fliplove.Megabitmeter.set_level(pixel_count, total_pixels)
 
       # Store new bitmap
       Agent.update(__MODULE__, fn state -> %{state | bitmap: new_bitmap} end)

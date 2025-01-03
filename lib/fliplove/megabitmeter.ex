@@ -30,11 +30,15 @@ defmodule Fliplove.Megabitmeter do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def set_level(value) when value >= 0 and value <= 999 do
-    GenServer.cast(__MODULE__, {:set_level, value})
+  def set_level(value, max_value) when is_number(value) and is_number(max_value) and max_value > 0 do
+    # Normalize value to 0-999 range
+    normalized_value = round(value / max_value * 999)
+    # Clamp to valid range
+    level = max(0, min(normalized_value, 999))
+    GenServer.cast(__MODULE__, {:set_level, level})
   end
 
-  def set_level(_), do: {:error, :invalid_value}
+  def set_level(_value, _max_value), do: {:error, :invalid_value}
 
   @impl true
   def init(_) do
