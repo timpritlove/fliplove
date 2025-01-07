@@ -97,6 +97,11 @@ defmodule Fliplove.Driver.Flipflapflop do
   end
 
   defp initialize_connection(state) do
+    # Close any existing connection first
+    if state.uart do
+      Circuits.UART.close(state.uart)
+    end
+
     with {:ok, uart_pid} <- Circuits.UART.start_link(),
          :ok <-
            Circuits.UART.open(uart_pid, state.device,

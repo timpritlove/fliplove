@@ -225,8 +225,17 @@ defmodule Fliplove.Megabitmeter do
     Logger.debug("Attempting to connect to Megabitmeter at #{device}")
 
     try do
+      # Clean up any existing connection first
+      case Process.get(:current_uart_pid) do
+        nil -> :ok
+        pid ->
+          Circuits.UART.close(pid)
+          Process.delete(:current_uart_pid)
+      end
+
       with {:ok, uart_pid} <- Circuits.UART.start_link(),
            :ok <- Circuits.UART.open(uart_pid, device, speed: @baud_rate, active: true) do
+        Process.put(:current_uart_pid, uart_pid)
         {:ok, uart_pid}
       else
         {:error, reason} = error ->
@@ -300,6 +309,28 @@ defmodule Fliplove.Megabitmeter do
       %State{state | current_value: current, target_value: target_value, step_size: step_size, animation_timer: timer}
     else
       state
+    end
+  end
+
+  @impl true
+  def terminate(_reason, state) do
+    if state.uart_pid do
+      Circuits.UART.close(state.uart_pid)
+    end
+  end
+
+  # Add cleanup on process exit
+  @impl true
+  def handle_info({:EXIT, pid, reason}, state) do
+    Logger.debug("Process exit detected: #{inspect(reason)}")
+
+    case Process.get(:current_uart_pid) do
+      ^pid ->
+        Process.delete(:current_uart_pid)
+        schedule_reconnect()
+        {:noreply, %State{state | uart_pid: nil, connected?: false, booting?: false}}
+      _ ->
+        {:noreply, state}
     end
   end
 end
