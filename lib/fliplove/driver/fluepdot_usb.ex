@@ -50,8 +50,16 @@ defmodule Fliplove.Driver.FluepdotUsb do
         {:stop, "#{@device_env} environment variable not set"}
 
       device ->
-        send(self(), :try_connect)
-        {:ok, %{state | device: device}}
+        # Start the UART process once
+        case Circuits.UART.start_link() do
+          {:ok, uart} ->
+            send(self(), :try_connect)
+            {:ok, %{state | device: device, uart: uart}}
+
+          {:error, reason} ->
+            Logger.error("Failed to start UART process: #{inspect(reason)}")
+            {:stop, reason}
+        end
     end
   end
 
@@ -235,66 +243,53 @@ defmodule Fliplove.Driver.FluepdotUsb do
   #
   # Reverts all changes and returns error if any step fails.
   defp initialize_connection(state) do
-    with {:ok, uart_pid} <- Circuits.UART.start_link(),
-         open_result <-
-           Circuits.UART.open(uart_pid, state.device,
-             speed: @device_bitrate,
-             active: true
-           ) do
-      case open_result do
-        :ok ->
-          Logger.info("Successfully opened serial connection to #{state.device}")
-          # Rest of the initialization code...
-          initial_state = %{
-            state
-            | uart: uart_pid,
-              connected: true,
-              counter: 0,
-              ready: false,
-              buffer: "",
-              log_buffer: ""
-          }
+    case Circuits.UART.open(state.uart, state.device,
+           speed: @device_bitrate,
+           active: true
+         ) do
+      :ok ->
+        Logger.info("Successfully opened serial connection to #{state.device}")
+        # Rest of the initialization code...
+        initial_state = %{
+          state
+          | connected: true,
+            counter: 0,
+            ready: false,
+            buffer: "",
+            log_buffer: ""
+        }
 
-          # Queue initialization commands...
-          init_commands = [
-            "wifi stop",
-            "config_rendering_mode differential",
-            "FLIPLOVE_clear"
-          ]
+        # Queue initialization commands...
+        init_commands = [
+          "wifi stop",
+          "config_rendering_mode differential",
+          "FLIPLOVE_clear"
+        ]
 
-          queued_state =
-            Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
-              Logger.debug("Queueing init command: #{cmd}")
-              %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
-            end)
+        queued_state =
+          Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
+            Logger.debug("Queueing init command: #{cmd}")
+            %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
+          end)
 
-          case Circuits.UART.write(uart_pid, "\n") do
-            :ok ->
-              {:ok, queued_state}
+        case Circuits.UART.write(state.uart, "\n") do
+          :ok ->
+            {:ok, queued_state}
 
-            error ->
-              Circuits.UART.close(uart_pid)
-              error
-          end
-
-        {:error, :port_timed_out} ->
-          # Clean up the UART process
-          Circuits.UART.close(uart_pid)
-          Logger.debug("USB port timed out while opening #{state.device}, will retry")
-          {:error, :port_timed_out}
-
-        {:error, reason} = error ->
-          Circuits.UART.close(uart_pid)
-          Logger.debug("Unable to initialize USB connection: #{inspect(reason)}")
-          error
-      end
-    else
-      {:error, reason} = error ->
-        if state.uart do
-          Circuits.UART.close(state.uart)
+          error ->
+            Circuits.UART.close(state.uart)
+            error
         end
 
-        Logger.debug("Failed to start UART: #{inspect(reason)}")
+      {:error, :port_timed_out} ->
+        # Just close the port, keep the process
+        Circuits.UART.close(state.uart)
+        Logger.debug("USB port timed out while opening #{state.device}, will retry")
+        {:error, :port_timed_out}
+
+      {:error, reason} = error ->
+        Circuits.UART.close(state.uart)
+        Logger.debug("Unable to initialize USB connection: #{inspect(reason)}")
         error
     end
   end

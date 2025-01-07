@@ -35,8 +35,16 @@ defmodule Fliplove.Driver.Flipflapflop do
         {:stop, "#{@device_env} environment variable not set"}
 
       device ->
-        send(self(), :try_connect)
-        {:ok, %{state | device: device}}
+        # Start the UART process once
+        case Circuits.UART.start_link() do
+          {:ok, uart} ->
+            send(self(), :try_connect)
+            {:ok, %{state | device: device, uart: uart}}
+
+          {:error, reason} ->
+            Logger.error("Failed to start UART process: #{inspect(reason)}")
+            {:stop, reason}
+        end
     end
   end
 
@@ -97,26 +105,21 @@ defmodule Fliplove.Driver.Flipflapflop do
   end
 
   defp initialize_connection(state) do
-    # Close any existing connection first
-    if state.uart do
+    # Just close the port if it's open, but keep the UART process
+    if state.connected do
       Circuits.UART.close(state.uart)
     end
 
-    with {:ok, uart_pid} <- Circuits.UART.start_link(),
-         :ok <-
-           Circuits.UART.open(uart_pid, state.device,
-             speed: @device_bitrate,
-             active: true
-           ) do
-      Logger.info("Successfully opened serial connection to #{state.device}")
-      {:ok, %{state | uart: uart_pid, connected: true}}
-    else
-      {:error, reason} = error ->
-        if state.uart do
-          Circuits.UART.close(state.uart)
-        end
+    case Circuits.UART.open(state.uart, state.device,
+           speed: @device_bitrate,
+           active: true
+         ) do
+      :ok ->
+        Logger.info("Successfully opened serial connection to #{state.device}")
+        {:ok, %{state | connected: true}}
 
-        Logger.debug("Failed to start UART: #{inspect(reason)}")
+      {:error, reason} = error ->
+        Logger.debug("Failed to open port: #{inspect(reason)}")
         error
     end
   end
