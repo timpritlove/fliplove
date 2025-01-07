@@ -1,0 +1,3 @@
+When defining a function with a default argument, do not use pattern matching in the function head as it is not allowed by elixir.
+
+When renaming files or moving them to other directories, use "git mv" instead of "mv" as it will update the git history.
