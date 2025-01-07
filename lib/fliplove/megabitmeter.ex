@@ -14,8 +14,8 @@ defmodule Fliplove.Megabitmeter do
 
   defmodule State do
     defstruct [
-      :uart_pid,
-      :device,
+      :uart,        # The UART process
+      :device,      # Device path
       :pending_value,
       :current_value,
       :target_value,
@@ -49,47 +49,38 @@ defmodule Fliplove.Megabitmeter do
       Logger.warning("FLIPLOVE_MEGABITMETER_DEVICE not configured, Megabitmeter will be disabled")
       {:ok, %State{device: nil, current_value: 0, target_value: 0, animation_timer: nil, step_size: nil}}
     else
-      state = %State{
-        device: device,
-        current_value: 0,
-        target_value: 0,
-        animation_timer: nil,
-        step_size: nil
-      }
+      # Start the UART process
+      case Circuits.UART.start_link() do
+        {:ok, uart} ->
+          state = %State{
+            uart: uart,
+            device: device,
+            current_value: 0,
+            target_value: 0,
+            animation_timer: nil,
+            step_size: nil
+          }
+          {:ok, state, {:continue, :connect}}
 
-      {:ok, state, {:continue, :connect}}
+        {:error, reason} ->
+          Logger.error("Failed to start UART process: #{inspect(reason)}")
+          {:stop, reason}
+      end
     end
   end
 
   @impl true
   def handle_continue(:connect, state) do
-    case open_uart(state.device) do
-      {:ok, uart_pid} ->
+    case try_connect(state) do
+      {:ok, new_state} ->
         Logger.info("Connected to Megabitmeter at #{state.device}, waiting for boot...")
         Process.send_after(self(), :boot_complete, @boot_delay)
-
-        {:noreply,
-         %State{
-           state
-           | uart_pid: uart_pid,
-             booting?: true,
-             current_value: state.current_value,
-             target_value: state.target_value,
-             animation_timer: state.animation_timer
-         }}
+        {:noreply, %{new_state | booting?: true}}
 
       {:error, reason} ->
         Logger.info("Failed to connect to Megabitmeter: #{inspect(reason)}")
         schedule_reconnect()
-
-        {:noreply,
-         %State{
-           state
-           | connected?: false,
-             current_value: state.current_value,
-             target_value: state.target_value,
-             animation_timer: state.animation_timer
-         }}
+        {:noreply, %{state | connected?: false}}
     end
   end
 
@@ -110,13 +101,8 @@ defmodule Fliplove.Megabitmeter do
     {:noreply, %State{state | pending_value: value}}
   end
 
-  def handle_cast({:set_level, value}, %State{device: nil} = state) do
-    # Device not configured, silently store value
-    {:noreply, %State{state | pending_value: value}}
-  end
-
   def handle_cast({:set_level, value}, state) do
-    # Device configured but not connected, store value silently
+    # Device not ready, store value silently
     {:noreply, %State{state | pending_value: value}}
   end
 
@@ -127,23 +113,21 @@ defmodule Fliplove.Megabitmeter do
 
     # Set any pending value that was stored during boot
     case new_state.pending_value do
-      nil ->
-        :ok
-
+      nil -> :ok
       value ->
         Logger.debug("Setting pending value #{value} after boot")
-        write_value(state.uart_pid, value)
+        write_value(state, value)
     end
 
     {:noreply, %State{new_state | pending_value: nil}}
   end
 
   def handle_info(:try_reconnect, state) do
-    case open_uart(state.device) do
-      {:ok, uart_pid} ->
+    case try_connect(state) do
+      {:ok, new_state} ->
         Logger.info("Connected to Megabitmeter at #{state.device}")
         Process.send_after(self(), :boot_complete, @boot_delay)
-        {:noreply, %State{state | uart_pid: uart_pid, booting?: true}}
+        {:noreply, %{new_state | booting?: true}}
 
       {:error, _reason} ->
         schedule_reconnect()
@@ -151,44 +135,20 @@ defmodule Fliplove.Megabitmeter do
     end
   end
 
-  def handle_info({:EXIT, pid, reason}, state) do
-    Logger.debug("Process exit detected: #{inspect(reason)}")
-
-    case Process.get(:current_uart_pid) do
-      ^pid ->
-        Process.delete(:current_uart_pid)
-        schedule_reconnect()
-        {:noreply, %State{state | uart_pid: nil, connected?: false, booting?: false}}
-      _ ->
-        {:noreply, state}
-    end
-  end
-
-  def handle_info({:circuits_uart, device, {:error, reason}}, %State{device: device} = state) do
-    Logger.debug("Megabitmeter error on #{device}: #{inspect(reason)}")
+  def handle_info({:circuits_uart, _port, {:error, reason}}, state) do
+    Logger.debug("Megabitmeter error: #{inspect(reason)}")
 
     # Only log disconnection if we were previously connected
     if state.connected? do
       Logger.info("Megabitmeter disconnected")
     end
 
-    # Clean up the existing connection
-    if state.uart_pid do
-      Circuits.UART.close(state.uart_pid)
-    end
+    # Close the port but keep the UART process
+    Circuits.UART.close(state.uart)
 
     # Reset state and schedule reconnect
     schedule_reconnect()
-
-    {:noreply,
-     %State{
-       state
-       | uart_pid: nil,
-         connected?: false,
-         booting?: false,
-         # Cancel any ongoing animation
-         animation_timer: nil
-     }}
+    {:noreply, %State{state | connected?: false, booting?: false, animation_timer: nil}}
   end
 
   def handle_info({:circuits_uart, _port, msg}, state) do
@@ -212,7 +172,7 @@ defmodule Fliplove.Megabitmeter do
           do: min(next_value, target),
           else: max(next_value, target)
 
-      case write_value(state.uart_pid, next_value) do
+      case write_value(state, next_value) do
         :ok ->
           timer =
             if next_value != target do
@@ -228,75 +188,34 @@ defmodule Fliplove.Megabitmeter do
     end
   end
 
-  defp open_uart(device) do
-    Logger.debug("Attempting to connect to Megabitmeter at #{device}")
-
-    try do
-      # Clean up any existing connection first
-      case Process.get(:current_uart_pid) do
-        nil -> :ok
-        pid ->
-          Circuits.UART.close(pid)
-          Process.delete(:current_uart_pid)
-      end
-
-      with {:ok, uart_pid} <- Circuits.UART.start_link(),
-           :ok <- Circuits.UART.open(uart_pid, device, speed: @baud_rate, active: true) do
-        Process.put(:current_uart_pid, uart_pid)
-        {:ok, uart_pid}
-      else
-        {:error, reason} = error ->
-          Logger.debug("Failed to open UART: #{inspect(reason)}")
-          error
-      end
-    catch
-      :exit, {:timeout, _} ->
-        Logger.debug("Timeout while opening UART connection")
-        {:error, :timeout}
+  # Attempt to connect to the device using the existing UART process
+  defp try_connect(%{uart: uart, device: device} = state) do
+    case Circuits.UART.open(uart, device, speed: @baud_rate, active: true) do
+      :ok -> {:ok, %{state | connected?: true}}
+      error -> error
     end
   end
 
-  defp write_value(uart_pid, value, retry_count \\ 0)
+  # Write a value to the device with retries
+  defp write_value(state, value, retry_count \\ 0)
 
-  defp write_value(nil, _value, _retry_count) do
-    # UART is not connected, return error immediately
-    {:error, :not_connected}
+  defp write_value(_state, _value, retry_count) when retry_count >= @max_write_retries do
+    {:error, :max_retries}
   end
 
-  defp write_value(uart_pid, value, retry_count) do
+  defp write_value(%{uart: uart} = state, value, retry_count) do
     message = "#{value}\n"
-
-    try do
-      case Circuits.UART.write(uart_pid, message) do
-        :ok ->
-          :ok
-
-        {:error, reason} ->
-          handle_write_error(uart_pid, value, reason, retry_count)
-      end
-    catch
-      :exit, {:timeout, _} ->
-        handle_write_error(uart_pid, value, :timeout, retry_count)
-
-      :exit, {:noproc, _} ->
-        # UART process died
-        send(self(), {:circuits_uart, uart_pid, {:error, :noproc}})
+    case Circuits.UART.write(uart, message) do
+      :ok -> :ok
+      {:error, :ebadf} ->
+        # Port is closed, trigger reconnect
+        send(self(), {:circuits_uart, uart, {:error, :ebadf}})
         {:error, :not_connected}
+      {:error, _reason} when retry_count < @max_write_retries ->
+        Process.sleep(100)
+        write_value(state, value, retry_count + 1)
+      error -> error
     end
-  end
-
-  defp handle_write_error(uart_pid, value, reason, retry_count) when retry_count < @max_write_retries do
-    Logger.warning("Megabitmeter write failed (attempt #{retry_count + 1}): #{inspect(reason)}")
-    # Brief pause before retry
-    Process.sleep(100)
-    write_value(uart_pid, value, retry_count + 1)
-  end
-
-  defp handle_write_error(uart_pid, _value, reason, _retry_count) do
-    Logger.error("Megabitmeter write failed after retries: #{inspect(reason)}")
-    # Force reconnection cycle
-    send(self(), {:circuits_uart, uart_pid, {:error, reason}})
-    {:error, reason}
   end
 
   defp schedule_reconnect do
@@ -321,8 +240,8 @@ defmodule Fliplove.Megabitmeter do
 
   @impl true
   def terminate(_reason, state) do
-    if state.uart_pid do
-      Circuits.UART.close(state.uart_pid)
+    if state.uart do
+      Circuits.UART.close(state.uart)
     end
   end
 end
