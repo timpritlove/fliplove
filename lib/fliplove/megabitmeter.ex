@@ -151,6 +151,19 @@ defmodule Fliplove.Megabitmeter do
     end
   end
 
+  def handle_info({:EXIT, pid, reason}, state) do
+    Logger.debug("Process exit detected: #{inspect(reason)}")
+
+    case Process.get(:current_uart_pid) do
+      ^pid ->
+        Process.delete(:current_uart_pid)
+        schedule_reconnect()
+        {:noreply, %State{state | uart_pid: nil, connected?: false, booting?: false}}
+      _ ->
+        {:noreply, state}
+    end
+  end
+
   def handle_info({:circuits_uart, device, {:error, reason}}, %State{device: device} = state) do
     Logger.debug("Megabitmeter error on #{device}: #{inspect(reason)}")
 
@@ -181,12 +194,6 @@ defmodule Fliplove.Megabitmeter do
   def handle_info({:circuits_uart, _port, msg}, state) do
     Logger.debug("Unexpected UART message: #{inspect(msg)}")
     {:noreply, state}
-  end
-
-  def handle_info({:EXIT, pid, reason}, %State{uart_pid: uart_pid} = state) when pid == uart_pid do
-    Logger.debug("UART process crashed: #{inspect(reason)}")
-    schedule_reconnect()
-    {:noreply, %State{state | uart_pid: nil, connected?: false, booting?: false}}
   end
 
   def handle_info(:animate_step, %State{connected?: false} = state) do
@@ -316,21 +323,6 @@ defmodule Fliplove.Megabitmeter do
   def terminate(_reason, state) do
     if state.uart_pid do
       Circuits.UART.close(state.uart_pid)
-    end
-  end
-
-  # Add cleanup on process exit
-  @impl true
-  def handle_info({:EXIT, pid, reason}, state) do
-    Logger.debug("Process exit detected: #{inspect(reason)}")
-
-    case Process.get(:current_uart_pid) do
-      ^pid ->
-        Process.delete(:current_uart_pid)
-        schedule_reconnect()
-        {:noreply, %State{state | uart_pid: nil, connected?: false, booting?: false}}
-      _ ->
-        {:noreply, state}
     end
   end
 end
