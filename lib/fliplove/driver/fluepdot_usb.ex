@@ -263,7 +263,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
         init_commands = [
           "wifi stop",
           "config_rendering_mode differential",
-          "FLIPLOVE_clear"
+          "flipdot_clear"
         ]
 
         queued_state =

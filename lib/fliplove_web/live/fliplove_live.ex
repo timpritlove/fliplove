@@ -582,10 +582,10 @@ defmodule FliploveWeb.FlipdotLive do
             <%!-- USB Commands Section --%>
             <.section :if={@usb_mode?} title="USB Commands">
               <.button_group>
-                <.usb_command tooltip="Clear Display" command="FLIPLOVE_clear" icon="eraser" />
+                <.usb_command tooltip="Clear Display" command="flipdot_clear" icon="eraser" />
                 <.usb_command
                   tooltip="Clear Display (Inverted)"
-                  command="FLIPLOVE_clear --invert"
+                  command="flipdot_clear --invert"
                   icon="circle-half-stroke"
                 />
                 <.usb_command tooltip="Reboot Device" command="reboot" icon="power-off" />
