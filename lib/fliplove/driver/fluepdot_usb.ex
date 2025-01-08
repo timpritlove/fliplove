@@ -162,7 +162,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
         if state.prompt_timer, do: Process.cancel_timer(state.prompt_timer)
         # Log success of the last command if there was one
         if state.last_sent_command do
-          Logger.info("Command completed successfully: #{inspect(state.last_sent_command)}")
+          Logger.debug("Command completed successfully: #{inspect(state.last_sent_command)}")
         end
 
         Logger.debug("USB prompt detected, setting ready state")
