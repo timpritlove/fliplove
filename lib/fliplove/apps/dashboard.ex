@@ -43,7 +43,6 @@ defmodule Fliplove.Apps.Dashboard do
 
   @impl true
   def handle_info(:clock_timer, state) do
-    Logger.debug("Clock timer fired")
     update_dashboard(state)
     schedule_next_minute(:clock_timer)
 
@@ -76,7 +75,7 @@ defmodule Fliplove.Apps.Dashboard do
     case Weather.get_48_hour_temperature() do
       [] -> {nil, nil}
       temperatures ->
-        temps = Enum.map(temperatures, fn {t, _, _} -> t end)
+        temps = Enum.map(temperatures, & &1.temperature)
         {Enum.max(temps), Enum.min(temps)}
     end
   end
@@ -125,8 +124,8 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp safe_create_temperature_chart do
     weather_bitmap = create_48_hour_temperature_chart(Display.height())
-    |> Bitmap.crop_relative(Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
-    {:ok, weather_bitmap}
+    result = Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
+    {:ok, result}
   rescue
     error -> {:error, error}
   end
@@ -164,32 +163,35 @@ defmodule Fliplove.Apps.Dashboard do
   defp convert_to_local_times(temperatures) do
     timezone = TimezoneHelper.get_system_timezone()
 
-    Enum.map(temperatures, fn {temperature, datetime, index} ->
-      local_datetime = DateTime.shift_zone!(datetime, timezone, Tz.TimeZoneDatabase)
-      hour = local_datetime |> Map.get(:hour)
-      {temperature, hour, index}
+    Enum.map(temperatures, fn temp ->
+      local_datetime = DateTime.shift_zone!(temp.datetime, timezone, Tz.TimeZoneDatabase)
+      %{
+        temperature: temp.temperature,
+        hour: Map.get(local_datetime, :hour),
+        index: temp.index,
+        is_night: temp.is_night
+      }
     end)
   end
 
   defp scale_temperatures(temp_data, chart_height) do
-    temps = Enum.map(temp_data, fn {t, _, _} -> t end)
+    temps = Enum.map(temp_data, & &1.temperature)
     min_temp = Enum.min(temps)
     max_temp = Enum.max(temps)
     range = max_temp - min_temp
 
-    Enum.map(temp_data, fn {temperature, hour, index} ->
-      temp_y = trunc((temperature - min_temp) * (chart_height - 1) / range)
-      {temperature, temp_y, hour, index}
+    Enum.map(temp_data, fn temp ->
+      temp_y = trunc((temp.temperature - min_temp) * (chart_height - 1) / range)
+      Map.put(temp, :y, temp_y)
     end)
   end
 
   defp create_temperature_bitmap(scaled_temps, dimensions) do
     temp_matrix =
-      for {{_temp, temp_y, _hour, x}, _index} <- Enum.with_index(scaled_temps),
+      for {temp, _index} <- Enum.with_index(scaled_temps),
           into: %{} do
-        {{x + 1, temp_y + 1}, 1}  # Offset by 1 for frame
+        {{temp.index + 1, temp.y + 1}, 1}  # Offset by 1 for frame
       end
-
     {Bitmap.new(dimensions.width + 2, dimensions.total_height, temp_matrix), scaled_temps}
   end
 
@@ -203,16 +205,16 @@ defmodule Fliplove.Apps.Dashboard do
     # Combine both matrices
     combined_matrix = Map.merge(midnight_matrix, noon_matrix)
     marker_bitmap = Bitmap.new(dimensions.width + 2, dimensions.total_height, combined_matrix)
-    Bitmap.overlay(bitmap, marker_bitmap)
+    {Bitmap.overlay(bitmap, marker_bitmap), scaled_temps}
   end
 
   defp create_time_markers(scaled_temps, bitmap, dimensions, hour, dot_count) do
-    for {{_temp, _temp_y, temp_hour, x}, _index} <- Enum.with_index(scaled_temps),
-        temp_hour == hour,
+    for {temp, _index} <- Enum.with_index(scaled_temps),
+        temp.hour == hour,
         y <- get_marker_positions(dimensions.height, dot_count),
-        not has_neighbor_temp?(bitmap.matrix, x + 1, y),
+        not has_neighbor_temp?(bitmap.matrix, temp.index + 1, y),
         into: %{} do
-      {{x + 1, y}, 1}
+      {{temp.index + 1, y}, 1}
     end
   end
 
@@ -220,9 +222,25 @@ defmodule Fliplove.Apps.Dashboard do
     Enum.to_list(1..dot_count) ++ Enum.to_list((chart_height - (dot_count - 1))..chart_height)
   end
 
-  defp add_frame(bitmap) do
-    frame_bitmap = Bitmap.frame(bitmap.width, bitmap.height)
-    Bitmap.overlay(frame_bitmap, bitmap)
+  defp add_frame({bitmap, scaled_temps}) do
+    # Create lookup map for night hours and midday
+    hour_map = Enum.reduce(scaled_temps, %{}, fn temp, acc ->
+      Map.put(acc, temp.index + 1, temp.is_night)  # Store with frame offset
+    end)
+
+    frame_matrix = for x <- 0..(bitmap.width - 1),
+        y <- 0..(bitmap.height - 1),
+        x == 0 or x == bitmap.width - 1 or y == 0 or y == bitmap.height - 1,
+        into: %{} do
+      is_border = x == 0 or x == bitmap.width - 1
+      is_night = Map.get(hour_map, x, false)
+      is_midday = Enum.any?(scaled_temps, fn temp -> temp.hour == 12 and temp.index + 1 == x end)
+      should_set = is_border or (y in [0, bitmap.height - 1] and (is_night or is_midday))
+      {{x, y}, if(should_set, do: 1, else: 0)}
+    end
+
+    frame_bitmap = Bitmap.new(bitmap.width, bitmap.height, frame_matrix)
+    Bitmap.overlay(bitmap, frame_bitmap)
   end
 
   # Helper to check if any neighboring position has a temperature pixel

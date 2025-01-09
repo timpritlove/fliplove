@@ -104,8 +104,9 @@ defmodule Fliplove.Weather do
 
   def get_48_hour_temperature() do
     with {:ok, weather} <- get_weather_data(),
-         {:ok, hourly} <- get_hourly_data(weather) do
-      parse_hourly_temperatures(hourly)
+         {:ok, hourly} <- get_hourly_data(weather),
+         {:ok, daily} <- get_daily_data(weather) do
+      parse_hourly_temperatures(hourly, daily)
     else
       _ -> []
     end
@@ -126,11 +127,41 @@ defmodule Fliplove.Weather do
     end
   end
 
-  defp parse_hourly_temperatures(hourly) do
+  defp get_daily_data(weather) do
+    case weather["daily"] do
+      nil -> {:error, :no_daily_data}
+      daily when is_list(daily) -> {:ok, daily}
+      _ -> {:error, :invalid_daily_data}
+    end
+  end
+
+  defp parse_hourly_temperatures(hourly, daily) do
+    # Extract sunrise/sunset times for the next 2 days
+    sun_times = Enum.take(daily, 2)
+    |> Enum.map(fn day ->
+      sunrise = DateTime.from_unix!(day["sunrise"])
+      sunset = DateTime.from_unix!(day["sunset"])
+      {sunrise, sunset}
+    end)
+
     for {hourly_data, index} <- Enum.with_index(hourly),
         temperature = hourly_data["temp"] / 1,
         datetime = DateTime.from_unix!(hourly_data["dt"]) do
-      {temperature, datetime, index}
+      # Find the relevant day's sunrise/sunset times
+      {sunrise, sunset} = Enum.find(sun_times, fn {sunrise, _sunset} ->
+        # Check if this datetime is on the same day as this sunrise
+        DateTime.to_date(datetime) == DateTime.to_date(sunrise)
+      end) || List.last(sun_times) # Default to last day if no match
+
+      is_night = DateTime.compare(datetime, sunset) in [:gt, :eq] or
+                DateTime.compare(datetime, sunrise) == :lt
+
+      %{
+        temperature: temperature,
+        datetime: datetime,
+        index: index,
+        is_night: is_night
+      }
     end
   end
 
