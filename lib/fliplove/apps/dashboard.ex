@@ -22,6 +22,9 @@ defmodule Fliplove.Apps.Dashboard do
   #@wind_symbol 0xF72E
 
   def init_app(_opts) do
+    offset_minutes = TimezoneHelper.get_utc_offset_minutes()
+    Logger.info("Dashboard using UTC offset: #{offset_minutes} minutes")
+
     state = %__MODULE__{
       font: Library.get_font_by_name(@font),
       bitmap: nil
@@ -59,16 +62,23 @@ defmodule Fliplove.Apps.Dashboard do
   # helper functions
 
   defp schedule_next_minute(message) do
-    now = System.system_time(:millisecond)
-    next_minute = div(now, 60_000) * 60_000 + 60_000
-    remaining_time = next_minute - now
-    :timer.send_after(remaining_time, __MODULE__, message)
+    offset_minutes = TimezoneHelper.get_utc_offset_minutes()
+    now = DateTime.utc_now()
+           |> DateTime.add(offset_minutes, :minute)
+
+    # Calculate milliseconds until the next minute in local time
+    {microseconds, _precision} = now.microsecond
+    remaining_ms = (60 - now.second) * 1000 - div(microseconds, 1000)
+
+    :timer.send_after(remaining_ms, __MODULE__, message)
   end
 
   defp get_time_string do
-    timezone = TimezoneHelper.get_system_timezone()
-    DateTime.now!(timezone, Tz.TimeZoneDatabase)
-    |> Calendar.strftime("%c", preferred_datetime: "%H:%M")
+    offset_minutes = TimezoneHelper.get_utc_offset_minutes()
+    # Get UTC time and add the offset
+    DateTime.utc_now()
+    |> DateTime.add(offset_minutes, :minute)
+    |> Calendar.strftime("%H:%M")
   end
 
   defp get_max_min_temps do
@@ -161,13 +171,15 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp convert_to_local_times(temperatures) do
-    timezone = TimezoneHelper.get_system_timezone()
+    offset_minutes = TimezoneHelper.get_utc_offset_minutes()
+    Logger.debug("Converting times using UTC offset: #{offset_minutes} minutes")
 
     Enum.map(temperatures, fn temp ->
-      local_datetime = DateTime.shift_zone!(temp.datetime, timezone, Tz.TimeZoneDatabase)
+      local_datetime = DateTime.add(temp.datetime, offset_minutes, :minute)
+      Logger.debug("Converted #{temp.datetime} UTC to local time: #{local_datetime}, is_night=#{temp.is_night}")
       %{
         temperature: temp.temperature,
-        hour: Map.get(local_datetime, :hour),
+        hour: local_datetime.hour,
         index: temp.index,
         is_night: temp.is_night
       }
@@ -227,6 +239,8 @@ defmodule Fliplove.Apps.Dashboard do
     hour_map = Enum.reduce(scaled_temps, %{}, fn temp, acc ->
       Map.put(acc, temp.index + 1, temp.is_night)  # Store with frame offset
     end)
+
+    Logger.debug("Hour map for frame rendering: #{inspect(Map.keys(hour_map) |> Enum.sort |> Enum.map(&{&1, Map.get(hour_map, &1)}))}")
 
     frame_matrix = for x <- 0..(bitmap.width - 1),
         y <- 0..(bitmap.height - 1),

@@ -36,12 +36,18 @@ defmodule Fliplove.Apps.Datetime do
   end
 
   defp update_display(%{font: font}) do
-    now = DateTime.now!(TimezoneHelper.get_system_timezone(), Tz.TimeZoneDatabase)
+    offset_minutes = TimezoneHelper.get_utc_offset_minutes()
+    now = DateTime.utc_now()
+          |> DateTime.add(offset_minutes, :minute)
+
+    # Format timezone offset as +HH:MM or -HH:MM
+    tz_display = format_offset(offset_minutes)
 
     Bitmap.new(Display.width(), Display.height())
     |> place_text(font, format_time(now), :top, :left)
     |> place_text(font, format_week(now), :top, :right)
-    |> place_text(font, format_date(now), :bottom, :center)
+    |> place_text(font, format_date(now), :bottom, :right)
+    |> place_text(font, tz_display, :bottom, :left)
     |> Display.set()
   end
 
@@ -57,7 +63,7 @@ defmodule Fliplove.Apps.Datetime do
   end
 
   defp format_date(datetime) do
-    Calendar.strftime(datetime, "%d.%m.%Y")
+    Calendar.strftime(datetime, "%d.%m.%y")  # Changed to use 2-digit year
   end
 
   defp format_week(datetime) do
@@ -103,5 +109,13 @@ defmodule Fliplove.Apps.Datetime do
       align: align_horizontally,
       valign: align_vertically
     )
+  end
+
+  defp format_offset(minutes) do
+    sign = if minutes >= 0, do: "+", else: "-"
+    abs_minutes = abs(minutes)
+    hours = div(abs_minutes, 60)
+    mins = rem(abs_minutes, 60)
+    "#{sign}#{String.pad_leading("#{hours}", 2, "0")}:#{String.pad_leading("#{mins}", 2, "0")}"
   end
 end

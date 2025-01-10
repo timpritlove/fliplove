@@ -9,6 +9,9 @@ import Config
 
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 
+config :fliplove,
+  timezone: :system  # Will use system's UTC offset
+
 # Configures the endpoint
 config :fliplove, FliploveWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,

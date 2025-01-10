@@ -136,30 +136,43 @@ defmodule Fliplove.Weather do
   end
 
   defp parse_hourly_temperatures(hourly, daily) do
-    # Extract sunrise/sunset times for all days we have data for
-    sun_times = Enum.map(daily, fn day ->
-      sunrise = DateTime.from_unix!(day["sunrise"])
-      sunset = DateTime.from_unix!(day["sunset"])
-      date = DateTime.to_date(sunrise)
-      {date, {sunrise, sunset}}
+    # Convert sunrise/sunset times to UTC timestamps
+    sun_events = daily
+    |> Enum.flat_map(fn day ->
+      # Each day gives us a sunrise and sunset point
+      [
+        {:sunrise, DateTime.from_unix!(day["sunrise"])},
+        {:sunset, DateTime.from_unix!(day["sunset"])}
+      ]
     end)
-    |> Map.new()  # Convert to map for easier lookup by date
+    |> Enum.sort_by(fn {_, time} -> DateTime.to_unix(time) end)
+
+    Logger.debug("Sun events in chronological order:")
+    Enum.each(sun_events, fn {event, time} ->
+      Logger.debug("  #{event}: #{time}")
+    end)
 
     for {hourly_data, index} <- Enum.with_index(hourly),
         temperature = hourly_data["temp"] / 1,
         datetime = DateTime.from_unix!(hourly_data["dt"]) do
 
-      date = DateTime.to_date(datetime)
-      # Find the relevant day's sunrise/sunset times
-      {sunrise, sunset} = case Map.get(sun_times, date) do
-        nil ->
-          {_, times} = Enum.max_by(sun_times, fn {date, _} -> date end)
-          times
-        times -> times
+      # Find the surrounding sun events
+      {prev_event, next_event} = get_surrounding_events(datetime, sun_events)
+
+      # Determine if it's night based on the surrounding events
+      is_night = case {prev_event, next_event} do
+        {nil, nil} ->
+          Logger.warning("No sun events found around #{datetime}")
+          true
+        {{:sunset, _}, {:sunrise, _}} -> true  # Between sunset and sunrise
+        {{:sunrise, _}, {:sunset, _}} -> false # Between sunrise and sunset
+        {nil, {:sunrise, _}} -> true          # Before first sunrise
+        {nil, {:sunset, _}} -> false          # Before first sunset
+        {{:sunset, _}, nil} -> true           # After last sunset
+        {{:sunrise, _}, nil} -> false         # After last sunrise
       end
 
-      is_night = DateTime.compare(datetime, sunset) in [:gt, :eq] or
-                DateTime.compare(datetime, sunrise) == :lt
+      Logger.debug("Hour check: datetime=#{datetime}, prev_event=#{inspect(prev_event)}, next_event=#{inspect(next_event)}, is_night=#{is_night}")
 
       %{
         temperature: temperature,
@@ -168,6 +181,21 @@ defmodule Fliplove.Weather do
         is_night: is_night
       }
     end
+  end
+
+  # Find the sun events immediately before and after the given datetime
+  defp get_surrounding_events(datetime, sun_events) do
+    unix_time = DateTime.to_unix(datetime)
+
+    prev_event = sun_events
+    |> Enum.take_while(fn {_, time} -> DateTime.to_unix(time) <= unix_time end)
+    |> List.last()
+
+    next_event = sun_events
+    |> Enum.drop_while(fn {_, time} -> DateTime.to_unix(time) <= unix_time end)
+    |> List.first()
+
+    {prev_event, next_event}
   end
 
   # Move the client function up with other client functions
