@@ -65,6 +65,14 @@ config :logger,
   level: :info,
   backends: [:console]
 
+# Suppress noisy connection logs
+config :logger,
+  compile_time_purge_matching: [
+    [level_lower_than: :error, module: Phoenix.LiveView.Socket],
+    [level_lower_than: :error, module: ThousandIsland.Acceptor],
+    [level_lower_than: :error, module: ThousandIsland.AcceptorSupervisor]
+  ]
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
