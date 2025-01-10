@@ -136,22 +136,27 @@ defmodule Fliplove.Weather do
   end
 
   defp parse_hourly_temperatures(hourly, daily) do
-    # Extract sunrise/sunset times for the next 2 days
-    sun_times = Enum.take(daily, 2)
-    |> Enum.map(fn day ->
+    # Extract sunrise/sunset times for all days we have data for
+    sun_times = Enum.map(daily, fn day ->
       sunrise = DateTime.from_unix!(day["sunrise"])
       sunset = DateTime.from_unix!(day["sunset"])
-      {sunrise, sunset}
+      date = DateTime.to_date(sunrise)
+      {date, {sunrise, sunset}}
     end)
+    |> Map.new()  # Convert to map for easier lookup by date
 
     for {hourly_data, index} <- Enum.with_index(hourly),
         temperature = hourly_data["temp"] / 1,
         datetime = DateTime.from_unix!(hourly_data["dt"]) do
+
+      date = DateTime.to_date(datetime)
       # Find the relevant day's sunrise/sunset times
-      {sunrise, sunset} = Enum.find(sun_times, fn {sunrise, _sunset} ->
-        # Check if this datetime is on the same day as this sunrise
-        DateTime.to_date(datetime) == DateTime.to_date(sunrise)
-      end) || List.last(sun_times) # Default to last day if no match
+      {sunrise, sunset} = case Map.get(sun_times, date) do
+        nil ->
+          {_, times} = Enum.max_by(sun_times, fn {date, _} -> date end)
+          times
+        times -> times
+      end
 
       is_night = DateTime.compare(datetime, sunset) in [:gt, :eq] or
                 DateTime.compare(datetime, sunrise) == :lt
