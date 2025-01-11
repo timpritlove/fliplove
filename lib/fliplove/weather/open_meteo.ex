@@ -77,7 +77,6 @@ defmodule Fliplove.Weather.OpenMeteo do
             ], fn [time, temp, precip, is_day] ->
               datetime = parse_time(time, timezone)
               is_night = is_day == 0  # OpenMeteo uses 1 for day, 0 for night
-              Logger.debug("Day/Night determination for #{DateTime.to_string(datetime)}: #{if is_night, do: "NIGHT", else: "DAY"} (is_day=#{is_day})")
               %{
                 datetime: datetime,
                 temperature: temp,

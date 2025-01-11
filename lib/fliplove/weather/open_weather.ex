@@ -47,21 +47,6 @@ defmodule Fliplove.Weather.OpenWeather do
          {:ok, data} <- call_api("/onecall", api_key, latitude, longitude) do
 
       hourly_data = data["hourly"]
-      timezone = data["timezone"]
-      timezone_offset = data["timezone_offset"]
-      current_time = DateTime.from_unix!(data["current"]["dt"])
-
-      # Log timezone and current conditions including sunrise/sunset
-      sunrise_time = DateTime.from_unix!(data["current"]["sunrise"])
-      sunset_time = DateTime.from_unix!(data["current"]["sunset"])
-      Logger.debug("""
-      Location timezone info:
-        Timezone: #{timezone}
-        Offset from UTC: #{timezone_offset} seconds
-        Current time UTC: #{DateTime.to_string(current_time)}
-        Today's sunrise UTC: #{DateTime.to_string(sunrise_time)}
-        Today's sunset UTC: #{DateTime.to_string(sunset_time)}
-      """)
 
       # Take only the requested number of hours, up to the maximum supported
       hours = min(hours, @max_forecast_hours)
@@ -76,8 +61,6 @@ defmodule Fliplove.Weather.OpenWeather do
         # - 'n' for night (e.g. "01n", "02n", "03n", etc.)
         [weather | _] = hour["weather"]
         icon = weather["icon"]
-
-        # Extract the last character and determine if it's night
         is_night = cond do
           String.ends_with?(icon, "d") -> false  # 'd' indicates day
           String.ends_with?(icon, "n") -> true   # 'n' indicates night
@@ -86,17 +69,8 @@ defmodule Fliplove.Weather.OpenWeather do
             true   # Default to night if format is unexpected
         end
 
-        # Convert hour to local time for logging clarity
-        hour_local = DateTime.add(hour_utc, timezone_offset, :second)
-        Logger.debug("""
-        Day/Night determination for #{DateTime.to_string(hour_local)} local (#{DateTime.to_string(hour_utc)} UTC):
-          Weather condition: #{weather["main"]} (#{weather["description"]})
-          Icon: #{icon}
-          Decision: #{if is_night, do: "NIGHT", else: "DAY"}
-        """)
-
         %{
-          datetime: hour_utc,  # Keep UTC in the returned data structure
+          datetime: hour_utc,
           temperature: hour["temp"],
           rainfall_rate: get_in(hour, ["rain", "1h"]) || 0.0,
           is_night: is_night
