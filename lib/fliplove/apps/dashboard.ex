@@ -175,21 +175,21 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp convert_to_local_times(temperatures) do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
+    Logger.debug("Converting times with UTC offset: #{offset_minutes} minutes")
 
     temperatures
     |> Enum.with_index()
     |> Enum.map(fn {temp, index} ->
       local_datetime = DateTime.add(temp.datetime, offset_minutes, :minute)
-
-      # Get the local hour and determine if it's night based on the local time
       local_hour = local_datetime.hour
-      is_night = local_hour >= 19 or local_hour < 7
+
+      Logger.debug("Temperature point: UTC=#{temp.datetime}, local=#{local_datetime}, hour=#{local_hour}, is_night=#{temp.is_night}")
 
       %{
         temperature: temp.temperature,
         hour: local_hour,
         index: index,
-        is_night: is_night
+        is_night: temp.is_night  # Use is_night from weather data instead of calculating
       }
     end)
   end
@@ -260,18 +260,21 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp should_draw_frame?(x, y, width, height, hour_map) do
-    cond do
+    result = cond do
       # Left and right borders are always solid
       x == 0 or x == width - 1 -> true
       # Top and bottom borders - check for night hours and midnight/midday
       (y == 0 or y == height - 1) and x > 0 and x < width - 1 ->
         case Map.get(hour_map, x) do
           %{is_night: is_night, hour: hour} ->
-            is_night or hour == 0 or hour == 12
+            is_night_or_special = is_night or hour == 0 or hour == 12
+            Logger.debug("Frame point x=#{x}: hour=#{hour}, is_night=#{is_night}, draw=#{is_night_or_special}")
+            is_night_or_special
           _ -> false
         end
       true -> false
     end
+    result
   end
 
   # Helper to check if any neighboring position has a temperature pixel
