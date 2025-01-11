@@ -112,31 +112,13 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp render_time(bitmap, font) do
-    case safe_get_time_string() do
-      {:ok, time_string} -> place_text(bitmap, font, time_string, :bottom, :left)
-      {:error, _} -> bitmap
-    end
-  end
-
-  defp safe_get_time_string do
-    {:ok, get_time_string()}
-  rescue
-    error -> {:error, error}
+    place_text(bitmap, font, get_time_string(), :bottom, :left)
   end
 
   defp render_temperature_chart(bitmap) do
-    case safe_create_temperature_chart() do
-      {:ok, weather_bitmap} -> Bitmap.overlay(bitmap, weather_bitmap)
-      {:error, _} -> bitmap
-    end
-  end
-
-  defp safe_create_temperature_chart do
     weather_bitmap = create_temperature_chart(Display.height())
     result = Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
-    {:ok, result}
-  rescue
-    error -> {:error, error}
+    Bitmap.overlay(bitmap, result)
   end
 
   defp render_temperature_extremes(bitmap, font) do
