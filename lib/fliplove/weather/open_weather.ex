@@ -2,6 +2,18 @@ defmodule Fliplove.Weather.OpenWeather do
   @moduledoc """
   OpenWeather service implementation (formerly OpenWeatherMap).
   Requires an API key from OpenWeather to be set in the FLIPLOVE_OPENWEATHERMAP_API_KEY environment variable.
+
+  ## Day/Night Determination
+  OpenWeather provides day/night information in two ways:
+  1. Through sunrise/sunset times in the daily data
+  2. Through the weather icon codes in hourly data, where icons end with:
+     - 'd' for day (e.g. "01d", "02d", "03d")
+     - 'n' for night (e.g. "01n", "02n", "03n")
+
+  We use method #2 (icon codes) as it's OpenWeather's own determination of day/night
+  for each specific hour, which should account for edge cases and local variations.
+  Note that OpenWeather's determination might differ from other services due to
+  different criteria for what constitutes day/night (e.g. civil twilight vs sunrise).
   """
 
   require Logger
@@ -35,31 +47,59 @@ defmodule Fliplove.Weather.OpenWeather do
          {:ok, data} <- call_api("/onecall", api_key, latitude, longitude) do
 
       hourly_data = data["hourly"]
-      daily_data = data["daily"]
+      timezone = data["timezone"]
+      timezone_offset = data["timezone_offset"]
+      current_time = DateTime.from_unix!(data["current"]["dt"])
 
-      # Extract sunrise/sunset times for determining night time
-      sun_events = daily_data
-      |> Enum.flat_map(fn day ->
-        [
-          DateTime.from_unix!(day["sunrise"]),
-          DateTime.from_unix!(day["sunset"])
-        ]
-      end)
-      |> Enum.sort_by(&DateTime.to_unix/1)
+      # Log timezone and current conditions including sunrise/sunset
+      sunrise_time = DateTime.from_unix!(data["current"]["sunrise"])
+      sunset_time = DateTime.from_unix!(data["current"]["sunset"])
+      Logger.debug("""
+      Location timezone info:
+        Timezone: #{timezone}
+        Offset from UTC: #{timezone_offset} seconds
+        Current time UTC: #{DateTime.to_string(current_time)}
+        Today's sunrise UTC: #{DateTime.to_string(sunrise_time)}
+        Today's sunset UTC: #{DateTime.to_string(sunset_time)}
+      """)
 
       # Take only the requested number of hours, up to the maximum supported
       hours = min(hours, @max_forecast_hours)
       hourly = hourly_data
       |> Enum.take(hours)
       |> Enum.map(fn hour ->
-        datetime = DateTime.from_unix!(hour["dt"])
-        rain_rate = get_in(hour, ["rain", "1h"]) || 0.0
+        hour_utc = DateTime.from_unix!(hour["dt"])
+
+        # OpenWeather provides day/night information in the weather icon code
+        # The icon code ends with:
+        # - 'd' for day (e.g. "01d", "02d", "03d", etc.)
+        # - 'n' for night (e.g. "01n", "02n", "03n", etc.)
+        [weather | _] = hour["weather"]
+        icon = weather["icon"]
+
+        # Extract the last character and determine if it's night
+        is_night = cond do
+          String.ends_with?(icon, "d") -> false  # 'd' indicates day
+          String.ends_with?(icon, "n") -> true   # 'n' indicates night
+          true ->  # default case
+            Logger.warning("Unexpected OpenWeather icon format: #{icon}")
+            true   # Default to night if format is unexpected
+        end
+
+        # Convert hour to local time for logging clarity
+        hour_local = DateTime.add(hour_utc, timezone_offset, :second)
+        Logger.debug("""
+        Day/Night determination for #{DateTime.to_string(hour_local)} local (#{DateTime.to_string(hour_utc)} UTC):
+          Weather condition: #{weather["main"]} (#{weather["description"]})
+          Icon: #{icon}
+          Decision: #{if is_night, do: "NIGHT", else: "DAY"}
+        """)
 
         %{
-          datetime: datetime,
+          datetime: hour_utc,  # Keep UTC in the returned data structure
           temperature: hour["temp"],
-          rainfall_rate: rain_rate,
-          is_night: is_night?(datetime, sun_events)
+          rainfall_rate: get_in(hour, ["rain", "1h"]) || 0.0,
+          is_night: is_night
         }
       end)
 
@@ -88,7 +128,8 @@ defmodule Fliplove.Weather.OpenWeather do
       {"lat", latitude},
       {"lon", longitude},
       {"units", "metric"},
-      {"appid", api_key}
+      {"appid", api_key},
+      {"timezone", "auto"}  # Get times in the local timezone of the coordinates
     ]
 
     case HTTPoison.get(url, [], params: params) do
@@ -111,24 +152,6 @@ defmodule Fliplove.Weather.OpenWeather do
       {:error, reason} ->
         Logger.error("OpenWeather API call failed: #{inspect(reason)}")
         {:error, :network_error}
-    end
-  end
-
-  defp is_night?(datetime, sun_events) do
-    unix_time = DateTime.to_unix(datetime)
-
-    # Find the surrounding sun events (alternating sunrise/sunset)
-    {prev_event, next_event} = sun_events
-    |> Enum.split_with(&(DateTime.to_unix(&1) <= unix_time))
-    |> then(fn {prev, next} -> {List.last(prev), List.first(next)} end)
-
-    case {prev_event, next_event} do
-      {nil, nil} -> true  # No sun events available
-      {prev, _next} ->
-        # If we're between events, check if the previous event was a sunset
-        # This works because sun events alternate between sunrise and sunset
-        prev_index = Enum.find_index(sun_events, &(&1 == prev))
-        prev_index != nil and rem(prev_index, 2) == 1
     end
   end
 end
