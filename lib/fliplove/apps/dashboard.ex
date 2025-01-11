@@ -11,15 +11,10 @@ defmodule Fliplove.Apps.Dashboard do
   alias Fliplove.{Weather, TimezoneHelper}
   alias Fliplove.Font.{Library}
   require Logger
-  # import Fliplove.PrettyDump
 
   defstruct font: nil, bitmap: nil
 
   @font "flipdot"
-  #@clock_symbol 0xF017
-  #@ms_symbol 0xF018
-  #@nbs_symbol 160
-  #@wind_symbol 0xF72E
 
   def init_app(_opts) do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
@@ -84,8 +79,9 @@ defmodule Fliplove.Apps.Dashboard do
     case get_hourly_forecast() do
       [] -> {nil, nil}
       temperatures ->
-        temps = Enum.map(temperatures, & &1.temperature)
-        {Enum.max(temps), Enum.min(temps)}
+        temperatures
+        |> Enum.map(& &1.temperature)
+        |> then(fn temps -> {Enum.max(temps), Enum.min(temps)} end)
     end
   end
 
@@ -155,8 +151,9 @@ defmodule Fliplove.Apps.Dashboard do
     temperatures
     |> Enum.with_index()
     |> Enum.map(fn {temp, index} ->
-      local_datetime = DateTime.add(temp.datetime, offset_minutes, :minute)
-      local_hour = local_datetime.hour
+      local_hour = temp.datetime
+                   |> DateTime.add(offset_minutes, :minute)
+                   |> Map.get(:hour)
 
       %{
         temperature: temp.temperature,
@@ -168,14 +165,13 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp scale_temperatures(temp_data, chart_height) do
-    temps = Enum.map(temp_data, & &1.temperature)
-    min_temp = Enum.min(temps)
-    max_temp = Enum.max(temps)
-    range = max_temp - min_temp
+    temperatures = Enum.map(temp_data, & &1.temperature)
+    min_temp = Enum.min(temperatures)
+    range = Enum.max(temperatures) - min_temp
 
     Enum.map(temp_data, fn temp ->
-      temp_y = trunc((temp.temperature - min_temp) * (chart_height - 1) / range)
-      Map.put(temp, :y, temp_y)
+      y = trunc((temp.temperature - min_temp) * (chart_height - 1) / range)
+      Map.put(temp, :y, y)
     end)
   end
 
