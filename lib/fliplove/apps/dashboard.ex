@@ -54,7 +54,6 @@ defmodule Fliplove.Apps.Dashboard do
 
   @impl true
   def handle_info({:update_weather, _weather}, state) do
-    Logger.debug("Dashboard received new weather data")
     update_dashboard(state)
     {:noreply, state}
   end
