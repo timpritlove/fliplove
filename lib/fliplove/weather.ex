@@ -1,25 +1,22 @@
 defmodule Fliplove.Weather do
   @moduledoc """
-  Retrieve weather data on a regular basis. Uses OpenWeatherMap API which
-  needs an account to access it. Pass the developer API key to the library
-  via the FLIPLOVE_OPENWEATHERMAP_API_KEY environment variable.
+  Retrieve weather data on a regular basis. Uses a configurable weather service
+  which can be set via the FLIPLOVE_WEATHER_SERVICE environment variable.
   """
   alias Phoenix.PubSub
   use GenServer
 
-  require HTTPoison
   require Logger
+
+  alias Fliplove.Location.Nominatim
 
   defstruct [:timer, :service_module, :latitude, :longitude, :weather, :weather_timestamp]
 
   @latitude_env "FLIPLOVE_LATITUDE"
   @longitude_env "FLIPLOVE_LONGITUDE"
+  @location_env "FLIPLOVE_LOCATION"
 
   @topic "weather:update"
-
-  @openweathermap_onecall_url "https://api.openweathermap.org/data/3.0/onecall"
-  @api_key_file "data/keys/openweathermap.txt"
-  @api_key_env "FLIPLOVE_OPENWEATHERMAP_API_KEY"
 
   @ip_geolocation_url "http://ip-api.com/json"
 
@@ -217,53 +214,27 @@ defmodule Fliplove.Weather do
     force
   end
 
-  # retrieve OWM API key from either a local config file or from the environment
-
-  def get_api_key do
-    case File.read(@api_key_file) do
-      {:ok, key} ->
-        {:ok, String.trim(key)}
-
-      {:error, _} ->
-        case System.get_env(@api_key_env) do
-          nil -> {:error, "No API key found in file or environment"}
-          key -> {:ok, key}
-        end
-    end
-  end
-
-  def call_openweathermap(api_key, latitude, longitude) do
-    url = @openweathermap_onecall_url
-
-    params = [
-      {"lat", latitude},
-      {"lon", longitude},
-      {"units", "metric"},
-      {"appid", api_key}
-    ]
-
-    case HTTPoison.get(url, [], params: params) do
-      {:ok, %{status_code: 200, body: body}} ->
-        Jason.decode!(body)
-
-      {:ok, %{status_code: status_code}} ->
-        Logger.warning("OpenWeatherMap API call failed (#{status_code})")
-        nil
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        Logger.warning("OpenWeatherMap API call failed: #{inspect(reason)}")
-        nil
-    end
-  end
-
   defp get_location do
     case {System.get_env(@latitude_env), System.get_env(@longitude_env)} do
       {lat, lon} when is_binary(lat) and is_binary(lon) ->
         {:ok, String.to_float(lat), String.to_float(lon), "environment variables"}
 
       _ ->
-        Logger.info("No location coordinates in environment, falling back to IP geolocation")
-        get_location_from_ip()
+        case System.get_env(@location_env) do
+          location when is_binary(location) ->
+            case Nominatim.resolve_location(location) do
+              {:ok, {lat, lon}} ->
+                {:ok, lat, lon, "Nominatim location lookup"}
+              {:error, reason} ->
+                Logger.warning("Failed to resolve location '#{location}' via Nominatim: #{inspect(reason)}")
+                Logger.info("Falling back to IP geolocation")
+                get_location_from_ip()
+            end
+
+          nil ->
+            Logger.info("No location coordinates or location name in environment, falling back to IP geolocation")
+            get_location_from_ip()
+        end
     end
   end
 
@@ -285,103 +256,6 @@ defmodule Fliplove.Weather do
 
   def get_weather_with_timestamp(), do: GenServer.call(__MODULE__, :get_weather_with_timestamp)
 
-  def get_48_hour_temperature() do
-    with {:ok, weather} <- get_weather_data(),
-         {:ok, hourly} <- get_hourly_data(weather),
-         {:ok, daily} <- get_daily_data(weather) do
-      parse_hourly_temperatures(hourly, daily)
-    else
-      _ -> []
-    end
-  end
-
-  defp get_weather_data do
-    case get_weather() do
-      nil -> {:error, :no_weather_data}
-      weather when is_map(weather) -> {:ok, weather}
-    end
-  end
-
-  defp get_hourly_data(weather) do
-    case weather["hourly"] do
-      nil -> {:error, :no_hourly_data}
-      hourly when is_list(hourly) -> {:ok, hourly}
-      _ -> {:error, :invalid_hourly_data}
-    end
-  end
-
-  defp get_daily_data(weather) do
-    case weather["daily"] do
-      nil -> {:error, :no_daily_data}
-      daily when is_list(daily) -> {:ok, daily}
-      _ -> {:error, :invalid_daily_data}
-    end
-  end
-
-  defp parse_hourly_temperatures(hourly, daily) do
-    # Convert sunrise/sunset times to UTC timestamps
-    sun_events = daily
-    |> Enum.flat_map(fn day ->
-      # Each day gives us a sunrise and sunset point
-      [
-        {:sunrise, DateTime.from_unix!(day["sunrise"])},
-        {:sunset, DateTime.from_unix!(day["sunset"])}
-      ]
-    end)
-    |> Enum.sort_by(fn {_, time} -> DateTime.to_unix(time) end)
-
-    Logger.debug("Sun events in chronological order:")
-    Enum.each(sun_events, fn {event, time} ->
-      Logger.debug("  #{event}: #{time}")
-    end)
-
-    for {hourly_data, index} <- Enum.with_index(hourly),
-        temperature = hourly_data["temp"] / 1,
-        datetime = DateTime.from_unix!(hourly_data["dt"]) do
-
-      # Find the surrounding sun events
-      {prev_event, next_event} = get_surrounding_events(datetime, sun_events)
-
-      # Determine if it's night based on the surrounding events
-      is_night = case {prev_event, next_event} do
-        {nil, nil} ->
-          Logger.warning("No sun events found around #{datetime}")
-          true
-        {{:sunset, _}, {:sunrise, _}} -> true  # Between sunset and sunrise
-        {{:sunrise, _}, {:sunset, _}} -> false # Between sunrise and sunset
-        {nil, {:sunrise, _}} -> true          # Before first sunrise
-        {nil, {:sunset, _}} -> false          # Before first sunset
-        {{:sunset, _}, nil} -> true           # After last sunset
-        {{:sunrise, _}, nil} -> false         # After last sunrise
-      end
-
-      Logger.debug("Hour check: datetime=#{datetime}, prev_event=#{inspect(prev_event)}, next_event=#{inspect(next_event)}, is_night=#{is_night}")
-
-      %{
-        temperature: temperature,
-        datetime: datetime,
-        index: index,
-        is_night: is_night
-      }
-    end
-  end
-
-  # Find the sun events immediately before and after the given datetime
-  defp get_surrounding_events(datetime, sun_events) do
-    unix_time = DateTime.to_unix(datetime)
-
-    prev_event = sun_events
-    |> Enum.take_while(fn {_, time} -> DateTime.to_unix(time) <= unix_time end)
-    |> List.last()
-
-    next_event = sun_events
-    |> Enum.drop_while(fn {_, time} -> DateTime.to_unix(time) <= unix_time end)
-    |> List.first()
-
-    {prev_event, next_event}
-  end
-
-  # Add before get_location function
   defp get_service_module do
     service = case System.get_env(@weather_service_env) do
       "openweather" -> :open_weather
