@@ -139,18 +139,13 @@ defmodule Fliplove.Apps.Dashboard do
   defp create_temperature_chart(height) do
     forecast = get_hourly_forecast()
     width = length(forecast)
-
-    chart_dimensions = %{
-      height: height - 2,  # Reduce height by 2 for frame
-      width: width,
-      total_height: height
-    }
+    chart_height = height - 2  # Reduce height by 2 for frame
 
     forecast
     |> convert_to_local_times()
-    |> scale_temperatures(chart_dimensions.height)
-    |> create_temperature_bitmap(chart_dimensions)
-    |> add_midnight_markers(chart_dimensions)
+    |> scale_temperatures(chart_height)
+    |> create_temperature_bitmap(width + 2, height)
+    |> add_midnight_markers(chart_height)
     |> add_frame()
   end
 
@@ -184,32 +179,32 @@ defmodule Fliplove.Apps.Dashboard do
     end)
   end
 
-  defp create_temperature_bitmap(scaled_temps, dimensions) do
+  defp create_temperature_bitmap(scaled_temps, width, height) do
     temp_matrix =
-      for {temp, _index} <- Enum.with_index(scaled_temps),
+      for temp <- scaled_temps,
           into: %{} do
         {{temp.index + 1, temp.y + 1}, 1}  # Offset by 1 for frame
       end
-    {Bitmap.new(dimensions.width + 2, dimensions.total_height, temp_matrix), scaled_temps}
+    {Bitmap.new(width, height, temp_matrix), scaled_temps}
   end
 
-  defp add_midnight_markers({bitmap, scaled_temps}, dimensions) do
+  defp add_midnight_markers({bitmap, scaled_temps}, chart_height) do
     # Add midnight markers (2 dots from top and bottom)
-    midnight_matrix = create_time_markers(scaled_temps, bitmap, dimensions, 0, 2)
+    midnight_matrix = create_time_markers(scaled_temps, bitmap, chart_height, 0, 2)
 
     # Add noon markers (1 dot from bottom)
-    noon_matrix = create_time_markers(scaled_temps, bitmap, dimensions, 12, 1)
+    noon_matrix = create_time_markers(scaled_temps, bitmap, chart_height, 12, 1)
 
-    # Combine both matrices
+    # Combine both matrices and create bitmap with same dimensions as input
     combined_matrix = Map.merge(midnight_matrix, noon_matrix)
-    marker_bitmap = Bitmap.new(dimensions.width + 2, dimensions.total_height, combined_matrix)
+    marker_bitmap = Bitmap.new(bitmap.width, bitmap.height, combined_matrix)
     {Bitmap.overlay(bitmap, marker_bitmap), scaled_temps}
   end
 
-  defp create_time_markers(scaled_temps, bitmap, dimensions, hour, dot_count) do
-    for {temp, _index} <- Enum.with_index(scaled_temps),
+  defp create_time_markers(scaled_temps, bitmap, chart_height, hour, dot_count) do
+    for temp <- scaled_temps,
         temp.hour == hour,
-        y <- get_marker_positions(dimensions.height, dot_count),
+        y <- get_marker_positions(chart_height, dot_count),
         not has_neighbor_temp?(bitmap.matrix, temp.index + 1, y),
         into: %{} do
       {{temp.index + 1, y}, 1}
@@ -217,18 +212,15 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp get_marker_positions(chart_height, dot_count) do
-    Enum.to_list(1..dot_count) ++ Enum.to_list((chart_height - (dot_count - 1))..chart_height)
+    top = 1..dot_count
+    bottom = (chart_height - dot_count + 1)..chart_height
+    Enum.to_list(top) ++ Enum.to_list(bottom)
   end
 
   defp add_frame({bitmap, scaled_temps}) do
-    # Create lookup map for night hours
-    hour_map = Enum.reduce(scaled_temps, %{}, fn temp, acc ->
-      Map.put(acc, temp.index + 1, %{is_night: temp.is_night, hour: temp.hour})  # Store with frame offset
-    end)
-
     frame_matrix = for x <- 0..(bitmap.width - 1),
         y <- 0..(bitmap.height - 1),
-        should_draw_frame?(x, y, bitmap.width, bitmap.height, hour_map),
+        is_frame_pixel?(x, y, bitmap.width, bitmap.height, scaled_temps),
         into: %{} do
       {{x, y}, 1}
     end
@@ -237,15 +229,15 @@ defmodule Fliplove.Apps.Dashboard do
     Bitmap.overlay(bitmap, frame_bitmap)
   end
 
-  defp should_draw_frame?(x, y, width, height, hour_map) do
+  defp is_frame_pixel?(x, y, width, height, temps) do
     cond do
-      # Left and right borders are always solid
+      # Left and right borders
       x == 0 or x == width - 1 -> true
-      # Top and bottom borders - check for night hours and midnight/midday
-      (y == 0 or y == height - 1) and x > 0 and x < width - 1 ->
-        case Map.get(hour_map, x) do
-          %{is_night: is_night, hour: hour} ->
-            is_night or hour == 0 or hour == 12
+      # Top and bottom borders with special markers
+      y == 0 or y == height - 1 ->
+        case Enum.find(temps, fn t -> t.index + 1 == x end) do
+          %{is_night: true} -> true
+          %{hour: hour} when hour in [0, 12] -> true
           _ -> false
         end
       true -> false
