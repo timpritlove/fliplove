@@ -93,7 +93,7 @@ defmodule Fliplove.Apps.Dashboard do
   defp format_temp(nil), do: "N/A"
   defp format_temp(temp) do
     temp = if temp == 0.0 or temp == -0.0, do: 0.0, else: temp
-    :erlang.float_to_binary(temp / 1, decimals: 1) <> "°C"
+    :erlang.float_to_binary(temp / 1, decimals: 1) <> "°"
   end
 
   defp update_dashboard(state) do
