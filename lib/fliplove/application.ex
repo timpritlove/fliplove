@@ -8,6 +8,8 @@ defmodule Fliplove.Application do
 
   @impl true
   def start(_type, _args) do
+    Logger.debug("Starting Fliplove application...")
+
     children =
       [
         # Start the Telemetry supervisor
@@ -19,6 +21,8 @@ defmodule Fliplove.Application do
         # Start hardware-related services first since they define display dimensions
         {Fliplove.Driver, []},
         Fliplove.Display,
+        # Start weather service after display is ready
+        {Fliplove.Weather, []},
         # Start web-related services after display is ready
         FliploveWeb.VirtualDisplay,
         {FliploveWeb.Endpoint, []},
@@ -30,37 +34,30 @@ defmodule Fliplove.Application do
         {Fliplove.Apps, []}
       ]
 
+    Logger.debug("Starting optional services...")
     # Optional services that can be disabled
     optional_children =
       []
-      |> maybe_start_weather()
       |> maybe_start_megabitmeter()
       |> maybe_start_telegram_bot()
 
     # Use rest_for_one strategy to ensure services start in order and
     # if a service crashes, all services that depend on it are restarted
     opts = [strategy: :rest_for_one, name: Fliplove.Supervisor]
+    Logger.debug("Starting supervisor with #{length(children)} core services and #{length(optional_children)} optional services...")
+
     result = Supervisor.start_link(children ++ optional_children, opts)
+    Logger.debug("Supervisor started with result: #{inspect(result)}")
 
     # Clear the display before showing the welcome message
+    Logger.debug("Clearing display...")
     Fliplove.Display.clear()
 
     # After all services have started, display the welcome message
+    Logger.debug("Rendering welcome message...")
     render_welcome_message()
 
     result
-  end
-
-  defp maybe_start_weather(children) do
-    case Fliplove.Weather.get_api_key() do
-      {:ok, _api_key} ->
-        Logger.info("Weather service enabled")
-        [{Fliplove.Weather, []} | children]
-
-      {:error, reason} ->
-        Logger.warning("Weather service disabled: #{reason}")
-        children
-    end
   end
 
   defp maybe_start_megabitmeter(children) do

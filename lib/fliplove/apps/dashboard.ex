@@ -82,7 +82,7 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp get_max_min_temps do
-    case Weather.get_48_hour_temperature() do
+    case get_hourly_forecast() do
       [] -> {nil, nil}
       temperatures ->
         temps = Enum.map(temperatures, & &1.temperature)
@@ -133,7 +133,7 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp safe_create_temperature_chart do
-    weather_bitmap = create_48_hour_temperature_chart(Display.height())
+    weather_bitmap = create_temperature_chart(Display.height())
     result = Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
     {:ok, result}
   rescue
@@ -155,14 +155,17 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   # Temperature chart creation functions
-  defp create_48_hour_temperature_chart(height) do
+  defp create_temperature_chart(height) do
+    forecast = get_hourly_forecast()
+    width = length(forecast)
+
     chart_dimensions = %{
       height: height - 2,  # Reduce height by 2 for frame
-      width: 48,
+      width: width,
       total_height: height
     }
 
-    Weather.get_48_hour_temperature()
+    forecast
     |> convert_to_local_times()
     |> scale_temperatures(chart_dimensions.height)
     |> create_temperature_bitmap(chart_dimensions)
@@ -172,16 +175,21 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp convert_to_local_times(temperatures) do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
-    Logger.debug("Converting times using UTC offset: #{offset_minutes} minutes")
 
-    Enum.map(temperatures, fn temp ->
+    temperatures
+    |> Enum.with_index()
+    |> Enum.map(fn {temp, index} ->
       local_datetime = DateTime.add(temp.datetime, offset_minutes, :minute)
-      Logger.debug("Converted #{temp.datetime} UTC to local time: #{local_datetime}, is_night=#{temp.is_night}")
+
+      # Get the local hour and determine if it's night based on the local time
+      local_hour = local_datetime.hour
+      is_night = local_hour >= 19 or local_hour < 7
+
       %{
         temperature: temp.temperature,
-        hour: local_datetime.hour,
-        index: temp.index,
-        is_night: temp.is_night
+        hour: local_hour,
+        index: index,
+        is_night: is_night
       }
     end)
   end
@@ -235,26 +243,35 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp add_frame({bitmap, scaled_temps}) do
-    # Create lookup map for night hours and midday
+    # Create lookup map for night hours
     hour_map = Enum.reduce(scaled_temps, %{}, fn temp, acc ->
-      Map.put(acc, temp.index + 1, temp.is_night)  # Store with frame offset
+      Map.put(acc, temp.index + 1, %{is_night: temp.is_night, hour: temp.hour})  # Store with frame offset
     end)
-
-    Logger.debug("Hour map for frame rendering: #{inspect(Map.keys(hour_map) |> Enum.sort |> Enum.map(&{&1, Map.get(hour_map, &1)}))}")
 
     frame_matrix = for x <- 0..(bitmap.width - 1),
         y <- 0..(bitmap.height - 1),
-        x == 0 or x == bitmap.width - 1 or y == 0 or y == bitmap.height - 1,
+        should_draw_frame?(x, y, bitmap.width, bitmap.height, hour_map),
         into: %{} do
-      is_border = x == 0 or x == bitmap.width - 1
-      is_night = Map.get(hour_map, x, false)
-      is_midday = Enum.any?(scaled_temps, fn temp -> temp.hour == 12 and temp.index + 1 == x end)
-      should_set = is_border or (y in [0, bitmap.height - 1] and (is_night or is_midday))
-      {{x, y}, if(should_set, do: 1, else: 0)}
+      {{x, y}, 1}
     end
 
     frame_bitmap = Bitmap.new(bitmap.width, bitmap.height, frame_matrix)
     Bitmap.overlay(bitmap, frame_bitmap)
+  end
+
+  defp should_draw_frame?(x, y, width, height, hour_map) do
+    cond do
+      # Left and right borders are always solid
+      x == 0 or x == width - 1 -> true
+      # Top and bottom borders - check for night hours and midnight/midday
+      (y == 0 or y == height - 1) and x > 0 and x < width - 1 ->
+        case Map.get(hour_map, x) do
+          %{is_night: is_night, hour: hour} ->
+            is_night or hour == 0 or hour == 12
+          _ -> false
+        end
+      true -> false
+    end
   end
 
   # Helper to check if any neighboring position has a temperature pixel
@@ -271,5 +288,15 @@ defmodule Fliplove.Apps.Dashboard do
       align: align_horizontally,
       valign: align_vertically
     )
+  end
+
+  # Add helper to get hourly forecast with maximum available hours
+  defp get_hourly_forecast do
+    case Weather.get_hourly_forecast(54) do
+      [] ->
+        Logger.warning("No hourly forecast data available")
+        []
+      forecast -> forecast
+    end
   end
 end

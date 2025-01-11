@@ -40,3 +40,35 @@ https://github.com/tbs1-bo/flipflapflop
 - Dummy
 
 This is a dummy display that can be used for testing. It's a simple terminal that shows the current state of the display.
+
+## Weather Service Configuration
+
+The application supports multiple weather service providers. Currently implemented are:
+
+### OpenMeteo (Default)
+- Free service, no API key required
+- Provides up to 16 days of hourly forecast data
+- Configure using:
+  ```elixir
+  config :fliplove, :weather,
+    service: :open_meteo
+  ```
+
+### OpenWeather
+- Requires an API key
+- Provides up to 48 hours of forecast data
+- Configure using:
+  ```elixir
+  config :fliplove, :weather,
+    service: :open_weather
+  ```
+- Required environment variables:
+  - `FLIPLOVE_OPENWEATHERMAP_API_KEY`: Your OpenWeather API key
+  - Or place your API key in `data/keys/openweathermap.txt`
+
+### Location Configuration
+Both services require location information which can be provided through:
+- Environment variables:
+  - `FLIPLOVE_LATITUDE`: Your location's latitude
+  - `FLIPLOVE_LONGITUDE`: Your location's longitude
+- If not provided, the application will attempt to determine location using IP geolocation

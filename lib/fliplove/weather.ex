@@ -10,7 +10,7 @@ defmodule Fliplove.Weather do
   require HTTPoison
   require Logger
 
-  defstruct [:timer, :api_key, :latitude, :longitude, :weather, :weather_timestamp]
+  defstruct [:timer, :service_module, :latitude, :longitude, :weather, :weather_timestamp]
 
   @latitude_env "FLIPLOVE_LATITUDE"
   @longitude_env "FLIPLOVE_LONGITUDE"
@@ -23,50 +23,93 @@ defmodule Fliplove.Weather do
 
   @ip_geolocation_url "http://ip-api.com/json"
 
+  # Add service module constants
+  @weather_service_env "FLIPLOVE_WEATHER_SERVICE"
+  @default_service :open_meteo
+
   def topic, do: @topic
 
-  # initialization functions
+  # Client API
 
   def start_link(_state) do
-    Logger.debug("Starting Weather service...")
+    GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
+  end
 
-    case get_api_key() do
-      {:ok, _api_key} ->
-        Logger.debug("Weather service API key found")
-        GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
+  def get_weather do
+    GenServer.call(__MODULE__, :get_current_weather)
+  end
 
-      {:error, reason} ->
-        Logger.error("Weather service disabled: #{reason}")
-        :ignore
+  def update_weather do
+    GenServer.call(__MODULE__, :update_weather)
+  end
+
+  def get_current_temperature do
+    case get_weather() do
+      nil -> nil
+      weather -> weather.temperature
     end
   end
+
+  def get_wind_speed do
+    case get_weather() do
+      nil -> nil
+      weather -> weather.wind_speed
+    end
+  end
+
+  def get_rain do
+    case get_weather() do
+      nil -> {0.0, 0}
+      weather ->
+        rainfall_rate = weather.rainfall_rate
+        {rainfall_rate, rainfall_intensity(rainfall_rate)}
+    end
+  end
+
+  @doc """
+  Get hourly forecast for the specified number of hours.
+  Returns a list of hourly weather data or an empty list if no data is available.
+  The actual number of hours returned may be less than requested, depending on the service's capabilities.
+  """
+  def get_hourly_forecast(hours) when is_integer(hours) and hours > 0 do
+    GenServer.call(__MODULE__, {:get_hourly_forecast, hours})
+  end
+
+  # initialization functions
 
   @impl true
   def init(state) do
     Logger.debug("Initializing Weather service...")
 
-    case get_api_key() do
-      {:ok, api_key} ->
-        Logger.debug("Weather service API key validated")
-        # Get location once during initialization
-        case get_location() do
-          {:ok, lat, lon, source} ->
-            Logger.info("Weather service using #{source} location (#{lat}, #{lon})")
+    with {:ok, service_module} <- get_service_module(),
+         {:ok, lat, lon, source} <- get_location() do
 
-            # update weather information in a second and then every 5 minutes
-            {:ok, _} = :timer.send_after(5_000, :update_weather)
-            {:ok, timer} = :timer.send_interval(300_000, :update_weather)
+      service_name = service_module |> Module.split() |> List.last()
+      Logger.debug("Selected weather service: #{service_name}")
+      Logger.debug("Location: #{lat}, #{lon} (source: #{source})")
 
-            {:ok, %{state | api_key: api_key, latitude: lat, longitude: lon, timer: timer}}
+      update_interval = service_module.get_update_interval()
+      Logger.debug("Weather update interval: #{update_interval}ms")
 
-          {:error, reason} ->
-            Logger.error("Failed to get location: #{inspect(reason)}")
-            {:stop, :location_not_available}
-        end
+      # Update weather information in a second and then periodically
+      Logger.debug("Scheduling initial weather update...")
+      {:ok, _initial_timer} = :timer.send_after(1_000, :update_weather)
+      Logger.debug("Scheduling periodic weather updates...")
+      {:ok, periodic_timer} = :timer.send_interval(update_interval, :update_weather)
 
+      Logger.info("Weather service enabled: #{service_name}")
+      Logger.info("Weather service using #{source} location (#{lat}, #{lon})")
+
+      {:ok, %{state |
+        service_module: service_module,
+        latitude: lat,
+        longitude: lon,
+        timer: periodic_timer
+      }}
+    else
       {:error, reason} ->
-        Logger.error("Failed to get API key during initialization: #{inspect(reason)}")
-        {:stop, :api_key_not_available}
+        Logger.error("Failed to initialize weather service: #{inspect(reason)}")
+        {:stop, reason}
     end
   end
 
@@ -79,161 +122,50 @@ defmodule Fliplove.Weather do
     Logger.info("Terminating weather service")
   end
 
-  # client functions
-
-  def update_weather(), do: GenServer.call(__MODULE__, :update_weather)
-
-  def get_weather(), do: GenServer.call(__MODULE__, :get_weather)
-
-  def get_current_temperature() do
-    weather = get_weather()
-    weather["current"]["temp"]
-  end
-
-  def get_wind_speed() do
-    weather = get_weather()
-    weather["current"]["wind_speed"]
-  end
-
-  def get_rain() do
-    weather = get_weather()
-    rainfall_rate = weather["current"]["rain"]
-    rainfall_intensity = rainfall_intensity(rainfall_rate)
-    {rainfall_rate, rainfall_intensity}
-  end
-
-  def get_48_hour_temperature() do
-    with {:ok, weather} <- get_weather_data(),
-         {:ok, hourly} <- get_hourly_data(weather),
-         {:ok, daily} <- get_daily_data(weather) do
-      parse_hourly_temperatures(hourly, daily)
-    else
-      _ -> []
-    end
-  end
-
-  defp get_weather_data do
-    case get_weather() do
-      nil -> {:error, :no_weather_data}
-      weather when is_map(weather) -> {:ok, weather}
-    end
-  end
-
-  defp get_hourly_data(weather) do
-    case weather["hourly"] do
-      nil -> {:error, :no_hourly_data}
-      hourly when is_list(hourly) -> {:ok, hourly}
-      _ -> {:error, :invalid_hourly_data}
-    end
-  end
-
-  defp get_daily_data(weather) do
-    case weather["daily"] do
-      nil -> {:error, :no_daily_data}
-      daily when is_list(daily) -> {:ok, daily}
-      _ -> {:error, :invalid_daily_data}
-    end
-  end
-
-  defp parse_hourly_temperatures(hourly, daily) do
-    # Convert sunrise/sunset times to UTC timestamps
-    sun_events = daily
-    |> Enum.flat_map(fn day ->
-      # Each day gives us a sunrise and sunset point
-      [
-        {:sunrise, DateTime.from_unix!(day["sunrise"])},
-        {:sunset, DateTime.from_unix!(day["sunset"])}
-      ]
-    end)
-    |> Enum.sort_by(fn {_, time} -> DateTime.to_unix(time) end)
-
-    Logger.debug("Sun events in chronological order:")
-    Enum.each(sun_events, fn {event, time} ->
-      Logger.debug("  #{event}: #{time}")
-    end)
-
-    for {hourly_data, index} <- Enum.with_index(hourly),
-        temperature = hourly_data["temp"] / 1,
-        datetime = DateTime.from_unix!(hourly_data["dt"]) do
-
-      # Find the surrounding sun events
-      {prev_event, next_event} = get_surrounding_events(datetime, sun_events)
-
-      # Determine if it's night based on the surrounding events
-      is_night = case {prev_event, next_event} do
-        {nil, nil} ->
-          Logger.warning("No sun events found around #{datetime}")
-          true
-        {{:sunset, _}, {:sunrise, _}} -> true  # Between sunset and sunrise
-        {{:sunrise, _}, {:sunset, _}} -> false # Between sunrise and sunset
-        {nil, {:sunrise, _}} -> true          # Before first sunrise
-        {nil, {:sunset, _}} -> false          # Before first sunset
-        {{:sunset, _}, nil} -> true           # After last sunset
-        {{:sunrise, _}, nil} -> false         # After last sunrise
-      end
-
-      Logger.debug("Hour check: datetime=#{datetime}, prev_event=#{inspect(prev_event)}, next_event=#{inspect(next_event)}, is_night=#{is_night}")
-
-      %{
-        temperature: temperature,
-        datetime: datetime,
-        index: index,
-        is_night: is_night
-      }
-    end
-  end
-
-  # Find the sun events immediately before and after the given datetime
-  defp get_surrounding_events(datetime, sun_events) do
-    unix_time = DateTime.to_unix(datetime)
-
-    prev_event = sun_events
-    |> Enum.take_while(fn {_, time} -> DateTime.to_unix(time) <= unix_time end)
-    |> List.last()
-
-    next_event = sun_events
-    |> Enum.drop_while(fn {_, time} -> DateTime.to_unix(time) <= unix_time end)
-    |> List.first()
-
-    {prev_event, next_event}
-  end
-
-  # Move the client function up with other client functions
-  def get_weather_with_timestamp(), do: GenServer.call(__MODULE__, :get_weather_with_timestamp)
-
   # server functions
 
   @impl true
-  def handle_call(:get_weather, _, state) do
+  def handle_call(:get_current_weather, _from, state) do
     {:reply, state.weather, state}
   end
 
   @impl true
-  def handle_call(:get_weather_with_timestamp, _, state) do
+  def handle_call(:get_weather_with_timestamp, _from, state) do
     {:reply, {state.weather, state.weather_timestamp}, state}
   end
 
   @impl true
-  def handle_call(:update_weather, _, state) do
+  def handle_call(:update_weather, _from, state) do
     {:reply, :ok, update_weather(state)}
   end
 
   @impl true
+  def handle_call({:get_hourly_forecast, hours}, _from, state) do
+    case state.service_module.get_hourly_forecast(state.latitude, state.longitude, hours) do
+      {:ok, forecast} -> {:reply, forecast, state}
+      {:error, _reason} -> {:reply, [], state}
+    end
+  end
+
+  @impl true
   def handle_info(:update_weather, state) do
+    Logger.debug("Updating weather data...")
     state = update_weather(state)
     {:noreply, state}
   end
 
   defp update_weather(state) do
-    case call_openweathermap(state.api_key, state.latitude, state.longitude) do
-      nil ->
-        # Keep existing state on error
-        state
-
-      weather ->
+    Logger.debug("Fetching weather data from service...")
+    case state.service_module.get_current_weather(state.latitude, state.longitude) do
+      {:ok, weather} ->
         timestamp = DateTime.utc_now()
+        Logger.debug("Weather data updated successfully")
         PubSub.broadcast(Fliplove.PubSub, topic(), {:update_weather, weather})
         %{state | weather: weather, weather_timestamp: timestamp}
+
+      {:error, reason} ->
+        Logger.warning("Failed to update weather: #{inspect(reason)}")
+        state
     end
   end
 
@@ -348,6 +280,124 @@ defmodule Fliplove.Weather do
 
       {:error, reason} ->
         {:error, "Failed to get location from IP: #{inspect(reason)}"}
+    end
+  end
+
+  def get_weather_with_timestamp(), do: GenServer.call(__MODULE__, :get_weather_with_timestamp)
+
+  def get_48_hour_temperature() do
+    with {:ok, weather} <- get_weather_data(),
+         {:ok, hourly} <- get_hourly_data(weather),
+         {:ok, daily} <- get_daily_data(weather) do
+      parse_hourly_temperatures(hourly, daily)
+    else
+      _ -> []
+    end
+  end
+
+  defp get_weather_data do
+    case get_weather() do
+      nil -> {:error, :no_weather_data}
+      weather when is_map(weather) -> {:ok, weather}
+    end
+  end
+
+  defp get_hourly_data(weather) do
+    case weather["hourly"] do
+      nil -> {:error, :no_hourly_data}
+      hourly when is_list(hourly) -> {:ok, hourly}
+      _ -> {:error, :invalid_hourly_data}
+    end
+  end
+
+  defp get_daily_data(weather) do
+    case weather["daily"] do
+      nil -> {:error, :no_daily_data}
+      daily when is_list(daily) -> {:ok, daily}
+      _ -> {:error, :invalid_daily_data}
+    end
+  end
+
+  defp parse_hourly_temperatures(hourly, daily) do
+    # Convert sunrise/sunset times to UTC timestamps
+    sun_events = daily
+    |> Enum.flat_map(fn day ->
+      # Each day gives us a sunrise and sunset point
+      [
+        {:sunrise, DateTime.from_unix!(day["sunrise"])},
+        {:sunset, DateTime.from_unix!(day["sunset"])}
+      ]
+    end)
+    |> Enum.sort_by(fn {_, time} -> DateTime.to_unix(time) end)
+
+    Logger.debug("Sun events in chronological order:")
+    Enum.each(sun_events, fn {event, time} ->
+      Logger.debug("  #{event}: #{time}")
+    end)
+
+    for {hourly_data, index} <- Enum.with_index(hourly),
+        temperature = hourly_data["temp"] / 1,
+        datetime = DateTime.from_unix!(hourly_data["dt"]) do
+
+      # Find the surrounding sun events
+      {prev_event, next_event} = get_surrounding_events(datetime, sun_events)
+
+      # Determine if it's night based on the surrounding events
+      is_night = case {prev_event, next_event} do
+        {nil, nil} ->
+          Logger.warning("No sun events found around #{datetime}")
+          true
+        {{:sunset, _}, {:sunrise, _}} -> true  # Between sunset and sunrise
+        {{:sunrise, _}, {:sunset, _}} -> false # Between sunrise and sunset
+        {nil, {:sunrise, _}} -> true          # Before first sunrise
+        {nil, {:sunset, _}} -> false          # Before first sunset
+        {{:sunset, _}, nil} -> true           # After last sunset
+        {{:sunrise, _}, nil} -> false         # After last sunrise
+      end
+
+      Logger.debug("Hour check: datetime=#{datetime}, prev_event=#{inspect(prev_event)}, next_event=#{inspect(next_event)}, is_night=#{is_night}")
+
+      %{
+        temperature: temperature,
+        datetime: datetime,
+        index: index,
+        is_night: is_night
+      }
+    end
+  end
+
+  # Find the sun events immediately before and after the given datetime
+  defp get_surrounding_events(datetime, sun_events) do
+    unix_time = DateTime.to_unix(datetime)
+
+    prev_event = sun_events
+    |> Enum.take_while(fn {_, time} -> DateTime.to_unix(time) <= unix_time end)
+    |> List.last()
+
+    next_event = sun_events
+    |> Enum.drop_while(fn {_, time} -> DateTime.to_unix(time) <= unix_time end)
+    |> List.first()
+
+    {prev_event, next_event}
+  end
+
+  # Add before get_location function
+  defp get_service_module do
+    service = case System.get_env(@weather_service_env) do
+      "openweather" -> :open_weather
+      "openmeteo" -> :open_meteo
+      nil -> Application.get_env(:fliplove, :weather, []) |> Keyword.get(:service, @default_service)
+      other ->
+        Logger.warning("Unknown weather service in environment: #{inspect(other)}, using default")
+        @default_service
+    end
+
+    case service do
+      :open_meteo -> {:ok, Fliplove.Weather.OpenMeteo}
+      :open_weather -> {:ok, Fliplove.Weather.OpenWeather}
+      other ->
+        Logger.error("Unknown weather service configured: #{inspect(other)}")
+        {:error, :invalid_service}
     end
   end
 end
