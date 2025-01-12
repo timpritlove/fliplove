@@ -484,13 +484,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "C",
         bitmap:
           defbitmap([
-            " X ",
-            "X X",
+            " XX",
             "X  ",
             "X  ",
             "X  ",
-            "X X",
-            " X "
+            "X  ",
+            "X  ",
+            " XX"
           ])
       },
       ?D => %{
@@ -542,7 +542,7 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
             "X X",
             "X X",
             "X X",
-            " X "
+            " XX"
           ])
       },
       ?H => %{
@@ -1211,19 +1211,19 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
       ?y => %{
         name: "y",
         bitmap:
-          defbitmap(
-            [
-              "X X",
-              "X X",
-              "X X",
-              " X ",
-              " X ",
-              " X ",
-              " X "
-            ],
-            baseline_y: -2
-          )
-      },
+        defbitmap([
+          "   ",
+          "X X",
+          "X X",
+          "X X",
+          "X X",
+          " XX",
+          "  X",
+          "XX "
+          ],
+          baseline_y: -2
+        )
+    },
       ?z => %{
         name: "z",
         bitmap:
