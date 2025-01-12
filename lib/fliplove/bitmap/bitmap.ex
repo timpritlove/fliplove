@@ -24,7 +24,13 @@ defmodule Fliplove.Bitmap do
     - baseline_x: horizontal baseline position (default: 0)
     - baseline_y: vertical baseline position (default: 0)
   """
-  defmacro defbitmap(lines, opts \\ []) do
+  # Handle do-block syntax with options
+  defmacro defbitmap(opts \\ [], do: block) do
+    lines = case block do
+      {:__block__, _, lines} -> lines
+      line -> [line]
+    end
+
     quote do
       bitmap =
         Fliplove.Bitmap.from_lines_of_text(unquote(lines),

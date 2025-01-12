@@ -65,7 +65,6 @@ defmodule Fliplove.Font.Kerning do
     },
       "flipdot_condensed" => %{
         7 => %{
-          "lt" => -1,
           "Fa" => -1,
           "Fe" => -1,
           "Fo" => -1,

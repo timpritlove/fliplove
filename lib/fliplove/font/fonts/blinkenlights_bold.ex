@@ -17,1191 +17,1188 @@ defmodule Fliplove.Font.Fonts.BlinkenlightsBold do
       0 => %{
         name: "defaultchar",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             "XXXXXX"
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XXXXXX"
+          end
       },
       ?\s => %{
         name: "space",
         bitmap:
-          defbitmap([
-            "   ",
-            "   ",
-            "   ",
-            "   ",
-            "   ",
-            "   ",
+          defbitmap do
             "   "
-          ])
+            "   "
+            "   "
+            "   "
+            "   "
+            "   "
+            "   "
+          end
       },
       ?! => %{
         name: "exclamation mark",
         bitmap:
-          defbitmap([
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "  ",
+          defbitmap do
             "XX"
-          ])
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+            "  "
+            "XX"
+          end
       },
       ?" => %{
         name: "quotation mark",
         bitmap:
-          defbitmap([
-            "XX XX",
-            "XX XX",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
+          defbitmap do
+            "XX XX"
+            "XX XX"
             "     "
-          ])
+            "     "
+            "     "
+            "     "
+            "     "
+          end
       },
       ?# => %{
         name: "number sign",
         bitmap:
-          defbitmap([
-            " XX XX ",
-            " XX XX ",
-            "XXXXXXX",
-            " XX XX ",
-            "XXXXXXX",
-            " XX XX ",
+          defbitmap do
             " XX XX "
-          ])
+            " XX XX "
+            "XXXXXXX"
+            " XX XX "
+            "XXXXXXX"
+            " XX XX "
+            " XX XX "
+          end
       },
       ?$ => %{
         name: "dollar sign",
         bitmap:
-          defbitmap([
-            "   XX   ",
-            "  XXXXXX",
-            "XX XX   ",
-            "  XXXX  ",
-            "   XX XX",
-            "XXXXXX  ",
+          defbitmap do
             "   XX   "
-          ])
+            "  XXXXXX"
+            "XX XX   "
+            "  XXXX  "
+            "   XX XX"
+            "XXXXXX  "
+            "   XX   "
+          end
       },
       ?% => %{
         name: "percent sign",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "   XX ",
-            "  XX  ",
-            " XX   ",
-            "XX  XX",
+          defbitmap do
             "XX  XX"
-          ])
+            "XX  XX"
+            "   XX "
+            "  XX  "
+            " XX   "
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?& => %{
         name: "ampersand",
         bitmap:
-          defbitmap([
-            " XXXX   ",
-            "XX  XX  ",
-            "XX  XX  ",
-            " XXXX   ",
-            "XX XX XX",
-            "XX  XX  ",
+          defbitmap do
+            " XXXX   "
+            "XX  XX  "
+            "XX  XX  "
+            " XXXX   "
+            "XX XX XX"
+            "XX  XX  "
             " XXX XX "
-          ])
+          end
       },
       ?' => %{
         name: "apostrophe",
         bitmap:
-          defbitmap([
-            "XX",
-            "XX",
-            "  ",
-            "  ",
-            "  ",
-            "  ",
+          defbitmap do
+            "XX"
+            "XX"
             "  "
-          ])
+            "  "
+            "  "
+            "  "
+            "  "
+          end
       },
       ?( => %{
         name: "left parenthesis",
         bitmap:
-          defbitmap([
-            "  XX",
-            " XX ",
-            "XX  ",
-            "XX  ",
-            "XX  ",
-            " XX ",
+          defbitmap do
             "  XX"
-          ])
+            " XX "
+            "XX  "
+            "XX  "
+            "XX  "
+            " XX "
+            "  XX"
+          end
       },
       ?) => %{
         name: "right parenthesis",
         bitmap:
-          defbitmap([
-            "XX  ",
-            " XX ",
-            "  XX",
-            "  XX",
-            "  XX",
-            " XX ",
+          defbitmap do
             "XX  "
-          ])
+            " XX "
+            "  XX"
+            "  XX"
+            "  XX"
+            " XX "
+            "XX  "
+          end
       },
       ?* => %{
         name: "asterisk",
         bitmap:
-          defbitmap([
-            "       ",
-            "XX X XX",
-            " XXXXX ",
-            "XXXXXXX",
-            " XXXXX ",
-            "XX X XX",
+          defbitmap do
             "       "
-          ])
+            "XX X XX"
+            " XXXXX "
+            "XXXXXXX"
+            " XXXXX "
+            "XX X XX"
+            "       "
+          end
       },
       ?+ => %{
         name: "plus sign",
         bitmap:
-          defbitmap([
-            "      ",
-            "  XX  ",
-            "  XX  ",
-            "XXXXXX",
-            "  XX  ",
-            "  XX  ",
+          defbitmap do
             "      "
-          ])
+            "  XX  "
+            "  XX  "
+            "XXXXXX"
+            "  XX  "
+            "  XX  "
+            "      "
+          end
       },
       ?, => %{
         name: "comma",
         bitmap:
-          defbitmap(
-            [
-              " XX",
+          defbitmap baseline_y: -1 do
+              " XX"
               "XX "
-            ],
-            baseline_y: -1
-          )
+            end
       },
       ?- => %{
         name: "hyphen",
         bitmap:
-          defbitmap([
-            "XXXX",
-            "    ",
-            "    ",
+          defbitmap do
+            "XXXX"
             "    "
-          ])
+            "    "
+            "    "
+          end
       },
       ?. => %{
         name: "period",
         bitmap:
-          defbitmap([
+          defbitmap do
             "XX"
-          ])
+          end
       },
       ?/ => %{
         name: "slash",
         bitmap:
-          defbitmap([
-            "    XX",
-            "    XX",
-            "   XX ",
-            "  XX  ",
-            " XX   ",
-            "XX    ",
+          defbitmap do
+            "    XX"
+            "    XX"
+            "   XX "
+            "  XX  "
+            " XX   "
             "XX    "
-          ])
+            "XX    "
+          end
       },
       ?0 => %{
         name: "zero",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?1 => %{
         name: "one",
         bitmap:
-          defbitmap([
-            " XX ",
-            "XXX ",
-            " XX ",
-            " XX ",
-            " XX ",
-            " XX ",
+          defbitmap do
+            " XX "
+            "XXX "
+            " XX "
+            " XX "
+            " XX "
+            " XX "
             "XXXX"
-          ])
+          end
       },
       ?2 => %{
         name: "two",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "   XX ",
-            "  XX  ",
-            " XX   ",
-            "XX    ",
+          defbitmap do
+            " XXXX "
+            "XX  XX"
+            "   XX "
+            "  XX  "
+            " XX   "
+            "XX    "
             "XXXXXX"
-          ])
+          end
       },
       ?3 => %{
         name: "three",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "    XX",
-            "   XX ",
-            "    XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "    XX"
+            "   XX "
+            "    XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?4 => %{
         name: "four",
         bitmap:
-          defbitmap([
-            "XX    ",
-            "XX  XX",
-            "XX  XX",
-            "XXXXXX",
-            "    XX",
-            "    XX",
+          defbitmap do
+            "XX    "
+            "XX  XX"
+            "XX  XX"
+            "XXXXXX"
             "    XX"
-          ])
+            "    XX"
+            "    XX"
+          end
       },
       ?5 => %{
         name: "five",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "XX    ",
-            "XXXXX ",
-            "    XX",
-            "    XX",
-            "XX  XX",
+          defbitmap do
+            "XXXXXX"
+            "XX    "
+            "XXXXX "
+            "    XX"
+            "    XX"
+            "XX  XX"
             " XXXX "
-          ])
+          end
       },
       ?6 => %{
         name: "six",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX    ",
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "XX    "
+            "XXXXX "
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?7 => %{
         name: "seven",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "    XX",
-            "   XX ",
-            "  XX  ",
-            "  XX  ",
-            "  XX  ",
+          defbitmap do
+            "XXXXXX"
+            "    XX"
+            "   XX "
             "  XX  "
-          ])
+            "  XX  "
+            "  XX  "
+            "  XX  "
+          end
       },
       ?8 => %{
         name: "eight",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?9 => %{
         name: "nine",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            " XXXXX",
-            "    XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            " XXXXX"
+            "    XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?: => %{
         name: "colon",
         bitmap:
-          defbitmap([
-            "XX",
-            "  ",
-            "XX",
-            "  ",
+          defbitmap do
+            "XX"
             "  "
-          ])
+            "XX"
+            "  "
+            "  "
+          end
       },
       ?; => %{
         name: "semicolon",
         bitmap:
-          defbitmap([
-            " XX",
-            "   ",
-            " XX",
-            " XX",
+          defbitmap do
+            " XX"
+            "   "
+            " XX"
+            " XX"
             "XX "
-          ])
+          end
       },
       ?< => %{
         name: "less-than sign",
         bitmap:
-          defbitmap([
-            "     ",
-            "  XX ",
-            " XX  ",
-            "XX   ",
-            " XX  ",
-            "  XX ",
+          defbitmap do
             "     "
-          ])
+            "  XX "
+            " XX  "
+            "XX   "
+            " XX  "
+            "  XX "
+            "     "
+          end
       },
       ?= => %{
         name: "equals sign",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "      ",
-            "XXXXXX",
-            "      ",
+          defbitmap do
+            "XXXXXX"
             "      "
-          ])
+            "XXXXXX"
+            "      "
+            "      "
+          end
       },
       ?> => %{
         name: "greater-than sign",
         bitmap:
-          defbitmap([
-            "     ",
-            " XX  ",
-            "  XX ",
-            "   XX",
-            "  XX ",
-            " XX  ",
+          defbitmap do
             "     "
-          ])
+            " XX  "
+            "  XX "
+            "   XX"
+            "  XX "
+            " XX  "
+            "     "
+          end
       },
       ?? => %{
         name: "question mark",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "   XX ",
-            "  XX  ",
-            "  XX  ",
-            "      ",
+          defbitmap do
+            " XXXX "
+            "XX  XX"
+            "   XX "
             "  XX  "
-          ])
+            "  XX  "
+            "      "
+            "  XX  "
+          end
       },
       ?@ => %{
         name: "at sign",
         bitmap:
-          defbitmap([
-            "  XXXXXXXX  ",
-            " XX      XX ",
-            "XX  XX X  XX",
-            "XX XX XX  XX",
-            "XX  XX XXXX ",
-            " XX         ",
+          defbitmap do
+            "  XXXXXXXX  "
+            " XX      XX "
+            "XX  XX X  XX"
+            "XX XX XX  XX"
+            "XX  XX XXXX "
+            " XX         "
             "  XXXXXXX   "
-          ])
+          end
       },
       ?A => %{
         name: "A",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            " XXXX "
             "XX  XX"
-          ])
+            "XX  XX"
+            "XXXXXX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?B => %{
         name: "B",
         bitmap:
-          defbitmap([
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             "XXXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XXXXX "
+            "XX  XX"
+            "XX  XX"
+            "XXXXX "
+          end
       },
       ?C => %{
         name: "C",
         bitmap:
-          defbitmap([
-            " XXXXX",
-            "XX    ",
-            "XX    ",
-            "XX    ",
-            "XX    ",
-            "XX    ",
+          defbitmap do
             " XXXXX"
-          ])
+            "XX    "
+            "XX    "
+            "XX    "
+            "XX    "
+            "XX    "
+            " XXXXX"
+          end
       },
       ?D => %{
         name: "D",
         bitmap:
-          defbitmap([
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             "XXXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XXXXX "
+          end
       },
       ?E => %{
         name: "E",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "XX    ",
-            "XX    ",
-            "XXXX  ",
-            "XX    ",
-            "XX    ",
+          defbitmap do
             "XXXXXX"
-          ])
+            "XX    "
+            "XX    "
+            "XXXX  "
+            "XX    "
+            "XX    "
+            "XXXXXX"
+          end
       },
       ?F => %{
         name: "F",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "XX    ",
-            "XX    ",
-            "XXXX  ",
-            "XX    ",
-            "XX    ",
+          defbitmap do
+            "XXXXXX"
             "XX    "
-          ])
+            "XX    "
+            "XXXX  "
+            "XX    "
+            "XX    "
+            "XX    "
+          end
       },
       ?G => %{
         name: "G",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX    ",
-            "XX XXX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "XX    "
+            "XX XXX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?H => %{
         name: "H",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             "XX  XX"
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XXXXXX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?I => %{
         name: "I",
         bitmap:
-          defbitmap([
-            "XXXX",
-            " XX ",
-            " XX ",
-            " XX ",
-            " XX ",
-            " XX ",
+          defbitmap do
             "XXXX"
-          ])
+            " XX "
+            " XX "
+            " XX "
+            " XX "
+            " XX "
+            "XXXX"
+          end
       },
       ?J => %{
         name: "J",
         bitmap:
-          defbitmap([
-            "    XX",
-            "    XX",
-            "    XX",
-            "    XX",
-            "    XX",
-            "XX  XX",
+          defbitmap do
+            "    XX"
+            "    XX"
+            "    XX"
+            "    XX"
+            "    XX"
+            "XX  XX"
             " XXXX "
-          ])
+          end
       },
       ?K => %{
         name: "K",
         bitmap:
-          defbitmap([
-            "XX   XX",
-            "XX  XX ",
-            "XX XX  ",
-            "XXXX   ",
-            "XX XX  ",
-            "XX  XX ",
+          defbitmap do
             "XX   XX"
-          ])
+            "XX  XX "
+            "XX XX  "
+            "XXXX   "
+            "XX XX  "
+            "XX  XX "
+            "XX   XX"
+          end
       },
       ?L => %{
         name: "L",
         bitmap:
-          defbitmap([
-            "XX    ",
-            "XX    ",
-            "XX    ",
-            "XX    ",
-            "XX    ",
-            "XX    ",
+          defbitmap do
+            "XX    "
+            "XX    "
+            "XX    "
+            "XX    "
+            "XX    "
+            "XX    "
             "XXXXXX"
-          ])
+          end
       },
       ?M => %{
         name: "M",
         bitmap:
-          defbitmap([
-            "XX   XX",
-            "XXX XXX",
-            "XXXXXXX",
-            "XX X XX",
-            "XX   XX",
-            "XX   XX",
+          defbitmap do
             "XX   XX"
-          ])
+            "XXX XXX"
+            "XXXXXXX"
+            "XX X XX"
+            "XX   XX"
+            "XX   XX"
+            "XX   XX"
+          end
       },
       ?N => %{
         name: "N",
         bitmap:
-          defbitmap([
-            "XX   XX",
-            "XXX  XX",
-            "XXXX XX",
-            "XX XXXX",
-            "XX  XXX",
-            "XX   XX",
+          defbitmap do
             "XX   XX"
-          ])
+            "XXX  XX"
+            "XXXX XX"
+            "XX XXXX"
+            "XX  XXX"
+            "XX   XX"
+            "XX   XX"
+          end
       },
       ?O => %{
         name: "O",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?P => %{
         name: "P",
         bitmap:
-          defbitmap([
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XXXXX ",
-            "XX    ",
-            "XX    ",
+          defbitmap do
+            "XXXXX "
+            "XX  XX"
+            "XX  XX"
+            "XXXXX "
             "XX    "
-          ])
+            "XX    "
+            "XX    "
+          end
       },
       ?Q => %{
         name: "Q",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX XX ",
+          defbitmap do
+            " XXXX "
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX XX "
             " XX XX"
-          ])
+          end
       },
       ?R => %{
         name: "R",
         bitmap:
-          defbitmap([
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XXXXX ",
-            "XX XX ",
-            "XX  XX",
+          defbitmap do
+            "XXXXX "
             "XX  XX"
-          ])
+            "XX  XX"
+            "XXXXX "
+            "XX XX "
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?S => %{
         name: "S",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX    ",
-            " XXXX ",
-            "    XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "XX    "
+            " XXXX "
+            "    XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?T => %{
         name: "T",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "  XX  ",
-            "  XX  ",
-            "  XX  ",
-            "  XX  ",
-            "  XX  ",
+          defbitmap do
+            "XXXXXX"
             "  XX  "
-          ])
+            "  XX  "
+            "  XX  "
+            "  XX  "
+            "  XX  "
+            "  XX  "
+          end
       },
       ?U => %{
         name: "U",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
             " XXXX "
-          ])
+          end
       },
       ?V => %{
         name: "V",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX ",
+          defbitmap do
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
             "  XX  "
-          ])
+          end
       },
       ?W => %{
         name: "W",
         bitmap:
-          defbitmap([
-            "XX   XX",
-            "XX   XX",
-            "XX   XX",
-            "XX   XX",
-            "XX X XX",
-            "XXX XXX",
+          defbitmap do
             "XX   XX"
-          ])
+            "XX   XX"
+            "XX   XX"
+            "XX   XX"
+            "XX X XX"
+            "XXX XXX"
+            "XX   XX"
+          end
       },
       ?X => %{
         name: "X",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            " XXXX ",
-            "  XX  ",
-            " XXXX ",
-            "XX  XX",
+          defbitmap do
             "XX  XX"
-          ])
+            "XX  XX"
+            " XXXX "
+            "  XX  "
+            " XXXX "
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?Y => %{
         name: "Y",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX ",
-            "  XX  ",
-            "  XX  ",
+          defbitmap do
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
             "  XX  "
-          ])
+            "  XX  "
+            "  XX  "
+          end
       },
       ?Z => %{
         name: "Z",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "    XX",
-            "   XX ",
-            "  XX  ",
-            " XX   ",
-            "XX    ",
+          defbitmap do
             "XXXXXX"
-          ])
+            "    XX"
+            "   XX "
+            "  XX  "
+            " XX   "
+            "XX    "
+            "XXXXXX"
+          end
       },
       ?[ => %{
         name: "left square bracket",
         bitmap:
-          defbitmap([
-            "XXXX",
-            "XX  ",
-            "XX  ",
-            "XX  ",
-            "XX  ",
-            "XX  ",
+          defbitmap do
             "XXXX"
-          ])
+            "XX  "
+            "XX  "
+            "XX  "
+            "XX  "
+            "XX  "
+            "XXXX"
+          end
       },
       ?\\ => %{
         name: "backslash",
         bitmap:
-          defbitmap([
-            "XX    ",
-            "XX    ",
-            " XX   ",
-            "  XX  ",
-            "   XX ",
-            "    XX",
+          defbitmap do
+            "XX    "
+            "XX    "
+            " XX   "
+            "  XX  "
+            "   XX "
             "    XX"
-          ])
+            "    XX"
+          end
       },
       ?] => %{
         name: "right square bracket",
         bitmap:
-          defbitmap([
-            "XXXX",
-            "  XX",
-            "  XX",
-            "  XX",
-            "  XX",
-            "  XX",
+          defbitmap do
             "XXXX"
-          ])
+            "  XX"
+            "  XX"
+            "  XX"
+            "  XX"
+            "  XX"
+            "XXXX"
+          end
       },
       ?^ => %{
         name: "caret",
         bitmap:
-          defbitmap([
-            "  XX  ",
-            " XXXX ",
-            "XX  XX",
-            "      ",
-            "      ",
-            "      ",
+          defbitmap do
+            "  XX  "
+            " XXXX "
+            "XX  XX"
             "      "
-          ])
+            "      "
+            "      "
+            "      "
+          end
       },
       ?_ => %{
         name: "underscore",
         bitmap:
-          defbitmap([
+          defbitmap do
             "XXXXX"
-          ])
+          end
       },
       ?` => %{
         name: "apostrophe",
         bitmap:
-          defbitmap([
-            "XX ",
-            " XX",
-            "   ",
-            "   ",
-            "   ",
-            "   ",
+          defbitmap do
+            "XX "
+            " XX"
             "   "
-          ])
+            "   "
+            "   "
+            "   "
+            "   "
+          end
       },
       ?a => %{
         name: "a",
         bitmap:
-          defbitmap([
-            " XXXXX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             " XXXXX"
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXXX"
+          end
       },
       ?b => %{
         name: "b",
         bitmap:
-          defbitmap([
-            "XX    ",
-            "XX    ",
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX    "
+            "XX    "
             "XXXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XXXXX "
+          end
       },
       ?c => %{
         name: "c",
         bitmap:
-          defbitmap([
-            " XXXXX",
-            "XX    ",
-            "XX    ",
-            "XX    ",
+          defbitmap do
             " XXXXX"
-          ])
+            "XX    "
+            "XX    "
+            "XX    "
+            " XXXXX"
+          end
       },
       ?d => %{
         name: "d",
         bitmap:
-          defbitmap([
-            "    XX",
-            "    XX",
-            " XXXXX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "    XX"
+            "    XX"
             " XXXXX"
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXXX"
+          end
       },
       ?e => %{
         name: "e",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX    ",
+          defbitmap do
+            " XXXX "
+            "XX  XX"
+            "XXXXXX"
+            "XX    "
             " XXXXX"
-          ])
+          end
       },
       ?f => %{
         name: "f",
         bitmap:
-          defbitmap([
-            "  XXX",
-            " XX  ",
-            " XX  ",
-            "XXXXX",
-            " XX  ",
-            " XX  ",
+          defbitmap do
+            "  XXX"
             " XX  "
-          ])
+            " XX  "
+            "XXXXX"
+            " XX  "
+            " XX  "
+            " XX  "
+          end
       },
       ?g => %{
         name: "g",
         bitmap:
-          defbitmap([
-            " XXXXX",
-            "XX  XX",
-            " XXXXX",
-            "    XX",
+          defbitmap do
+            " XXXXX"
+            "XX  XX"
+            " XXXXX"
+            "    XX"
             "XXXXX "
-          ])
+          end
       },
       ?h => %{
         name: "h",
         bitmap:
-          defbitmap([
-            "XX    ",
-            "XX    ",
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX    "
+            "XX    "
+            "XXXXX "
             "XX  XX"
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?i => %{
         name: "i",
         bitmap:
-          defbitmap([
-            "XX",
-            "  ",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
+          defbitmap do
             "XX"
-          ])
+            "  "
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+          end
       },
       ?j => %{
         name: "j",
         bitmap:
-          defbitmap([
-            "   XX",
-            "     ",
-            "   XX",
-            "   XX",
-            "   XX",
-            "XX XX",
+          defbitmap do
+            "   XX"
+            "     "
+            "   XX"
+            "   XX"
+            "   XX"
+            "XX XX"
             " XXX "
-          ])
+          end
       },
       ?k => %{
         name: "k",
         bitmap:
-          defbitmap([
-            "XX    ",
-            "XX XX ",
-            "XXXX  ",
-            "XXXX  ",
-            "XXXX  ",
-            "XX XX ",
+          defbitmap do
+            "XX    "
+            "XX XX "
+            "XXXX  "
+            "XXXX  "
+            "XXXX  "
+            "XX XX "
             "XX  XX"
-          ])
+          end
       },
       ?l => %{
         name: "l",
         bitmap:
-          defbitmap([
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
+          defbitmap do
             "XX"
-          ])
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+          end
       },
       ?m => %{
         name: "m",
         bitmap:
-          defbitmap([
-            "XXX XXX ",
-            "XX XX XX",
-            "XX XX XX",
-            "XX XX XX",
+          defbitmap do
+            "XXX XXX "
             "XX XX XX"
-          ])
+            "XX XX XX"
+            "XX XX XX"
+            "XX XX XX"
+          end
       },
       ?n => %{
         name: "n",
         bitmap:
-          defbitmap([
-            "XXXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XXXXX "
             "XX  XX"
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?o => %{
         name: "o",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
             " XXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?p => %{
         name: "p",
         bitmap:
-          defbitmap([
-            "XXXXX ",
-            "XX  XX",
-            "XXXXX ",
-            "XX    ",
+          defbitmap do
+            "XXXXX "
+            "XX  XX"
+            "XXXXX "
             "XX    "
-          ])
+            "XX    "
+          end
       },
       ?q => %{
         name: "q",
         bitmap:
-          defbitmap([
-            " XXXXX",
-            "XX  XX",
-            " XXXXX",
-            "    XX",
+          defbitmap do
+            " XXXXX"
+            "XX  XX"
+            " XXXXX"
             "    XX"
-          ])
+            "    XX"
+          end
       },
       ?r => %{
         name: "r",
         bitmap:
-          defbitmap([
-            " XXXX",
-            "XX   ",
-            "XX   ",
-            "XX   ",
+          defbitmap do
+            " XXXX"
             "XX   "
-          ])
+            "XX   "
+            "XX   "
+            "XX   "
+          end
       },
       ?s => %{
         name: "s",
         bitmap:
-          defbitmap([
-            " XXXXX",
-            "XX    ",
-            " XXXX ",
-            "    XX",
+          defbitmap do
+            " XXXXX"
+            "XX    "
+            " XXXX "
+            "    XX"
             "XXXXX "
-          ])
+          end
       },
       ?t => %{
         name: "t",
         bitmap:
-          defbitmap([
-            " XX ",
-            " XX ",
-            "XXXX",
-            " XX ",
-            " XX ",
-            " XX ",
+          defbitmap do
             " XX "
-          ])
+            " XX "
+            "XXXX"
+            " XX "
+            " XX "
+            " XX "
+            " XX "
+          end
       },
       ?u => %{
         name: "u",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
             " XXXX "
-          ])
+          end
       },
       ?v => %{
         name: "v",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX ",
+          defbitmap do
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
             "  XX  "
-          ])
+          end
       },
       ?w => %{
         name: "w",
         bitmap:
-          defbitmap([
-            "XX    XX",
-            "XX    XX",
-            "XX XX XX",
-            "XX XX XX",
+          defbitmap do
+            "XX    XX"
+            "XX    XX"
+            "XX XX XX"
+            "XX XX XX"
             " XX  XX "
-          ])
+          end
       },
       ?x => %{
         name: "x",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            " XXXX ",
-            "  XX  ",
-            " XXXX ",
+          defbitmap do
             "XX  XX"
-          ])
+            " XXXX "
+            "  XX  "
+            " XXXX "
+            "XX  XX"
+          end
       },
       ?y => %{
         name: "y",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "XX  XX",
-            " XXXXX",
-            "    XX",
+          defbitmap do
+            "XX  XX"
+            "XX  XX"
+            " XXXXX"
+            "    XX"
             "XXXXX "
-          ])
+          end
       },
       ?z => %{
         name: "z",
         bitmap:
-          defbitmap([
-            "XXXXXX",
-            "   XX ",
-            "  XX  ",
-            " XX   ",
+          defbitmap do
             "XXXXXX"
-          ])
+            "   XX "
+            "  XX  "
+            " XX   "
+            "XXXXXX"
+          end
       },
       ?{ => %{
         name: "left curly bracket",
         bitmap:
-          defbitmap([
-            "  XX",
-            " XX ",
-            " XX ",
-            "XX  ",
-            " XX ",
-            " XX ",
+          defbitmap do
             "  XX"
-          ])
+            " XX "
+            " XX "
+            "XX  "
+            " XX "
+            " XX "
+            "  XX"
+          end
       },
       ?| => %{
         name: "vertical bar",
         bitmap:
-          defbitmap([
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
+          defbitmap do
             "XX"
-          ])
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+          end
       },
       ?} => %{
         name: "right curly bracket",
         bitmap:
-          defbitmap([
-            "XX  ",
-            " XX ",
-            " XX ",
-            "  XX",
-            " XX ",
-            " XX ",
+          defbitmap do
             "XX  "
-          ])
+            " XX "
+            " XX "
+            "  XX"
+            " XX "
+            " XX "
+            "XX  "
+          end
       },
       ?~ => %{
         name: "tilde",
         bitmap:
-          defbitmap([
-            " XX    ",
-            "XX X XX",
-            "    XX ",
-            "       ",
+          defbitmap do
+            " XX    "
+            "XX X XX"
+            "    XX "
             "       "
-          ])
+            "       "
+          end
       },
 
       # ISO 8859-1 CHARACTERS
@@ -1209,546 +1206,531 @@ defmodule Fliplove.Font.Fonts.BlinkenlightsBold do
       160 => %{
         name: "no-break space",
         bitmap:
-          defbitmap([
-            "  ",
-            "  ",
-            "  ",
-            "  ",
-            "  ",
-            "  ",
+          defbitmap do
             "  "
-          ])
+            "  "
+            "  "
+            "  "
+            "  "
+            "  "
+            "  "
+          end
       },
       ?¡ => %{
         name: "inverted exclamation mark",
         bitmap:
-          defbitmap([
-            "XX",
-            "  ",
-            "XX",
-            "XX",
-            "XX",
-            "XX",
+          defbitmap do
             "XX"
-          ])
+            "  "
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+            "XX"
+          end
       },
       ?¢ => %{
         name: "cent sign",
         bitmap:
-          defbitmap([
-            "  XXXX",
-            " XX   ",
-            "XXXXX ",
-            " XX   ",
-            "  XXXX",
+          defbitmap do
+            "  XXXX"
+            " XX   "
+            "XXXXX "
+            " XX   "
+            "  XXXX"
             "      "
-          ])
+          end
       },
       ?£ => %{
         name: "pound sign",
         bitmap:
-          defbitmap([
-            "  XXXX",
-            " XX   ",
-            " XX   ",
-            "XXXXX ",
-            " XX   ",
-            " XX   ",
+          defbitmap do
+            "  XXXX"
+            " XX   "
+            " XX   "
+            "XXXXX "
+            " XX   "
+            " XX   "
             "XXXXXX"
-          ])
+          end
       },
       ?¤ => %{
         name: "currency sign",
         bitmap:
-          defbitmap([
-            "      ",
-            "XX  XX",
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            " XXXX ",
+          defbitmap do
+            "      "
             "XX  XX"
-          ])
+            " XXXX "
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+            "XX  XX"
+          end
       },
       ?¥ => %{
         name: "yen sign",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            " XXXX ",
-            "XXXXXX",
-            "  XX  ",
-            "XXXXXX",
-            "  XX  ",
+          defbitmap do
+            "XX  XX"
+            " XXXX "
+            "XXXXXX"
             "  XX  "
-          ])
+            "XXXXXX"
+            "  XX  "
+            "  XX  "
+          end
       },
       ?¦ => %{
         name: "broken bar",
         bitmap:
-          defbitmap([
-            "XX",
-            "XX",
-            "XX",
-            "  ",
-            "XX",
-            "XX",
+          defbitmap do
             "XX"
-          ])
+            "XX"
+            "XX"
+            "  "
+            "XX"
+            "XX"
+            "XX"
+          end
       },
       ?§ => %{
         name: "section sign",
         bitmap:
-          defbitmap(
-            [
-              " XXX ",
-              "X    ",
-              " X   ",
-              " XXX ",
-              "X   X",
-              " XXX ",
-              "   X ",
-              "    X",
+          defbitmap baseline_y: -1 do
               " XXX "
-            ],
-            baseline_y: -1
-          )
+              "X    "
+              " X   "
+              " XXX "
+              "X   X"
+              " XXX "
+              "   X "
+              "    X"
+              " XXX "
+            end
       },
       ?ß => %{
         name: "sharp s",
         bitmap:
-          defbitmap(
-            [
-              " XXXXX ",
-              "XX   XX",
-              "XX  XX ",
-              "XX XX  ",
-              "XX  XX ",
-              "XX   XX",
-              "XX XXX ",
+          defbitmap baseline_y: -1 do
+              " XXXXX "
+              "XX   XX"
+              "XX  XX "
+              "XX XX  "
+              "XX  XX "
+              "XX   XX"
+              "XX XXX "
               "XX     "
-            ],
-            baseline_y: -1
-          )
+            end
       },
       ?Ä => %{
         name: "A with diaresis",
         bitmap:
-          defbitmap([
-            "      ",
-            "XX  XX",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
+          defbitmap do
+            "      "
             "XX  XX"
-          ])
+            "      "
+            " XXXX "
+            "XX  XX"
+            "XXXXXX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?Á => %{
         name: "A with acute",
         bitmap:
-          defbitmap([
-            "   XX ",
-            "  XX  ",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
+          defbitmap do
+            "   XX "
+            "  XX  "
+            "      "
+            " XXXX "
             "XX  XX"
-          ])
+            "XXXXXX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?À => %{
         name: "A with grave",
         bitmap:
-          defbitmap([
-            " XX   ",
-            "  XX  ",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
+          defbitmap do
+            " XX   "
+            "  XX  "
+            "      "
+            " XXXX "
             "XX  XX"
-          ])
+            "XXXXXX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?Å => %{
         name: "A with ring",
         bitmap:
-          defbitmap([
-            " XXXX ",
-            " XXXX ",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
+          defbitmap do
+            " XXXX "
+            " XXXX "
+            "      "
+            " XXXX "
             "XX  XX"
-          ])
+            "XXXXXX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?Ã => %{
         name: "A with tilde",
         bitmap:
-          defbitmap([
-            " XX XX",
-            "XX XX ",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XXXXXX",
-            "XX  XX",
+          defbitmap do
+            " XX XX"
+            "XX XX "
+            "      "
+            " XXXX "
             "XX  XX"
-          ])
+            "XXXXXX"
+            "XX  XX"
+            "XX  XX"
+          end
       },
       ?ä => %{
         name: "a with diaresis",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "      ",
-            " XXXXX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX  XX"
+            "      "
             " XXXXX"
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXXX"
+          end
       },
       ?Ö => %{
         name: "O with diaresis",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX  XX"
+            "      "
             " XXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?ö => %{
         name: "o with diaresis",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "      ",
-            " XXXX ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX  XX"
+            "      "
             " XXXX "
-          ])
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            " XXXX "
+          end
       },
       ?Ü => %{
         name: "U with diaresis",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "      ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX  XX"
+            "      "
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
             " XXXX "
-          ])
+          end
       },
       ?ü => %{
         name: "u with diaresis",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "      ",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
-            "XX  XX",
+          defbitmap do
+            "XX  XX"
+            "      "
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
+            "XX  XX"
             " XXXX "
-          ])
+          end
       },
       ?¨ => %{
         name: "diaresis",
         bitmap:
-          defbitmap([
-            "XX  XX",
-            "      ",
-            "      ",
-            "      ",
-            "      ",
-            "      ",
+          defbitmap do
+            "XX  XX"
             "      "
-          ])
+            "      "
+            "      "
+            "      "
+            "      "
+            "      "
+          end
       },
       ?© => %{
         name: "copyright sign",
         bitmap:
-          defbitmap(
-            [
-              " XXX ",
-              "X   X",
-              "  X  ",
-              " X X ",
-              " X   ",
-              " X X ",
-              "  X  ",
-              "X   X",
+          defbitmap baseline_y: -1 do
               " XXX "
-            ],
-            baseline_y: -1
-          )
+              "X   X"
+              "  X  "
+              " X X "
+              " X   "
+              " X X "
+              "  X  "
+              "X   X"
+              " XXX "
+            end
       },
       ?€ => %{
         name: "euro sign",
         bitmap:
-          defbitmap([
-            "  XXX",
-            " X   ",
-            "XXXX ",
-            " X   ",
-            "XXXX ",
-            " X   ",
+          defbitmap do
             "  XXX"
-          ])
+            " X   "
+            "XXXX "
+            " X   "
+            "XXXX "
+            " X   "
+            "  XXX"
+          end
       },
       ?¯ => %{
         name: "macron",
         bitmap:
-          defbitmap([
-            "XXXXX",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
+          defbitmap do
+            "XXXXX"
             "     "
-          ])
+            "     "
+            "     "
+            "     "
+            "     "
+            "     "
+          end
       },
       ?° => %{
         name: "degree sign",
         bitmap:
-          defbitmap([
-            " X ",
-            "X X",
-            " X ",
-            "   ",
-            "   ",
-            "   ",
+          defbitmap do
+            " X "
+            "X X"
+            " X "
             "   "
-          ])
+            "   "
+            "   "
+            "   "
+          end
       },
       ?± => %{
         name: "plus-minus sign",
         bitmap:
-          defbitmap([
-            "  X  ",
-            "  X  ",
-            "XXXXX",
-            "  X  ",
-            "  X  ",
-            "     ",
+          defbitmap do
+            "  X  "
+            "  X  "
             "XXXXX"
-          ])
+            "  X  "
+            "  X  "
+            "     "
+            "XXXXX"
+          end
       },
       ?² => %{
         name: "superscript two",
         bitmap:
-          defbitmap([
-            "XX ",
-            "  X",
-            " X ",
-            "X  ",
-            "XXX",
-            "   ",
+          defbitmap do
+            "XX "
+            "  X"
+            " X "
+            "X  "
+            "XXX"
             "   "
-          ])
+            "   "
+          end
       },
       ?³ => %{
         name: "superscript three",
         bitmap:
-          defbitmap([
-            "XX ",
-            "  X",
-            " X ",
-            "  X",
-            "XX ",
-            "   ",
+          defbitmap do
+            "XX "
+            "  X"
+            " X "
+            "  X"
+            "XX "
             "   "
-          ])
+            "   "
+          end
       },
       ?´ => %{
         name: "acute accent",
         bitmap:
-          defbitmap(
-            [
-              " X",
+          defbitmap baseline_y: 5 do
+              " X"
               "X "
-            ],
-            baseline_y: 5
-          )
+            end
       },
       ?µ => %{
         name: "micro sign",
         bitmap:
-          defbitmap(
-            [
-              "    ",
-              "    ",
-              "    ",
-              "   X",
-              "X  X",
-              "X  X",
-              "XXX ",
-              "X   ",
+          defbitmap baseline_y: -1 do
+              "    "
+              "    "
+              "    "
+              "   X"
+              "X  X"
+              "X  X"
+              "XXX "
               "X   "
-            ],
-            baseline_y: -1
-          )
+              "X   "
+            end
       },
       ?· => %{
         name: "middle dot",
         bitmap:
-          defbitmap([
-            " ",
-            " ",
-            " ",
-            "X",
-            " ",
-            " ",
+          defbitmap do
             " "
-          ])
+            " "
+            " "
+            "X"
+            " "
+            " "
+            " "
+          end
       },
       ?¹ => %{
         name: "superscript one",
         bitmap:
-          defbitmap([
-            " X ",
-            "XX ",
-            " X ",
-            " X ",
-            "XXX",
-            "   ",
+          defbitmap do
+            " X "
+            "XX "
+            " X "
+            " X "
+            "XXX"
             "   "
-          ])
+            "   "
+          end
       },
       ?ª => %{
         name: "feminine ordinal indicator",
         bitmap:
-          defbitmap([
-            " X ",
-            "X X",
-            "XXX",
-            "X X",
-            "   ",
-            "   ",
+          defbitmap do
+            " X "
+            "X X"
+            "XXX"
+            "X X"
             "   "
-          ])
+            "   "
+            "   "
+          end
       },
       ?º => %{
         name: "masculine ordinal indicator",
         bitmap:
-          defbitmap([
-            " X ",
-            "X X",
-            "X X",
-            " X ",
-            "   ",
-            "   ",
+          defbitmap do
+            " X "
+            "X X"
+            "X X"
+            " X "
             "   "
-          ])
+            "   "
+            "   "
+          end
       },
       ?« => %{
         name: "left-pointing double angle quotation mark",
         bitmap:
-          defbitmap([
-            "     ",
-            "     ",
-            " X X ",
-            "X X  ",
-            " X X ",
-            "     ",
+          defbitmap do
             "     "
-          ])
+            "     "
+            " X X "
+            "X X  "
+            " X X "
+            "     "
+            "     "
+          end
       },
       ?¬ => %{
         name: "not sign",
         bitmap:
-          defbitmap([
-            "     ",
-            "     ",
-            "     ",
-            "XXXXX",
-            "    X",
-            "     ",
+          defbitmap do
             "     "
-          ])
+            "     "
+            "     "
+            "XXXXX"
+            "    X"
+            "     "
+            "     "
+          end
       },
       ?» => %{
         name: "right-pointing double angle quotation mark",
         bitmap:
-          defbitmap([
-            "     ",
-            "     ",
-            " X X ",
-            "  X X",
-            " X X ",
-            "     ",
+          defbitmap do
             "     "
-          ])
+            "     "
+            " X X "
+            "  X X"
+            " X X "
+            "     "
+            "     "
+          end
       },
       ?¼ => %{
         name: "vulgar fraction one quarter",
         bitmap:
-          defbitmap([
-            " X      X   ",
-            "XX     X    ",
-            " X    X X  X",
-            " X   X  X  X",
-            " X  X   XXXX",
-            "   X       X",
+          defbitmap do
+            " X      X   "
+            "XX     X    "
+            " X    X X  X"
+            " X   X  X  X"
+            " X  X   XXXX"
+            "   X       X"
             "  X        X"
-          ])
+          end
       },
       ?½ => %{
         name: "vulgar fraction one half",
         bitmap:
-          defbitmap([
-            " X      X   ",
-            "XX     X    ",
-            " X    X  XX ",
-            " X   X  X  X",
-            " X  X     X ",
-            "   X     X  ",
+          defbitmap do
+            " X      X   "
+            "XX     X    "
+            " X    X  XX "
+            " X   X  X  X"
+            " X  X     X "
+            "   X     X  "
             "  X     XXXX"
-          ])
+          end
       },
       ?¾ => %{
         name: "vulgar fraction three quarters",
         bitmap:
-          defbitmap([
-            " XX      X    ",
-            "X  X    X     ",
-            "  X    X  X  X",
-            "X  X  X   X  X",
-            " XX  X    XXXX",
-            "    X        X",
+          defbitmap do
+            " XX      X    "
+            "X  X    X     "
+            "  X    X  X  X"
+            "X  X  X   X  X"
+            " XX  X    XXXX"
+            "    X        X"
             "   X         X"
-          ])
+          end
       },
       ?¿ => %{
         name: "question mark",
         bitmap:
-          defbitmap([
-            "  X  ",
-            "     ",
-            "  X  ",
-            "  X  ",
-            "   X ",
-            "X   X",
+          defbitmap do
+            "  X  "
+            "     "
+            "  X  "
+            "  X  "
+            "   X "
+            "X   X"
             " XXX "
-          ])
+          end
       }
     }
   }
