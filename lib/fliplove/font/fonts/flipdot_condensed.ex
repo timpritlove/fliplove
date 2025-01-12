@@ -84,17 +84,15 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         bitmap:
           defbitmap(
             [
-              "  X  ",
-              " XXX ",
-              "X X X",
-              "X X  ",
-              " XXX ",
-              "  X X",
-              "X X X",
-              " XXX ",
-              "  X  "
+              " X ",
+              "XXX",
+              "X  ",
+              "XXX",
+              "  X",
+              "XXX",
+              " X "
             ],
-            baseline_y: -1
+            baseline_y: 0
           )
       },
       ?% => %{
@@ -114,13 +112,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "ampersand",
         bitmap:
           defbitmap([
-            " X  ",
-            "X X ",
-            "X X ",
-            " X  ",
-            "X X ",
-            "X  X",
-            " XXX"
+            " X ",
+            "X X",
+            "X X",
+            " X ",
+            "X  ",
+            "X X",
+            " XX"
           ])
       },
       ?' => %{
@@ -249,13 +247,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "one",
         bitmap:
           defbitmap([
-            " X",
-            "XX",
-            " X",
-            " X",
-            " X",
-            " X",
-            " X"
+            " X ",
+            "XX ",
+            " X ",
+            " X ",
+            " X ",
+            " X ",
+            "XXX"
           ])
       },
       ?2 => %{
@@ -303,8 +301,8 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
           defbitmap([
             "XXX",
             "X  ",
-            "X  ",
-            " X ",
+            "XX ",
+            "  X",
             "  X",
             "X X",
             " X "
@@ -370,8 +368,8 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
             "X",
             " ",
             " ",
-            " ",
-            "X"
+            "X",
+            " "
           ])
       },
       ?; => %{
@@ -380,26 +378,26 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
           defbitmap(
             [
               " ",
-              "X",
               " ",
+              "X",
               " ",
               "X",
               "X"
             ],
-            baseline_y: 0
+            baseline_y: -1
           )
       },
       ?< => %{
         name: "less-than sign",
         bitmap:
           defbitmap([
-            "   X",
-            "  X ",
-            " X  ",
-            "X   ",
-            " X  ",
-            "  X ",
-            "   X"
+            "   ",
+            "  X",
+            " X ",
+            "X  ",
+            " X ",
+            "  X",
+            "   "
           ])
       },
       ?= => %{
@@ -419,39 +417,39 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "greater-than sign",
         bitmap:
           defbitmap([
-            "X   ",
-            " X  ",
-            "  X ",
-            "   X",
-            "  X ",
-            " X  ",
-            "X   "
+            "   ",
+            "X  ",
+            " X ",
+            "  X",
+            " X ",
+            "X  ",
+            "   "
           ])
       },
       ?? => %{
         name: "question mark",
         bitmap:
           defbitmap([
-            " XX ",
-            "X  X",
-            "   X",
-            "  X ",
-            "  X ",
-            "    ",
-            "  X "
+            " X ",
+            "X X",
+            "  X",
+            " X ",
+            " X ",
+            "   ",
+            " X "
           ])
       },
       ?@ => %{
         name: "at sign",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "X X X",
-            "XX XX",
-            "X X  ",
-            "X   X",
-            " XXX "
+            " XX",
+            "X X",
+            "X X",
+            "X X",
+            "X  ",
+            "X  ",
+            " XX"
           ])
       },
       ?A => %{
@@ -835,13 +833,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "caret",
         bitmap:
           defbitmap([
-            "  X  ",
-            " X X ",
-            "X   X",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            " X ",
+            "X X",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   "
           ])
       },
       ?_ => %{
@@ -1050,13 +1048,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "m",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "XX X ",
-            "X X X",
-            "X X X",
-            "X X X",
-            "X X X"
+            "   ",
+            "   ",
+            "XXX",
+            "XXX",
+            "X X",
+            "X X",
+            "X X"
           ])
       },
       ?n => %{
@@ -1335,40 +1333,40 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "pound sign",
         bitmap:
           defbitmap([
-            "  XXX",
-            " X   ",
-            " X   ",
-            "XXXX ",
-            " X   ",
-            " X   ",
-            "XXXXX"
+            " XX",
+            "X  ",
+            "X  ",
+            "XX ",
+            "X  ",
+            "X  ",
+            "XXX"
           ])
       },
       ?¤ => %{
         name: "currency sign",
         bitmap:
           defbitmap([
-            "     ",
-            "X   X",
-            " XXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX ",
-            "X   X"
+            "   ",
+            "X X",
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            " X ",
+            "X X"
           ])
       },
       ?¥ => %{
         name: "yen sign",
         bitmap:
           defbitmap([
-            "X   X",
-            " X X ",
-            "XXXXX",
-            "  X  ",
-            "XXXXX",
-            "  X  ",
-            "  X  "
+            "X X",
+            "X X",
+            "XXX",
+            " X ",
+            "XXX",
+            " X ",
+            " X "
           ])
       },
       ?¦ => %{
@@ -1535,13 +1533,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "euro sign",
         bitmap:
           defbitmap([
-            "  XX",
-            " X  ",
-            "XXX ",
-            " X  ",
-            "XXX ",
-            " X  ",
-            "  XX"
+            " XX",
+            "X  ",
+            "XX ",
+            "X  ",
+            "XX ",
+            "X  ",
+            " XX"
           ])
       },
       ?¯ => %{
@@ -1694,13 +1692,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "left-pointing double angle quotation mark",
         bitmap:
           defbitmap([
-            "     ",
-            "  X X",
-            " X X ",
-            "X X  ",
-            " X X ",
-            "  X X",
-            "     "
+            "    ",
+            "    ",
+            " X X",
+            "X X ",
+            " X X",
+            "    ",
+            "    "
           ])
       },
       ?¬ => %{
@@ -1720,13 +1718,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "right-pointing double angle quotation mark",
         bitmap:
           defbitmap([
-            "     ",
-            "X X  ",
-            " X X ",
-            "  X X",
-            " X X ",
-            "X X  ",
-            "     "
+            "    ",
+            "    ",
+            "X X ",
+            " X X",
+            "X X ",
+            "    ",
+            "    "
           ])
       },
       ?¼ => %{
@@ -1769,280 +1767,17 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
           ])
       },
       ?¿ => %{
-        name: "question mark",
+        name: "inverted question mark",
         bitmap:
           defbitmap([
-            "  X  ",
-            "     ",
-            "  X  ",
-            "  X  ",
-            "   X ",
-            "X   X",
-            " XXX "
+            " X ",
+            "   ",
+            " X ",
+            " X ",
+            "  X",
+            "X X",
+            " X "
           ])
-      },
-
-      # SPACE INVADERS
-
-      ?á => %{
-        name: "crab_invader_0",
-        bitmap:
-          defbitmap([
-            "  X     X  ",
-            "   X   X   ",
-            "  XXXXXXX  ",
-            " XX XXX XX ",
-            "XXXXXXXXXXX",
-            "X XXXXXXX X",
-            "X X     X X",
-            "   XX XX   "
-          ])
-      },
-      ?à => %{
-        name: "crab_invader_1",
-        bitmap:
-          defbitmap([
-            "  X     X  ",
-            "X  X   X  X",
-            "X XXXXXXX X",
-            "XXX XXX XXX",
-            "XXXXXXXXXXX",
-            " XXXXXXXXX ",
-            "  X     X  ",
-            " X       X "
-          ])
-      },
-      ?í => %{
-        name: "squid_invader_0",
-        bitmap:
-          defbitmap([
-            "   XX   ",
-            "  XXXX  ",
-            " XXXXXX ",
-            "XX XX XX",
-            "XXXXXXXX",
-            "  X  X  ",
-            " X XX X ",
-            "X X  X X"
-          ])
-      },
-      ?ì => %{
-        name: "squid_invader_1",
-        bitmap:
-          defbitmap([
-            "   XX   ",
-            "  XXXX  ",
-            " XXXXXX ",
-            "XX XX XX",
-            "XXXXXXXX",
-            " X XX X ",
-            "X      X",
-            " X    X "
-          ])
-      },
-      ?ó => %{
-        name: "octopus_invader_0",
-        bitmap:
-          defbitmap([
-            "    XXXX    ",
-            " XXXXXXXXXX ",
-            "XXXXXXXXXXXX",
-            "XXX  XX  XXX",
-            "XXXXXXXXXXXX",
-            "   XX  XX   ",
-            "  XX XX XX  ",
-            "XX        XX"
-          ])
-      },
-      ?ò => %{
-        name: "octopus_invader_1",
-        bitmap:
-          defbitmap([
-            "    XXXX    ",
-            " XXXXXXXXXX ",
-            "XXXXXXXXXXXX",
-            "XXX  XX  XXX",
-            "XXXXXXXXXXXX",
-            "  XXX  XXX  ",
-            " XX  XX  XX ",
-            "  XX    XX  "
-          ])
-      },
-      ?å => %{
-        name: "invader_ufo",
-        bitmap:
-          defbitmap([
-            "     XXXXXX     ",
-            "   XXXXXXXXXX   ",
-            "  XXXXXXXXXXXX  ",
-            " XX XX XX XX XX ",
-            "XXXXXXXXXXXXXXXX",
-            "  XXX  XX   XXX ",
-            "   X         X  "
-          ])
-      },
-      0xF72E => %{
-        name: "wind",
-        bitmap:
-          defbitmap(
-            [
-              "     XX   ",
-              "       X  ",
-              "XXXXXXX   ",
-              "          ",
-              "XXXXXXXXX ",
-              "         X",
-              "XXXX   XX ",
-              "    X     ",
-              "  XX      "
-            ],
-            baseline_y: -1
-          )
-      },
-      0xF73D => %{
-        name: "rain",
-        bitmap:
-          defbitmap(
-            [
-              "  XX     ",
-              " XXXX XX ",
-              "XXXXXXXXX",
-              "XXXXXXXXX",
-              "XXXXXXXXX",
-              " XXXXXXX ",
-              "         ",
-              " X  X  X ",
-              "  X  X  X"
-            ],
-            baseline_y: -1
-          )
-      },
-      0xF017 => %{
-        name: "clock",
-        bitmap:
-          defbitmap([
-            "  XXX  ",
-            " X X X ",
-            "X  X  X",
-            "X  X  X",
-            "X   X X",
-            " X   X ",
-            "  XXX  "
-          ])
-      },
-      0xF018 => %{
-        name: "m/s",
-        bitmap:
-          defbitmap([
-            "      X     ",
-            "XX X  X  XXX",
-            "X X X X X   ",
-            "X X X X  XX ",
-            "X X X X    X",
-            "X X X X XXX ",
-            "      X     "
-          ])
-      },
-      0x1FFF2 => %{
-        name: "clock-face-three-oclock",
-        bitmap:
-          defbitmap([
-            "  XXX  ",
-            " X X X ",
-            "X  X  X",
-            "X  XXXX",
-            "X     X",
-            " X   X ",
-            "  XXX  "
-          ])
-      },
-      0x1FFF5 => %{
-        name: "clock-face-six-oclock",
-        bitmap:
-          defbitmap([
-            "  XXX  ",
-            " X X X ",
-            "X  X  X",
-            "X  X  X",
-            "X  X  X",
-            " X X X ",
-            "  XXX  "
-          ])
-      },
-      0x1FFF8 => %{
-        name: "clock-face-nine-oclock",
-        bitmap:
-          defbitmap([
-            "  XXX  ",
-            " X X X ",
-            "X  X  X",
-            "XXXX  X",
-            "X     X",
-            " X   X ",
-            "  XXX  "
-          ])
-      },
-      0x1FFFB => %{
-        name: "clock-face-twelve-oclock",
-        bitmap:
-          defbitmap([
-            "  XXX  ",
-            " X X X ",
-            "X  X  X",
-            "X  X  X",
-            "X     X",
-            " X   X ",
-            "  XXX  "
-          ])
-      },
-      0x2744 => %{
-        name: "snowflake",
-        bitmap:
-          defbitmap(
-            [
-              "    X    ",
-              " X  X  X ",
-              "  X X X  ",
-              "   XXX   ",
-              "XXXX XXXX",
-              "   XXX   ",
-              "  X X X  ",
-              " X  X  X ",
-              "    X    "
-            ],
-            baseline_y: -1
-          )
-      },
-      ?ツ => %{
-        name: "katakana-letter-tu",
-        bitmap:
-          defbitmap([
-            "  X    X",
-            "X  X   X",
-            " X    X ",
-            "      X ",
-            "     X  ",
-            "   XX   ",
-            " XX     "
-          ])
-      },
-      0xF2C9 => %{
-        name: "thermometer-half",
-        bitmap:
-          defbitmap(
-            [
-              "   XXX   ",
-              "  X   X  ",
-              "  X   X  ",
-              "  X X X  ",
-              "  X X X  ",
-              " X XXX X ",
-              "X XXXXX X",
-              " X XXX X ",
-              "  XXXXX  "
-            ],
-            baseline_y: -1
-          )
       }
     }
   }
