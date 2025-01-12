@@ -17,9 +17,10 @@ defmodule Fliplove.Apps.Slideshow do
 
   # server functions
 
-  @impl true
-  def terminate(_reason, _state) do
-    Logger.info("Slideshow has been shut down.")
+  @impl Fliplove.Apps.Base
+  def cleanup_app(_reason, _state) do
+    Logger.debug("Slideshow cleanup_app called")
+    :ok
   end
 
   @impl true

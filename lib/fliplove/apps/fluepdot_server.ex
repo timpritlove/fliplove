@@ -55,10 +55,12 @@ defmodule Fliplove.Apps.FluepdotServer do
     {:noreply, state}
   end
 
-  @impl true
-  def terminate(_reason, %{udp_socket: socket, http_pid: http_pid}) do
-    :gen_udp.close(socket)
-    Supervisor.stop(http_pid)
+  @impl Fliplove.Apps.Base
+  def cleanup_app(_reason, %{udp_socket: socket, http_pid: http_pid}) do
+    Logger.info("Fluepdot Server has been shut down.")
+    if socket, do: :gen_udp.close(socket)
+    if http_pid, do: Process.exit(http_pid, :normal)
+    :ok
   end
 
   @doc """

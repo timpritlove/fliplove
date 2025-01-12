@@ -23,9 +23,10 @@ defmodule Fliplove.Apps.Datetime do
 
   # server functions
 
-  @impl true
-  def terminate(_reason, _state) do
-    Logger.info("Datetime app has been shut down.")
+  @impl Fliplove.Apps.Base
+  def cleanup_app(_reason, _state) do
+    Logger.debug("Datetime cleanup_app called")
+    :ok
   end
 
   @impl true

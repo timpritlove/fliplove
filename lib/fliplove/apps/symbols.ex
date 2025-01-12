@@ -53,9 +53,10 @@ defmodule Fliplove.Apps.Symbols do
 
   # server functions
 
-  @impl true
-  def terminate(_reason, _state) do
-    Logger.info("Symbols app has been shut down.")
+  @impl Fliplove.Apps.Base
+  def cleanup_app(_reason, _state) do
+    Logger.debug("Symbols cleanup_app called")
+    :ok
   end
 
   @impl true

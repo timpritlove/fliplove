@@ -21,8 +21,6 @@ defmodule Fliplove.Application do
         # Start hardware-related services first since they define display dimensions
         {Fliplove.Driver, []},
         Fliplove.Display,
-        # Start weather service after display is ready
-        {Fliplove.Weather, []},
         # Start web-related services after display is ready
         FliploveWeb.VirtualDisplay,
         {FliploveWeb.Endpoint, []},

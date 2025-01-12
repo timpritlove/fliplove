@@ -29,9 +29,10 @@ defmodule Fliplove.Apps.MazeSolver do
     Maze.solve_maze(maze, mode: :parallel)
   end
 
-  @impl true
-  def terminate(_reason, _state) do
+  @impl Fliplove.Apps.Base
+  def cleanup_app(_reason, _state) do
     Logger.info("Maze Solver has been shut down.")
+    :ok
   end
 
   @impl true

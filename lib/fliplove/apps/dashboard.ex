@@ -20,6 +20,17 @@ defmodule Fliplove.Apps.Dashboard do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
     Logger.info("Dashboard using UTC offset: #{offset_minutes} minutes")
 
+    # Start the Weather service
+    case Weather.start() do
+      {:ok, _pid} ->
+        Logger.info("Weather service started")
+      {:error, {:already_started, _pid}} ->
+        Logger.info("Weather service was already running")
+      {:error, reason} ->
+        Logger.error("Failed to start Weather service: #{inspect(reason)}")
+        raise "Failed to start Weather service"
+    end
+
     state = %__MODULE__{
       font: Library.get_font_by_name(@font),
       bitmap: nil
@@ -34,9 +45,15 @@ defmodule Fliplove.Apps.Dashboard do
 
   # server functions
 
-  @impl true
-  def terminate(_reason, _state) do
+  @impl Fliplove.Apps.Base
+  def cleanup_app(reason, _state) do
+    Logger.debug("Dashboard cleanup_app called with reason: #{inspect(reason)}")
     Logger.info("Dashboard has been shut down.")
+    # Stop the Weather service
+    Logger.debug("Stopping Weather service...")
+    result = Weather.stop()
+    Logger.debug("Weather service stop result: #{inspect(result)}")
+    :ok
   end
 
   @impl true

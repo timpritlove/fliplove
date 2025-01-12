@@ -32,6 +32,14 @@ defmodule Fliplove.Weather do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
+  def stop do
+    GenServer.stop(__MODULE__)
+  end
+
+  def start do
+    start_link([])
+  end
+
   def get_weather do
     GenServer.call(__MODULE__, :get_current_weather)
   end

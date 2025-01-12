@@ -98,6 +98,10 @@ defmodule Fliplove.Apps do
         :ok
 
       [{pid, app}] ->
+        Logger.debug("Stopping app #{app}...")
+        # First try to stop the GenServer gracefully
+        GenServer.stop(pid, :normal)
+        # Then remove it from the supervisor
         DynamicSupervisor.terminate_child(@supervisor, pid)
         Logger.info("App #{app} has been stopped.")
         :ok

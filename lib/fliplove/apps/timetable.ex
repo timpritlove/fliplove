@@ -254,4 +254,11 @@ defmodule Fliplove.Apps.Timetable do
         "??"
     end
   end
+
+  @impl Fliplove.Apps.Base
+  def cleanup_app(_reason, state) do
+    Logger.debug("Timetable cleanup_app called")
+    if state.timer, do: Process.cancel_timer(state.timer)
+    :ok
+  end
 end
