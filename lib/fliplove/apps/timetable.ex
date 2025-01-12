@@ -5,7 +5,7 @@ defmodule Fliplove.Apps.Timetable do
   alias Fliplove.Bitmap
   require Logger
 
-  @refresh_interval 20_000 # 20 seconds
+  @refresh_interval 30_000 # 30 seconds
   @api_base_url "https://v6.bvg.transport.rest"
   @stop_name_cleanup [
     {"(Berlin)", :end},    # Remove "(Berlin)" at the end of names
@@ -85,6 +85,9 @@ defmodule Fliplove.Apps.Timetable do
           {:ok, %{"departures" => departures}} when is_list(departures) ->
             sorted_departures = departures
               |> Enum.sort_by(& &1["when"])
+
+            sorted_departures = sorted_departures
+              |> Enum.sort_by(& &1["when"])
               |> Enum.take(2)
             {:ok, sorted_departures}
           {:ok, response} ->
@@ -117,38 +120,57 @@ defmodule Fliplove.Apps.Timetable do
     |> String.trim()
   end
 
-  defp render_departures(departures) do
+  defp render_departures([first_departure, second_departure]) do
     font = Library.get_font_by_name("flipdot_condensed")
-    bitmap = Bitmap.new(Display.width(), Display.height())
+    display = Bitmap.new(Display.width(), Display.height())
 
-    departures
-    |> Enum.with_index()
-    |> Enum.reduce(bitmap, fn {departure, index}, acc ->
-      y_pos = index * 8 # Each row is 8 pixels high
+    # Render both departures separately
+    first = render_departure(first_departure, font)
+    second = render_departure(second_departure, font)
 
-      # Format departure info
-      line = departure["line"]["name"]
-      destination = departure["destination"]["name"] |> clean_stop_name()
-      when_str = format_time_until(departure["when"])
-
-      # Render line number at x=0
-      acc = Renderer.render_text(acc, {0, y_pos}, font, line)
-
-      # Render destination starting at x=18, cropped to 70px width
-      dest_bitmap = Bitmap.new(74, 8)
-      |> Renderer.render_text({0, 0}, font, destination)
-      acc = Bitmap.overlay(acc, dest_bitmap, [cursor_x: 18, cursor_y: y_pos])
-
-      # Render time right-aligned, using top/bottom based on index
-      valign = if index == 0, do: :top, else: :bottom
-      acc = Renderer.place_text(acc, font, when_str,
-        align: :right,
-        valign: valign
-      )
-
-      acc
-    end)
+    # Place first departure at top (y=8), second at bottom (y=0)
+    display
+    |> Bitmap.overlay(first, cursor_y: 8)
+    |> Bitmap.overlay(second, cursor_y: 0)
     |> Display.set()
+  end
+
+  defp render_departures([single_departure]) do
+    # Handle case with only one departure by showing it at the bottom
+    font = Library.get_font_by_name("flipdot_condensed")
+    display = Bitmap.new(Display.width(), Display.height())
+
+    single = render_departure(single_departure, font)
+    display
+    |> Bitmap.overlay(single, cursor_y: 8)
+    |> Display.set()
+  end
+
+  defp render_departures([]) do
+    # Handle empty departures list
+    Display.set(Bitmap.new(Display.width(), Display.height()))
+  end
+
+  defp render_departure(departure, font) do
+    bitmap = Bitmap.new(Display.width(), 8)
+
+    # Format departure info
+    line = departure["line"]["name"]
+    destination = departure["destination"]["name"] |> clean_stop_name()
+    when_str = format_time_until(departure["when"])
+
+    Logger.debug("Rendering: #{line} #{destination} #{when_str}")
+
+    # Render line number at x=0
+    bitmap = Renderer.render_text(bitmap, {0, 0}, font, line)
+
+    # Render destination
+    dest_bitmap = Bitmap.new(90, 8)
+    |> Renderer.render_text({0, 0}, font, destination)
+    bitmap = Bitmap.overlay(bitmap, dest_bitmap, cursor_x: 15)
+
+    # Render time right-aligned
+    Renderer.place_text(bitmap, font, when_str, align: :right)
   end
 
   defp format_time_until(when_str) do
