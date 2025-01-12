@@ -11,7 +11,8 @@ defmodule Fliplove.Apps do
     maze_solver: Fliplove.Apps.MazeSolver,
     symbols: Fliplove.Apps.Symbols,
     fluepdot_server: Fliplove.Apps.FluepdotServer,
-    datetime: Fliplove.Apps.Datetime
+    datetime: Fliplove.Apps.Datetime,
+    timetable: Fliplove.Apps.Timetable
   }
 
   def start_link(_) do

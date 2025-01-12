@@ -576,6 +576,7 @@ defmodule FliploveWeb.FlipdotLive do
                 <.app app={@app} tooltip="Symbols" value="symbols" self={:symbols} icon="icons" />
                 <.app app={@app} tooltip="Fluepdot Server" value="fluepdot_server" self={:fluepdot_server} icon="server" />
                 <.app app={@app} tooltip="Date & Time" value="datetime" self={:datetime} icon="clock" />
+                <.app app={@app} tooltip="Timetable" value="timetable" self={:timetable} icon="train" />
               </.button_group>
             </.section>
 
