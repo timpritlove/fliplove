@@ -80,11 +80,9 @@ defmodule Fliplove.Apps.Timetable do
 
     case HTTPoison.get(url) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        Logger.debug("Got response: #{body}")
 
         case Jason.decode(body) do
           {:ok, %{"departures" => departures}} when is_list(departures) ->
-            Logger.debug("Found #{length(departures)} departures")
             sorted_departures = departures
               |> Enum.sort_by(& &1["when"])
               |> Enum.take(2)
@@ -132,17 +130,14 @@ defmodule Fliplove.Apps.Timetable do
       line = departure["line"]["name"]
       destination = departure["destination"]["name"] |> clean_stop_name()
       when_str = format_time_until(departure["when"])
-      Logger.debug("Rendering line=#{line} dest=#{destination} time=#{when_str}")
 
       # Render line number at x=0
       acc = Renderer.render_text(acc, {0, y_pos}, font, line)
-      Logger.debug("Rendered line number")
 
       # Render destination starting at x=18, cropped to 70px width
       dest_bitmap = Bitmap.new(74, 8)
       |> Renderer.render_text({0, 0}, font, destination)
       acc = Bitmap.overlay(acc, dest_bitmap, [cursor_x: 18, cursor_y: y_pos])
-      Logger.debug("Rendered destination")
 
       # Render time right-aligned, using top/bottom based on index
       valign = if index == 0, do: :top, else: :bottom
@@ -150,7 +145,6 @@ defmodule Fliplove.Apps.Timetable do
         align: :right,
         valign: valign
       )
-      Logger.debug("Rendered time")
 
       acc
     end)
@@ -158,8 +152,6 @@ defmodule Fliplove.Apps.Timetable do
   end
 
   defp format_time_until(when_str) do
-    Logger.debug("Formatting time for: #{when_str}")
-
     case DateTime.from_iso8601(when_str) do
       {:ok, departure_time, _offset} ->
         now = DateTime.now!("Etc/UTC")
