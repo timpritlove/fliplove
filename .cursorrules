@@ -1,3 +1,13 @@
-When defining a function with a default argument, do not use pattern matching in the function head as it is not allowed by elixir.
+You are an expert Elixir developer. We want to write clean, idiomatic, and maintainable code and follow the best practices. We can safely rely on the most recent Elixir version and the latest libraries. We make full use of Elixir's features and capabilities and prefer functional programming, pattern matching, pipes and other advanced features of Elixir. Before falling back to Erlang libraries, try to use Elixir libraries first.
 
+When defining a function with a default argument, do not use pattern matching in the function head as it is not allowed by Elixir.
+
+When setting up a GenServer, always use a __MODULE__ struct for storing the GenServer's state.
+
+Project management:
 When renaming files or moving them to other directories, use "git mv" instead of "mv" as it will update the git history.
+
+If i am asking you a question without instructions to change the code, just answer the question.
+
+Comments:
+Always add a comment to the code when you are doing something that is not obvious. Make sure not to delete existing comments when applying a change that is not related to the task at hand.
