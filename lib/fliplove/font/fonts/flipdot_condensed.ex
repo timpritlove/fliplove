@@ -1,15 +1,15 @@
-defmodule Fliplove.Font.Fonts.Flipdot do
+defmodule Fliplove.Font.Fonts.FlipdotCondensed do
   alias Fliplove.Bitmap
   import Bitmap
   alias Fliplove.Font
 
   @font %Font{
-    name: "flipdot",
+    name: "flipdot_condensed",
     properties: %{
       copyright: "Public domain font. Share and enjoy.",
       family_name: "Flipdot",
       foundry: "AAA",
-      weight_name: "Normal",
+      weight_name: "Condensed",
       slant: "R",
       pixel_size: 7
     },
@@ -18,13 +18,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "defaultchar",
         bitmap:
           defbitmap([
-            "XXXXX",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "XXXXX"
+            "XXX",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "XXX"
           ])
       },
       ?\s => %{
@@ -70,13 +70,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "number sign",
         bitmap:
           defbitmap([
-            " X X ",
-            " X X ",
-            "XXXXX",
-            " X X ",
-            "XXXXX",
-            " X X ",
-            " X X "
+            " X ",
+            " X ",
+            "XXX",
+            " X ",
+            "XXX",
+            " X ",
+            " X "
           ])
       },
       ?$ => %{
@@ -101,26 +101,26 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "percent sign",
         bitmap:
           defbitmap([
-            "XX X ",
-            "XX X ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            " X XX",
-            " X XX"
+            "X X",
+            "X X",
+            "  X",
+            " X ",
+            "X  ",
+            "X X",
+            "X X"
           ])
       },
       ?& => %{
         name: "ampersand",
         bitmap:
           defbitmap([
-            " XX  ",
-            "X  X ",
-            "X  X ",
-            " XX  ",
-            "X  X ",
-            "X   X",
-            " XXXX"
+            " X  ",
+            "X X ",
+            "X X ",
+            " X  ",
+            "X X ",
+            "X  X",
+            " XXX"
           ])
       },
       ?' => %{
@@ -140,26 +140,26 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "left parenthesis",
         bitmap:
           defbitmap([
-            "  X",
-            " X ",
-            "X  ",
-            "X  ",
-            "X  ",
-            " X ",
-            "  X"
+            " X",
+            "X ",
+            "X ",
+            "X ",
+            "X ",
+            "X ",
+            " X"
           ])
       },
       ?) => %{
         name: "right parenthesis",
         bitmap:
           defbitmap([
-            "X  ",
-            " X ",
-            "  X",
-            "  X",
-            "  X",
-            " X ",
-            "X  "
+            "X ",
+            " X",
+            " X",
+            " X",
+            " X",
+            " X",
+            "X "
           ])
       },
       ?* => %{
@@ -179,13 +179,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "plus sign",
         bitmap:
           defbitmap([
-            "     ",
-            "  X  ",
-            "  X  ",
-            "XXXXX",
-            "  X  ",
-            "  X  ",
-            "     "
+            "   ",
+            "   ",
+            " X ",
+            "XXX",
+            " X ",
+            "   ",
+            "   "
           ])
       },
       ?, => %{
@@ -203,13 +203,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "hyphen",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "     ",
-            "XXXXX",
-            "     ",
-            "     ",
-            "     "
+            "   ",
+            "   ",
+            "   ",
+            "XXX",
+            "   ",
+            "   ",
+            "   "
           ])
       },
       ?. => %{
@@ -236,130 +236,130 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "zero",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "X  XX",
-            "X X X",
-            "XX  X",
-            "X   X",
-            " XXX "
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?1 => %{
         name: "one",
         bitmap:
           defbitmap([
-            " X ",
-            "XX ",
-            " X ",
-            " X ",
-            " X ",
-            " X ",
-            "XXX"
+            " X",
+            "XX",
+            " X",
+            " X",
+            " X",
+            " X",
+            " X"
           ])
       },
       ?2 => %{
         name: "two",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "    X",
-            "  XX ",
-            " X   ",
-            "X    ",
-            "XXXXX"
+            " X ",
+            "X X",
+            "  X",
+            " X ",
+            "X  ",
+            "X  ",
+            "XXX"
           ])
       },
       ?3 => %{
         name: "three",
         bitmap:
           defbitmap([
-            "XXXXX",
-            "    X",
-            "   X ",
-            "  XX ",
-            "    X",
-            "X   X",
-            " XXX "
+            " X ",
+            "X X",
+            "  X",
+            " X ",
+            "  X",
+            "X X",
+            " X "
           ])
       },
       ?4 => %{
         name: "four",
         bitmap:
           defbitmap([
-            "   X ",
-            "  XX ",
-            " X X ",
-            "X  X ",
-            "XXXXX",
-            "   X ",
-            "   X "
+            "X  ",
+            "X X",
+            "X X",
+            "XXX",
+            "  X",
+            "  X",
+            "  X"
           ])
       },
       ?5 => %{
         name: "five",
         bitmap:
           defbitmap([
-            "XXXXX",
-            "X    ",
-            "X    ",
-            " XXX ",
-            "    X",
-            "X   X",
-            " XXX "
+            "XXX",
+            "X  ",
+            "X  ",
+            " X ",
+            "  X",
+            "X X",
+            " X "
           ])
       },
       ?6 => %{
         name: "six",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "X    ",
-            "XXXX ",
-            "X   X",
-            "X   X",
-            " XXX "
+            " X ",
+            "X X",
+            "X  ",
+            "XX ",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?7 => %{
         name: "seven",
         bitmap:
           defbitmap([
-            "XXXXX",
-            "    X",
-            "   X ",
-            "  X  ",
-            " X   ",
-            " X   ",
-            " X   "
+            "XXX",
+            "  X",
+            "  X",
+            " X ",
+            " X ",
+            " X ",
+            " X "
           ])
       },
       ?8 => %{
         name: "eight",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "X   X",
-            " XXX ",
-            "X   X",
-            "X   X",
-            " XXX "
+            " X ",
+            "X X",
+            "X X",
+            " X ",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?9 => %{
         name: "nine",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "X   X",
-            " XXXX",
-            "    X",
-            "X   X",
-            " XXX "
+            " X ",
+            "X X",
+            "X X",
+            " XX",
+            "  X",
+            "X X",
+            " X "
           ])
       },
       ?: => %{
@@ -406,13 +406,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "equals sign",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "XXXXX",
-            "     ",
-            "XXXXX",
-            "     ",
-            "     "
+            "   ",
+            "   ",
+            "XXX",
+            "   ",
+            "XXX",
+            "   ",
+            "   "
           ])
       },
       ?> => %{
@@ -432,13 +432,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "question mark",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "   X ",
-            "  X  ",
-            "  X  ",
-            "     ",
-            "  X  "
+            " XX ",
+            "X  X",
+            "   X",
+            "  X ",
+            "  X ",
+            "    ",
+            "  X "
           ])
       },
       ?@ => %{
@@ -458,108 +458,251 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "A",
         bitmap:
           defbitmap([
-            "  X  ",
-            " X X ",
-            "X   X",
-            "X   X",
-            "XXXXX",
-            "X   X",
-            "X   X"
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            "XXX",
+            "X X",
+            "X X"
           ])
       },
       ?B => %{
         name: "B",
         bitmap:
           defbitmap([
-            "XXXX ",
-            "X   X",
-            "X   X",
-            "XXXX ",
-            "X   X",
-            "X   X",
-            "XXXX "
+            "XX ",
+            "X X",
+            "X X",
+            "XX ",
+            "X X",
+            "X X",
+            "XX "
           ])
       },
       ?C => %{
         name: "C",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "X    ",
-            "X    ",
-            "X    ",
-            "X   X",
-            " XXX "
+            " X ",
+            "X X",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X X",
+            " X "
           ])
       },
       ?D => %{
         name: "D",
         bitmap:
           defbitmap([
-            "XXXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "XXXX "
+            "XX ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "XX "
           ])
       },
       ?E => %{
         name: "E",
         bitmap:
           defbitmap([
-            "XXXXX",
-            "X    ",
-            "X    ",
-            "XXXX ",
-            "X    ",
-            "X    ",
-            "XXXXX"
+            "XXX",
+            "X  ",
+            "X  ",
+            "XX ",
+            "X  ",
+            "X  ",
+            "XXX"
           ])
       },
       ?F => %{
         name: "F",
         bitmap:
           defbitmap([
-            "XXXXX",
-            "X    ",
-            "X    ",
-            "XXXX ",
-            "X    ",
-            "X    ",
-            "X    "
+            "XXX",
+            "X  ",
+            "X  ",
+            "XX ",
+            "X  ",
+            "X  ",
+            "X  "
           ])
       },
       ?G => %{
         name: "G",
         bitmap:
           defbitmap([
-            " XXX ",
-            "X   X",
-            "X    ",
-            "X XXX",
-            "X   X",
-            "X   X",
-            " XXX "
+            " X ",
+            "X X",
+            "X  ",
+            "X X",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?H => %{
         name: "H",
         bitmap:
           defbitmap([
-            "X   X",
-            "X   X",
-            "X   X",
-            "XXXXX",
-            "X   X",
-            "X   X",
-            "X   X"
+            "X X",
+            "X X",
+            "X X",
+            "XXX",
+            "X X",
+            "X X",
+            "X X"
           ])
       },
       ?I => %{
         name: "I",
+        bitmap:
+          defbitmap([
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
+          ])
+      },
+      ?J => %{
+        name: "J",
+        bitmap:
+          defbitmap([
+            "  X",
+            "  X",
+            "  X",
+            "  X",
+            "  X",
+            "X X",
+            " X "
+          ])
+      },
+      ?K => %{
+        name: "K",
+        bitmap:
+          defbitmap([
+            "X X",
+            "X X",
+            "X X",
+            "XX ",
+            "X X",
+            "X X",
+            "X X"
+          ])
+      },
+      ?L => %{
+        name: "L",
+        bitmap:
+          defbitmap([
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            "X  ",
+            "XXX"
+          ])
+      },
+      ?M => %{
+        name: "M",
+        bitmap:
+          defbitmap([
+            "X X",
+            "XXX",
+            "XXX",
+            "X X",
+            "X X",
+            "X X",
+            "X X"
+          ])
+      },
+      ?N => %{
+        name: "N",
+        bitmap:
+          defbitmap([
+            "X X",
+            "X X",
+            "XXX",
+            "X X",
+            "X X",
+            "X X",
+            "X X"
+          ])
+      },
+      ?O => %{
+        name: "O",
+        bitmap:
+          defbitmap([
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            " X "
+          ])
+      },
+      ?P => %{
+        name: "P",
+        bitmap:
+          defbitmap([
+            "XX ",
+            "X X",
+            "X X",
+            "XX ",
+            "X  ",
+            "X  ",
+            "X  "
+          ])
+      },
+      ?Q => %{
+        name: "Q",
+        bitmap:
+          defbitmap([
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "XX ",
+            " XX"
+          ])
+      },
+      ?R => %{
+        name: "R",
+        bitmap:
+          defbitmap([
+            "XX ",
+            "X X",
+            "X X",
+            "XX ",
+            "X X",
+            "X X",
+            "X X"
+          ])
+      },
+      ?S => %{
+        name: "S",
+        bitmap:
+          defbitmap([
+            " X ",
+            "X X",
+            "X  ",
+            " X ",
+            "  X",
+            "X X",
+            " X "
+          ])
+      },
+      ?T => %{
+        name: "T",
         bitmap:
           defbitmap([
             "XXX",
@@ -568,241 +711,98 @@ defmodule Fliplove.Font.Fonts.Flipdot do
             " X ",
             " X ",
             " X ",
-            "XXX"
-          ])
-      },
-      ?J => %{
-        name: "J",
-        bitmap:
-          defbitmap([
-            "    X",
-            "    X",
-            "    X",
-            "    X",
-            "    X",
-            "X   X",
-            " XXX "
-          ])
-      },
-      ?K => %{
-        name: "K",
-        bitmap:
-          defbitmap([
-            "X   X",
-            "X  X ",
-            "X X  ",
-            "XX   ",
-            "X X  ",
-            "X  X ",
-            "X   X"
-          ])
-      },
-      ?L => %{
-        name: "L",
-        bitmap:
-          defbitmap([
-            "X    ",
-            "X    ",
-            "X    ",
-            "X    ",
-            "X    ",
-            "X    ",
-            "XXXXX"
-          ])
-      },
-      ?M => %{
-        name: "M",
-        bitmap:
-          defbitmap([
-            "X   X",
-            "XX XX",
-            "X X X",
-            "X X X",
-            "X   X",
-            "X   X",
-            "X   X"
-          ])
-      },
-      ?N => %{
-        name: "N",
-        bitmap:
-          defbitmap([
-            "X   X",
-            "X   X",
-            "XX  X",
-            "X X X",
-            "X  XX",
-            "X   X",
-            "X   X"
-          ])
-      },
-      ?O => %{
-        name: "O",
-        bitmap:
-          defbitmap([
-            " XXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX "
-          ])
-      },
-      ?P => %{
-        name: "P",
-        bitmap:
-          defbitmap([
-            "XXXX ",
-            "X   X",
-            "X   X",
-            "XXXX ",
-            "X    ",
-            "X    ",
-            "X    "
-          ])
-      },
-      ?Q => %{
-        name: "Q",
-        bitmap:
-          defbitmap([
-            " XXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X X X",
-            "X  X ",
-            " XX X"
-          ])
-      },
-      ?R => %{
-        name: "R",
-        bitmap:
-          defbitmap([
-            "XXXX ",
-            "X   X",
-            "X   X",
-            "XXXX ",
-            "X X  ",
-            "X  X ",
-            "X   X"
-          ])
-      },
-      ?S => %{
-        name: "S",
-        bitmap:
-          defbitmap([
-            " XXX ",
-            "X   X",
-            "X    ",
-            " XXX ",
-            "    X",
-            "X   X",
-            " XXX "
-          ])
-      },
-      ?T => %{
-        name: "T",
-        bitmap:
-          defbitmap([
-            "XXXXX",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  "
+            " X "
           ])
       },
       ?U => %{
         name: "U",
         bitmap:
           defbitmap([
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX "
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "XXX"
           ])
       },
       ?V => %{
         name: "V",
         bitmap:
           defbitmap([
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            " X X ",
-            "  X  "
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?W => %{
         name: "W",
         bitmap:
           defbitmap([
-            "X   X",
-            "X   X",
-            "X   X",
-            "X X X",
-            "X X X",
-            "XX XX",
-            "X   X"
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "XXX",
+            "XXX",
+            "X X"
           ])
       },
       ?X => %{
         name: "X",
         bitmap:
           defbitmap([
-            "X   X",
-            "X   X",
-            " X X ",
-            "  X  ",
-            " X X ",
-            "X   X",
-            "X   X"
+            "X X",
+            "X X",
+            "X X",
+            " X ",
+            "X X",
+            "X X",
+            "X X"
           ])
       },
       ?Y => %{
         name: "Y",
         bitmap:
           defbitmap([
-            "X   X",
-            "X   X",
-            " X X ",
-            "  X  ",
-            "  X  ",
-            "  X  ",
-            "  X  "
+            "X X",
+            "X X",
+            "X X",
+            " X ",
+            " X ",
+            " X ",
+            " X "
           ])
       },
       ?Z => %{
         name: "Z",
         bitmap:
           defbitmap([
-            "XXXXX",
-            "    X",
-            "   X ",
-            "  X  ",
-            " X   ",
-            "X    ",
-            "XXXXX"
+            "XXX",
+            "  X",
+            "  X",
+            " X ",
+            "X  ",
+            "X  ",
+            "XXX"
           ])
       },
       ?[ => %{
         name: "left square bracket",
         bitmap:
           defbitmap([
-            " XX",
-            "X  ",
-            "X  ",
-            "X  ",
-            "X  ",
-            "X  ",
-            " XX"
+            "XX",
+            "X ",
+            "X ",
+            "X ",
+            "X ",
+            "X ",
+            "XX"
           ])
       },
       ?\\ => %{
@@ -822,13 +822,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "right square bracket",
         bitmap:
           defbitmap([
-            "XX ",
-            "  X",
-            "  X",
-            "  X",
-            "  X",
-            "  X",
-            "XX "
+            "XX",
+            " X",
+            " X",
+            " X",
+            " X",
+            " X",
+            "XX"
           ])
       },
       ?^ => %{
@@ -848,13 +848,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "underscore",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "XXXXX"
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "XXX"
           ])
       },
       ?` => %{
@@ -874,93 +874,92 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "a",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            " XXX ",
-            "    X",
-            " XXXX",
-            "X   X",
-            " XXXX"
+            "   ",
+            "   ",
+            "XX ",
+            "  X",
+            " XX",
+            "X X",
+            "XXX"
           ])
       },
       ?b => %{
         name: "b",
         bitmap:
           defbitmap([
-            "X    ",
-            "X    ",
-            "XXXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "XXXX "
+            "X  ",
+            "X  ",
+            "XX ",
+            "X X",
+            "X X",
+            "X X",
+            "XX "
           ])
       },
       ?c => %{
         name: "c",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            " XXXX",
-            "X    ",
-            "X    ",
-            "X    ",
-            " XXXX"
+            "   ",
+            "   ",
+            " XX",
+            "X  ",
+            "X  ",
+            "X  ",
+            " XX"
           ])
       },
       ?d => %{
         name: "d",
         bitmap:
           defbitmap([
-            "    X",
-            "    X",
-            " XXXX",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXXX"
+            "  X",
+            "  X",
+            " XX",
+            "X X",
+            "X X",
+            "X X",
+            " XX"
           ])
       },
       ?e => %{
         name: "e",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            " XXX ",
-            "X   X",
-            "XXXXX",
-            "X    ",
-            " XXX "
+            "   ",
+            "   ",
+            " X ",
+            "X X",
+            "XXX",
+            "X  ",
+            " XX"
           ])
       },
       ?f => %{
         name: "f",
         bitmap:
           defbitmap([
-            " XX",
-            "X  ",
-            "X  ",
-            "XX ",
-            "X  ",
-            "X  ",
-            "X  "
+            " X",
+            "X ",
+            "X ",
+            "XX",
+            "X ",
+            "X ",
+            "X "
           ])
       },
       ?g => %{
         name: "g",
         bitmap:
-          defbitmap(
-            [
-              "     ",
-              " XXX ",
-              "X   X",
-              "X   X",
-              "X   X",
-              " XXXX",
-              "    X",
-              " XXX "
+          defbitmap([
+            "   ",
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            " XX",
+            "  X",
+            " XX"
             ],
             baseline_y: -2
           )
@@ -969,26 +968,26 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "h",
         bitmap:
           defbitmap([
-            "X    ",
-            "X    ",
-            "XXXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X"
+            "X  ",
+            "X  ",
+            "XX ",
+            "X X",
+            "X X",
+            "X X",
+            "X X"
           ])
       },
       ?ï => %{
         name: "i diaeresis",
         bitmap:
           defbitmap([
-            "X X",
-            "   ",
-            " X ",
-            " X ",
-            " X ",
-            " X ",
-            " X "
+            "X",
+            " ",
+            "X",
+            " ",
+            "X",
+            "X",
+            "X"
           ])
       },
       ?i => %{
@@ -1009,14 +1008,14 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         bitmap:
           defbitmap(
             [
-              "  X",
-              "   ",
-              "  X",
-              "  X",
-              "  X",
-              "  X",
-              "  X",
-              "XX "
+              " X",
+              "  ",
+              " X",
+              " X",
+              " X",
+              " X",
+              " X",
+              "X "
             ],
             baseline_y: -2
           )
@@ -1025,26 +1024,26 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "k",
         bitmap:
           defbitmap([
-            "X   ",
-            "X   ",
-            "X  X",
-            "X X ",
-            "XX  ",
-            "X X ",
-            "X  X"
+            "X  ",
+            "X  ",
+            "X X",
+            "XX ",
+            "XX ",
+            "X X",
+            "X X"
           ])
       },
       ?l => %{
         name: "l",
         bitmap:
           defbitmap([
-            "X  ",
-            "X  ",
-            "X  ",
-            "X  ",
-            "X  ",
-            "X  ",
-            " XX"
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X",
+            "X"
           ])
       },
       ?m => %{
@@ -1064,26 +1063,26 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "n",
         bitmap:
           defbitmap([
-            "    ",
-            "    ",
-            "XXX ",
-            "X  X",
-            "X  X",
-            "X  X",
-            "X  X"
+            "   ",
+            "   ",
+            "XX ",
+            "X X",
+            "X X",
+            "X X",
+            "X X"
           ])
       },
       ?o => %{
         name: "o",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            " XXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX "
+            "   ",
+            "   ",
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?p => %{
@@ -1091,13 +1090,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         bitmap:
           defbitmap(
             [
-              "XXXX ",
-              "X   X",
-              "X   X",
-              "X   X",
-              "XXXX ",
-              "X    ",
-              "X    "
+              "XX ",
+              "X X",
+              "X X",
+              "X X",
+              "XX ",
+              "X  ",
+              "X  "
             ],
             baseline_y: -2
           )
@@ -1107,13 +1106,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         bitmap:
           defbitmap(
             [
-              " XXX ",
-              "X   X",
-              "X   X",
-              "X   X",
-              " XXXX",
-              "    X",
-              "    X"
+              " X ",
+              "X X",
+              "X X",
+              "X X",
+              " XX",
+              "  X",
+              "  X"
             ],
             baseline_y: -2
           )
@@ -1122,91 +1121,91 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "r",
         bitmap:
           defbitmap([
-            "    ",
-            "    ",
-            " XXX",
-            "X   ",
-            "X   ",
-            "X   ",
-            "X   "
+            "  ",
+            "  ",
+            " X",
+            "X ",
+            "X ",
+            "X ",
+            "X "
           ])
       },
       ?s => %{
         name: "s",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            " XXXX",
-            "X    ",
-            " XXX ",
-            "    X",
-            "XXXX "
+            "   ",
+            "   ",
+            " XX",
+            "X  ",
+            " X ",
+            "  X",
+            "XX "
           ])
       },
       ?t => %{
         name: "t",
         bitmap:
           defbitmap([
-            " X ",
-            " X ",
-            "XXX",
-            " X ",
-            " X ",
-            " X ",
-            "  X"
+            "X ",
+            "X ",
+            "XX",
+            "X ",
+            "X ",
+            "X ",
+            " X"
           ])
       },
       ?u => %{
         name: "u",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX "
+            "   ",
+            "   ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "XXX"
           ])
       },
       ?v => %{
         name: "v",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "X   X",
-            "X   X",
-            "X   X",
-            " X X ",
-            "  X  "
+            "   ",
+            "   ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?w => %{
         name: "w",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "X   X",
-            "X X X",
-            "X X X",
-            "XX XX",
-            "X   X"
+            "   ",
+            "   ",
+            "X X",
+            "X X",
+            "XXX",
+            "XXX",
+            "X X"
           ])
       },
       ?x => %{
         name: "x",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "X   X",
-            " X X ",
-            "  X  ",
-            " X X ",
-            "X   X"
+            "   ",
+            "   ",
+            "X X",
+            "X X",
+            " X ",
+            "X X",
+            "X X"
           ])
       },
       ?y => %{
@@ -1214,13 +1213,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         bitmap:
           defbitmap(
             [
-              "X   X",
-              "X   X",
-              "X   X",
-              " X X ",
-              "  X  ",
-              "  X  ",
-              "  X  "
+              "X X",
+              "X X",
+              "X X",
+              " X ",
+              " X ",
+              " X ",
+              " X "
             ],
             baseline_y: -2
           )
@@ -1229,26 +1228,26 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "z",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "XXXXX",
-            "   X ",
-            "  X  ",
-            " X   ",
-            "XXXXX"
+            "   ",
+            "   ",
+            "XXX",
+            "  X",
+            " X ",
+            "X  ",
+            "XXX"
           ])
       },
       ?{ => %{
         name: "left curly brace",
         bitmap:
           defbitmap([
-            "  X",
-            " X ",
-            " X ",
-            "X  ",
-            " X ",
-            " X ",
-            "  X"
+            " X",
+            " X",
+            "X ",
+            "X ",
+            "X ",
+            " X",
+            " X"
           ])
       },
       ?| => %{
@@ -1268,13 +1267,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "right curly brace",
         bitmap:
           defbitmap([
-            "X  ",
-            " X ",
-            " X ",
-            "  X",
-            " X ",
-            " X ",
-            "X  "
+            "X ",
+            "X ",
+            " X",
+            " X",
+            " X",
+            "X ",
+            "X "
           ])
       },
       ?~ => %{
@@ -1390,15 +1389,15 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         bitmap:
           defbitmap(
             [
-              " XXX ",
-              "X    ",
-              " X   ",
-              " XXX ",
-              "X   X",
-              " XXX ",
-              "   X ",
-              "    X",
-              " XXX "
+              " X ",
+              "X  ",
+              " X ",
+              " X ",
+              "X X",
+              " X ",
+              " X ",
+              "  X",
+              " X "
             ],
             baseline_y: -1
           )
@@ -1408,14 +1407,14 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         bitmap:
           defbitmap(
             [
-              " XXX ",
-              "X   X",
-              "X  X ",
-              "X X  ",
-              "X  X ",
-              "X   X",
-              "X XX ",
-              "X    "
+              " X ",
+              "X X",
+              "X X",
+              "XX ",
+              "X X",
+              "X X",
+              "XX ",
+              "X  "
             ],
             baseline_y: -1
           )
@@ -1424,81 +1423,81 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "A with diaresis",
         bitmap:
           defbitmap([
-            "X   X",
-            "  X  ",
-            " X X ",
-            "X   X",
-            "X   X",
-            "XXXXX",
-            "X   X",
-            "X   X"
+            "X X",
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            "XXX",
+            "X X",
+            "X X"
           ])
       },
       ?ä => %{
         name: "a with diaresis",
         bitmap:
           defbitmap([
-            " X X ",
-            "     ",
-            " XXX ",
-            "    X",
-            " XXXX",
-            "X   X",
-            " XXXX"
+            "X X",
+            "   ",
+            "XX ",
+            "  X",
+            " XX",
+            "X X",
+            "XXX"
           ])
       },
       ?Ö => %{
         name: "O with diaresis",
         bitmap:
           defbitmap([
-            "X   X",
-            " XXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX "
+            "X X",
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?ö => %{
         name: "o with diaresis",
         bitmap:
           defbitmap([
-            " X X ",
-            "     ",
-            " XXX ",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX "
+            "X X",
+            "   ",
+            " X ",
+            "X X",
+            "X X",
+            "X X",
+            " X "
           ])
       },
       ?Ü => %{
         name: "U with diaresis",
         bitmap:
           defbitmap([
-            "X   X",
-            "     ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX "
+            "X X",
+            "   ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "XXX"
           ])
       },
       ?ü => %{
         name: "u with diaresis",
         bitmap:
           defbitmap([
-            " X X ",
-            "     ",
-            "X   X",
-            "X   X",
-            "X   X",
-            "X   X",
-            " XXX "
+            "X X",
+            "   ",
+            "X X",
+            "X X",
+            "X X",
+            "X X",
+            "XXX"
           ])
       },
       ?¨ => %{
@@ -1519,15 +1518,15 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         bitmap:
           defbitmap(
             [
-              " XXX ",
-              "X   X",
-              "  X  ",
-              " X X ",
-              " X   ",
-              " X X ",
-              "  X  ",
-              "X   X",
-              " XXX "
+              " X ",
+              "X X",
+              "   ",
+              " XX",
+              "X  ",
+              " XX",
+              "   ",
+              "X X",
+              " X "
             ],
             baseline_y: -1
           )
@@ -1536,26 +1535,26 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "euro sign",
         bitmap:
           defbitmap([
-            "  XXX",
-            " X   ",
-            "XXXX ",
-            " X   ",
-            "XXXX ",
-            " X   ",
-            "  XXX"
+            "  XX",
+            " X  ",
+            "XXX ",
+            " X  ",
+            "XXX ",
+            " X  ",
+            "  XX"
           ])
       },
       ?¯ => %{
         name: "macron",
         bitmap:
           defbitmap([
-            "XXXXX",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     ",
-            "     "
+            "XXX",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   ",
+            "   "
           ])
       },
       ?° => %{
@@ -1575,39 +1574,39 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "plus-minus sign",
         bitmap:
           defbitmap([
-            "  X  ",
-            "  X  ",
-            "XXXXX",
-            "  X  ",
-            "  X  ",
-            "     ",
-            "XXXXX"
+            "   ",
+            " X ",
+            "XXX",
+            " X ",
+            "   ",
+            "XXX",
+            "   "
           ])
       },
       ?² => %{
         name: "superscript two",
         bitmap:
           defbitmap([
-            "XX ",
-            "  X",
-            " X ",
-            "X  ",
-            "XXX",
-            "   ",
-            "   "
+            "X ",
+            " X",
+            "X ",
+            "X ",
+            "XX",
+            "  ",
+            "  "
           ])
       },
       ?³ => %{
         name: "superscript three",
         bitmap:
           defbitmap([
-            "XX ",
-            "  X",
-            " X ",
-            "  X",
-            "XX ",
-            "   ",
-            "   "
+            "X ",
+            " X",
+            "X ",
+            " X",
+            "X ",
+            "  ",
+            "  "
           ])
       },
       ?´ => %{
@@ -1626,15 +1625,15 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         bitmap:
           defbitmap(
             [
-              "    ",
-              "    ",
-              "    ",
-              "   X",
-              "X  X",
-              "X  X",
-              "XXX ",
-              "X   ",
-              "X   "
+              "   ",
+              "   ",
+              "   ",
+              "  X",
+              "X X",
+              "X X",
+              "XX ",
+              "X  ",
+              "X  "
             ],
             baseline_y: -1
           )
@@ -1656,13 +1655,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "superscript one",
         bitmap:
           defbitmap([
-            " X ",
-            "XX ",
-            " X ",
-            " X ",
-            "XXX",
-            "   ",
-            "   "
+            " X",
+            "XX",
+            " X",
+            " X",
+            " X",
+            "  ",
+            "  "
           ])
       },
       ?ª => %{
@@ -1708,13 +1707,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "not sign",
         bitmap:
           defbitmap([
-            "     ",
-            "     ",
-            "     ",
-            "XXXXX",
-            "    X",
-            "     ",
-            "     "
+            "   ",
+            "   ",
+            "   ",
+            "XXX",
+            "  X",
+            "   ",
+            "   "
           ])
       },
       ?» => %{

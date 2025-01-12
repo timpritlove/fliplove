@@ -24,10 +24,11 @@ defmodule Fliplove.Font.Library do
     # Start with built-in fonts
     initial_fonts = [
       Fliplove.Font.Fonts.SpaceInvaders.get(),
-      Fliplove.Font.Fonts.Flipdot.get()
+      Fliplove.Font.Fonts.Flipdot.get(),
+      Fliplove.Font.Fonts.FlipdotCondensed.get()
     ]
 
-    Logger.debug("Loaded #{length(initial_fonts)} built-in fonts")
+    Logger.debug("Loaded #{length(initial_fonts)} built-in fonts: #{inspect(initial_fonts)}")
 
     {:ok, task_supervisor} = Task.Supervisor.start_link()
     Logger.debug("Started Task Supervisor")
