@@ -140,39 +140,39 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "left parenthesis",
         bitmap:
           defbitmap([
-            " X",
-            "X ",
-            "X ",
-            "X ",
-            "X ",
-            "X ",
-            " X"
+            "  X",
+            " X ",
+            "X  ",
+            "X  ",
+            "X  ",
+            " X ",
+            "  X"
           ])
       },
       ?) => %{
         name: "right parenthesis",
         bitmap:
           defbitmap([
-            "X ",
-            " X",
-            " X",
-            " X",
-            " X",
-            " X",
-            "X "
+            "X  ",
+            " X ",
+            "  X",
+            "  X",
+            "  X",
+            " X ",
+            "X  "
           ])
       },
       ?* => %{
         name: "asterisk",
         bitmap:
           defbitmap([
-            "  X  ",
-            "X X X",
-            " XXX ",
-            "  X  ",
-            " XXX ",
-            "X X X",
-            "  X  "
+            "   ",
+            "   ",
+            "X X",
+            " X ",
+            "X X",
+            "   ",
+            "   "
           ])
       },
       ?+ => %{
@@ -1241,13 +1241,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "left curly brace",
         bitmap:
           defbitmap([
-            " X",
-            " X",
-            "X ",
-            "X ",
-            "X ",
-            " X",
-            " X"
+            "  X",
+            " X ",
+            " X ",
+            "X  ",
+            " X ",
+            " X ",
+            "  X"
           ])
       },
       ?| => %{
@@ -1267,13 +1267,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "right curly brace",
         bitmap:
           defbitmap([
-            "X ",
-            "X ",
-            " X",
-            " X",
-            " X",
-            "X ",
-            "X "
+            "X  ",
+            " X ",
+            " X ",
+            "  X",
+            " X ",
+            " X ",
+            "X  "
           ])
       },
       ?~ => %{
