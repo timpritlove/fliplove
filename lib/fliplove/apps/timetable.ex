@@ -5,7 +5,10 @@ defmodule Fliplove.Apps.Timetable do
   alias Fliplove.Bitmap
   require Logger
 
-  @refresh_interval 30_000 # 30 seconds
+  # Default refresh intervals in milliseconds
+  @default_refresh_interval 60_000  # 60 seconds when no data or departures far away
+  @medium_refresh_interval 30_000   # 30 seconds when departure is 2-3 minutes away
+  @fast_refresh_interval 15_000     # 15 seconds when departure is less than 2 minutes away
   @api_base_url "https://v6.bvg.transport.rest"
   @stop_name_cleanup [
     {"(Berlin)", :end},    # Remove "(Berlin)" at the end of names
@@ -25,8 +28,9 @@ defmodule Fliplove.Apps.Timetable do
   - timer: Reference to the refresh timer
   - stop_id: BVG stop ID from environment variable
   - last_departures: List of last known departures, used for fallback on API errors
+  - refresh_interval: Current refresh interval in milliseconds
   """
-  defstruct [:timer, :stop_id, :last_departures]
+  defstruct [:timer, :stop_id, :last_departures, refresh_interval: @default_refresh_interval]
 
   def init_app(_opts) do
     case System.get_env("FLIPLOVE_TIMETABLE_STOP") do
@@ -36,8 +40,9 @@ defmodule Fliplove.Apps.Timetable do
 
       stop_id ->
         Logger.info("Starting timetable app for stop #{stop_id}")
-        timer = schedule_refresh()
-        state = %__MODULE__{timer: timer, stop_id: stop_id}
+        state = %__MODULE__{stop_id: stop_id}
+        timer = schedule_refresh(state)
+        state = %__MODULE__{state | timer: timer}
         update_display(state)
         {:ok, state}
     end
@@ -47,31 +52,82 @@ defmodule Fliplove.Apps.Timetable do
     # Cancel old timer if it exists
     if state.timer, do: Process.cancel_timer(state.timer)
 
-    # Update display and schedule next refresh
-    new_state = update_display(state)
-    timer = schedule_refresh()
+    # Update state with new data and timer
+    new_state = refresh_state(state)
 
-    {:noreply, %__MODULE__{new_state | timer: timer}}
+    {:noreply, new_state}
   end
 
-  defp schedule_refresh do
-    Process.send_after(self(), :refresh, @refresh_interval)
-  end
-
-  defp update_display(%__MODULE__{stop_id: stop_id, last_departures: last_departures} = state) do
+  defp refresh_state(%__MODULE__{stop_id: stop_id, last_departures: last_departures} = state) do
     case fetch_departures(stop_id) do
       {:ok, departures} ->
-        render_departures(departures)
-        %__MODULE__{state | last_departures: departures}
+        # Update display with new departures
+        update_display(departures)
+
+        # Calculate new refresh interval and schedule timer
+        new_refresh_interval = calculate_refresh_interval(departures)
+        new_timer = schedule_refresh(%__MODULE__{refresh_interval: new_refresh_interval})
+
+        %__MODULE__{state |
+          last_departures: departures,
+          refresh_interval: new_refresh_interval,
+          timer: new_timer
+        }
 
       {:error, reason} ->
         Logger.error("Failed to fetch departures: #{inspect(reason)}")
-        # On error, render last known departures if available
+        # On error, show last known departures if available
         if last_departures do
-          render_departures(last_departures)
+          update_display(last_departures)
         end
-        state
+
+        # Schedule next retry with current interval
+        new_timer = schedule_refresh(state)
+        %__MODULE__{state | timer: new_timer}
     end
+  end
+
+  defp update_display(departures) do
+    render_departures(departures)
+  end
+
+  defp schedule_refresh(%__MODULE__{refresh_interval: refresh_interval}) do
+    Logger.debug("Scheduling next refresh in #{div(refresh_interval, 1000)} seconds")
+    Process.send_after(self(), :refresh, refresh_interval)
+  end
+
+  defp calculate_refresh_interval(departures) when is_list(departures) and length(departures) > 0 do
+    # Get the first departure time
+    case List.first(departures) do
+      %{"when" => when_str} ->
+        case DateTime.from_iso8601(when_str) do
+          {:ok, departure_time, _offset} ->
+            now = DateTime.now!("Etc/UTC")
+            minutes_until = DateTime.diff(departure_time, now, :minute)
+
+            interval = cond do
+              minutes_until >= 3 -> @default_refresh_interval
+              minutes_until >= 2 -> @medium_refresh_interval
+              true -> @fast_refresh_interval
+            end
+
+            Logger.debug("Next departure in #{minutes_until} minutes, setting refresh interval to #{div(interval, 1000)} seconds")
+            interval
+
+          _error ->
+            Logger.debug("Could not parse departure time, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds")
+            @default_refresh_interval
+        end
+
+      _no_when ->
+        Logger.debug("No departure time found, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds")
+        @default_refresh_interval
+    end
+  end
+
+  defp calculate_refresh_interval(_) do
+    Logger.debug("No departures found, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds")
+    @default_refresh_interval
   end
 
   defp fetch_departures(stop_id) do
@@ -158,9 +214,6 @@ defmodule Fliplove.Apps.Timetable do
     line = departure["line"]["name"]
     destination = departure["destination"]["name"] |> clean_stop_name()
     when_str = format_time_until(departure["when"])
-
-    Logger.debug("Rendering: #{line} #{destination} #{when_str}")
-
     # Render line number at x=0
     bitmap = Renderer.render_text(bitmap, {0, 0}, font, line)
 
