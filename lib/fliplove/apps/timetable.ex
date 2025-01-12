@@ -6,6 +6,7 @@ defmodule Fliplove.Apps.Timetable do
   require Logger
 
   # Default refresh intervals in milliseconds
+  @initial_refresh_interval 1_000   # 1 second for the first fetch after startup
   @default_refresh_interval 60_000  # 60 seconds when no data or departures far away
   @medium_refresh_interval 30_000   # 30 seconds when departure is 2-3 minutes away
   @fast_refresh_interval 15_000     # 15 seconds when departure is less than 2 minutes away
@@ -40,11 +41,17 @@ defmodule Fliplove.Apps.Timetable do
 
       stop_id ->
         Logger.info("Starting timetable app for stop #{stop_id}")
-        state = %__MODULE__{stop_id: stop_id}
-        timer = schedule_refresh(state)
-        state = %__MODULE__{state | timer: timer}
-        update_display(state)
-        {:ok, state}
+        # Start with empty display
+        Display.set(Bitmap.new(Display.width(), Display.height()))
+
+        # Create initial state with very short refresh interval for first fetch
+        initial_state = %__MODULE__{
+          stop_id: stop_id,
+          refresh_interval: @initial_refresh_interval
+        }
+        timer = schedule_refresh(initial_state)
+
+        {:ok, %__MODULE__{initial_state | timer: timer}}
     end
   end
 
