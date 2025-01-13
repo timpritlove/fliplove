@@ -15,7 +15,7 @@ defmodule Fliplove.Apps.Dashboard do
   defstruct font: nil, bitmap: nil
 
   @font "flipdot_condensed"
-  @forecast_hours 72
+  @forecast_hours 73
 
   def init_app(_opts) do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
