@@ -14,7 +14,8 @@ defmodule Fliplove.Apps.Dashboard do
 
   defstruct font: nil, bitmap: nil
 
-  @font "flipdot"
+  @font "flipdot_condensed"
+  @forecast_hours 72
 
   def init_app(_opts) do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
@@ -294,7 +295,7 @@ defmodule Fliplove.Apps.Dashboard do
 
   # Add helper to get hourly forecast with maximum available hours
   defp get_hourly_forecast do
-    case Weather.get_hourly_forecast(54) do
+    case Weather.get_hourly_forecast(@forecast_hours) do
       [] ->
         Logger.warning("No hourly forecast data available")
         []
