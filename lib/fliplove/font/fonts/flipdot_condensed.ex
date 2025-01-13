@@ -83,14 +83,14 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "dollar sign",
         bitmap:
           defbitmap do
-              " X "
-              "XXX"
-              "X  "
-              "XXX"
-              "  X"
-              "XXX"
-              " X "
-            end
+            " X "
+            "XXX"
+            "X  "
+            "XXX"
+            "  X"
+            "XXX"
+            " X "
+          end
       },
       ?% => %{
         name: "percent sign",
@@ -187,9 +187,9 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "comma",
         bitmap:
           defbitmap baseline_y: -1 do
-              "X"
-              "X"
-            end
+            "X"
+            "X"
+          end
       },
       ?- => %{
         name: "hyphen",
@@ -370,13 +370,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "semicolon",
         bitmap:
           defbitmap baseline_y: -1 do
-              " "
-              " "
-              "X"
-              " "
-              "X"
-              "X"
-            end
+            " "
+            " "
+            "X"
+            " "
+            "X"
+            "X"
+          end
       },
       ?< => %{
         name: "less-than sign",
@@ -949,7 +949,7 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
             " XX"
             "  X"
             " XX"
-            end
+          end
       },
       ?h => %{
         name: "h",
@@ -994,15 +994,15 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "j",
         bitmap:
           defbitmap baseline_y: -2 do
-              " X"
-              "  "
-              " X"
-              " X"
-              " X"
-              " X"
-              " X"
-              "X "
-            end
+            " X"
+            "  "
+            " X"
+            " X"
+            " X"
+            " X"
+            " X"
+            "X "
+          end
       },
       ?k => %{
         name: "k",
@@ -1073,27 +1073,27 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "p",
         bitmap:
           defbitmap baseline_y: -2 do
-              "XX "
-              "X X"
-              "X X"
-              "X X"
-              "XX "
-              "X  "
-              "X  "
-            end
+            "XX "
+            "X X"
+            "X X"
+            "X X"
+            "XX "
+            "X  "
+            "X  "
+          end
       },
       ?q => %{
         name: "q",
         bitmap:
           defbitmap baseline_y: -2 do
-              " X "
-              "X X"
-              "X X"
-              "X X"
-              " XX"
-              "  X"
-              "  X"
-            end
+            " X "
+            "X X"
+            "X X"
+            "X X"
+            " XX"
+            "  X"
+            "  X"
+          end
       },
       ?r => %{
         name: "r",
@@ -1189,16 +1189,16 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
       ?y => %{
         name: "y",
         bitmap:
-        defbitmap baseline_y: -2 do
-          "   "
-          "X X"
-          "X X"
-          "X X"
-          "X X"
-          " XX"
-          "  X"
-          "XX "
-        end
+          defbitmap baseline_y: -2 do
+            "   "
+            "X X"
+            "X X"
+            "X X"
+            "X X"
+            " XX"
+            "  X"
+            "XX "
+          end
       },
       ?z => %{
         name: "z",
@@ -1364,30 +1364,30 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "section sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              " X "
-              "X  "
-              " X "
-              " X "
-              "X X"
-              " X "
-              " X "
-              "  X"
-              " X "
-            end
+            " X "
+            "X  "
+            " X "
+            " X "
+            "X X"
+            " X "
+            " X "
+            "  X"
+            " X "
+          end
       },
       ?ß => %{
         name: "sharp s",
         bitmap:
           defbitmap baseline_y: -1 do
-              " X "
-              "X X"
-              "X X"
-              "XX "
-              "X X"
-              "X X"
-              "XX "
-              "X  "
-            end
+            " X "
+            "X X"
+            "X X"
+            "XX "
+            "X X"
+            "X X"
+            "XX "
+            "X  "
+          end
       },
       ?Ä => %{
         name: "A with diaresis",
@@ -1487,16 +1487,16 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "copyright sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              " X "
-              "X X"
-              "   "
-              " XX"
-              "X  "
-              " XX"
-              "   "
-              "X X"
-              " X "
-            end
+            " X "
+            "X X"
+            "   "
+            " XX"
+            "X  "
+            " XX"
+            "   "
+            "X X"
+            " X "
+          end
       },
       ?€ => %{
         name: "euro sign",
@@ -1580,24 +1580,24 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "acute accent",
         bitmap:
           defbitmap baseline_y: 5 do
-              " X"
-              "X "
-            end
+            " X"
+            "X "
+          end
       },
       ?µ => %{
         name: "micro sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              "   "
-              "   "
-              "   "
-              "  X"
-              "X X"
-              "X X"
-              "XX "
-              "X  "
-              "X  "
-            end
+            "   "
+            "   "
+            "   "
+            "  X"
+            "X X"
+            "X X"
+            "XX "
+            "X  "
+            "X  "
+          end
       },
       ?· => %{
         name: "middle dot",

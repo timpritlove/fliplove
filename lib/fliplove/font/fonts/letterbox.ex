@@ -187,9 +187,9 @@ defmodule Fliplove.Font.Fonts.Letterbox do
         name: "comma",
         bitmap:
           defbitmap baseline_y: -1 do
-              " X"
-              "X "
-            end
+            " X"
+            "X "
+          end
       },
       ?- => %{
         name: "hyphen-minus",
@@ -1348,30 +1348,30 @@ defmodule Fliplove.Font.Fonts.Letterbox do
         name: "section sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              " XXX "
-              "X    "
-              " X   "
-              " XXX "
-              "X   X"
-              " XXX "
-              "   X "
-              "    X"
-              " XXX "
-            end
+            " XXX "
+            "X    "
+            " X   "
+            " XXX "
+            "X   X"
+            " XXX "
+            "   X "
+            "    X"
+            " XXX "
+          end
       },
       ?ß => %{
         name: "sharp s",
         bitmap:
           defbitmap baseline_y: -1 do
-              " XXX "
-              "X   X"
-              "X  X "
-              "X X  "
-              "X  X "
-              "X   X"
-              "X XX "
-              "X    "
-            end
+            " XXX "
+            "X   X"
+            "X  X "
+            "X X  "
+            "X  X "
+            "X   X"
+            "X XX "
+            "X    "
+          end
       },
       ?Ä => %{
         name: "A with diaresis",
@@ -1527,16 +1527,16 @@ defmodule Fliplove.Font.Fonts.Letterbox do
         name: "copyright sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              " XXX "
-              "X   X"
-              "  X  "
-              " X X "
-              " X   "
-              " X X "
-              "  X  "
-              "X   X"
-              " XXX "
-            end
+            " XXX "
+            "X   X"
+            "  X  "
+            " X X "
+            " X   "
+            " X X "
+            "  X  "
+            "X   X"
+            " XXX "
+          end
       },
       ?€ => %{
         name: "euro sign",
@@ -1620,24 +1620,24 @@ defmodule Fliplove.Font.Fonts.Letterbox do
         name: "acute accent",
         bitmap:
           defbitmap baseline_y: 5 do
-              " X"
-              "X "
-            end
+            " X"
+            "X "
+          end
       },
       ?µ => %{
         name: "micro sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              "    "
-              "    "
-              "    "
-              "   X"
-              "X  X"
-              "X  X"
-              "XXX "
-              "X   "
-              "X   "
-            end
+            "    "
+            "    "
+            "    "
+            "   X"
+            "X  X"
+            "X  X"
+            "XXX "
+            "X   "
+            "X   "
+          end
       },
       ?· => %{
         name: "middle dot",

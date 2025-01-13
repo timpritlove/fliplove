@@ -84,15 +84,15 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
         encoding: ?$,
         bitmap:
           defbitmap baseline_y: -1 do
-              "  X  "
-              " XXX "
-              "X X X"
-              "X X  "
-              " XXX "
-              "  X X"
-              "X X X"
-              " XXX "
-              "  X  "
+            "  X  "
+            " XXX "
+            "X X X"
+            "X X  "
+            " XXX "
+            "  X X"
+            "X X X"
+            " XXX "
+            "  X  "
           end
       },
       ?% => %{
@@ -190,8 +190,8 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
         encoding: ?,,
         bitmap:
           defbitmap baseline_y: -1 do
-              "  X  "
-              "  X  "
+            "  X  "
+            "  X  "
           end
       },
       ?- => %{
@@ -373,13 +373,13 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
         encoding: ?;,
         bitmap:
           defbitmap baseline_y: -1 do
-              "  X  "
-              "     "
-              "     "
-              "     "
-              "     "
-              "  X  "
-              "  X  "
+            "  X  "
+            "     "
+            "     "
+            "     "
+            "     "
+            "  X  "
+            "  X  "
           end
       },
       ?< => %{
@@ -1361,15 +1361,15 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
         name: "section sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              " XXX "
-              "X    "
-              " X   "
-              " XXX "
-              "X   X"
-              " XXX "
-              "   X "
-              "    X"
-              " XXX "
+            " XXX "
+            "X    "
+            " X   "
+            " XXX "
+            "X   X"
+            " XXX "
+            "   X "
+            "    X"
+            " XXX "
           end
       },
       ?¨ => %{
@@ -1391,15 +1391,15 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
         name: "copyright sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              " XXX "
-              "X   X"
-              "  X  "
-              " X X "
-              " X   "
-              " X X "
-              "  X  "
-              "X   X"
-              " XXX "
+            " XXX "
+            "X   X"
+            "  X  "
+            " X X "
+            " X   "
+            " X X "
+            "  X  "
+            "X   X"
+            " XXX "
           end
       },
       ?€ => %{
@@ -1491,8 +1491,8 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
         name: "acute accent",
         bitmap:
           defbitmap baseline_y: 5 do
-              "   X "
-              "  X  "
+            "   X "
+            "  X  "
           end
       },
       ?µ => %{
@@ -1500,15 +1500,15 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
         name: "micro sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              "     "
-              "     "
-              "     "
-              "    X"
-              " X  X"
-              " X  X"
-              " XXX "
-              " X   "
-              " X   "
+            "     "
+            "     "
+            "     "
+            "    X"
+            " X  X"
+            " X  X"
+            " XXX "
+            " X   "
+            " X   "
           end
       },
       ?· => %{

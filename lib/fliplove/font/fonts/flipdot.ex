@@ -83,16 +83,16 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "dollar sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              "  X  "
-              " XXX "
-              "X X X"
-              "X X  "
-              " XXX "
-              "  X X"
-              "X X X"
-              " XXX "
-              "  X  "
-            end
+            "  X  "
+            " XXX "
+            "X X X"
+            "X X  "
+            " XXX "
+            "  X X"
+            "X X X"
+            " XXX "
+            "  X  "
+          end
       },
       ?% => %{
         name: "percent sign",
@@ -189,9 +189,9 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "comma",
         bitmap:
           defbitmap baseline_y: -1 do
-              "X"
-              "X"
-            end
+            "X"
+            "X"
+          end
       },
       ?- => %{
         name: "hyphen",
@@ -372,13 +372,13 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "semicolon",
         bitmap:
           defbitmap baseline_y: -1 do
-              " "
-              "X"
-              " "
-              " "
-              "X"
-              "X"
-            end
+            " "
+            "X"
+            " "
+            " "
+            "X"
+            "X"
+          end
       },
       ?< => %{
         name: "less-than sign",
@@ -943,15 +943,15 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "g",
         bitmap:
           defbitmap baseline_y: -2 do
-              "     "
-              " XXX "
-              "X   X"
-              "X   X"
-              "X   X"
-              " XXXX"
-              "    X"
-              " XXX "
-            end
+            "     "
+            " XXX "
+            "X   X"
+            "X   X"
+            "X   X"
+            " XXXX"
+            "    X"
+            " XXX "
+          end
       },
       ?h => %{
         name: "h",
@@ -996,15 +996,15 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "j",
         bitmap:
           defbitmap baseline_y: -2 do
-              "  X"
-              "   "
-              "  X"
-              "  X"
-              "  X"
-              "  X"
-              "  X"
-              "XX "
-            end
+            "  X"
+            "   "
+            "  X"
+            "  X"
+            "  X"
+            "  X"
+            "  X"
+            "XX "
+          end
       },
       ?k => %{
         name: "k",
@@ -1075,27 +1075,27 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "p",
         bitmap:
           defbitmap baseline_y: -2 do
-              "XXXX "
-              "X   X"
-              "X   X"
-              "X   X"
-              "XXXX "
-              "X    "
-              "X    "
-            end
+            "XXXX "
+            "X   X"
+            "X   X"
+            "X   X"
+            "XXXX "
+            "X    "
+            "X    "
+          end
       },
       ?q => %{
         name: "q",
         bitmap:
           defbitmap baseline_y: -2 do
-              " XXX "
-              "X   X"
-              "X   X"
-              "X   X"
-              " XXXX"
-              "    X"
-              "    X"
-            end
+            " XXX "
+            "X   X"
+            "X   X"
+            "X   X"
+            " XXXX"
+            "    X"
+            "    X"
+          end
       },
       ?r => %{
         name: "r",
@@ -1192,14 +1192,14 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "y",
         bitmap:
           defbitmap baseline_y: -2 do
-              "X   X"
-              "X   X"
-              "X   X"
-              "X   X"
-              " XXXX"
-              "    X"
-              " XXX "
-            end
+            "X   X"
+            "X   X"
+            "X   X"
+            "X   X"
+            " XXXX"
+            "    X"
+            " XXX "
+          end
       },
       ?z => %{
         name: "z",
@@ -1365,30 +1365,30 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "section sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              " XXX "
-              "X    "
-              " X   "
-              " XXX "
-              "X   X"
-              " XXX "
-              "   X "
-              "    X"
-              " XXX "
-            end
+            " XXX "
+            "X    "
+            " X   "
+            " XXX "
+            "X   X"
+            " XXX "
+            "   X "
+            "    X"
+            " XXX "
+          end
       },
       ?ß => %{
         name: "sharp s",
         bitmap:
           defbitmap baseline_y: -1 do
-              " XXX "
-              "X   X"
-              "X  X "
-              "X X  "
-              "X  X "
-              "X   X"
-              "X XX "
-              "X    "
-            end
+            " XXX "
+            "X   X"
+            "X  X "
+            "X X  "
+            "X  X "
+            "X   X"
+            "X XX "
+            "X    "
+          end
       },
       ?Ä => %{
         name: "A with diaresis",
@@ -1488,16 +1488,16 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "copyright sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              " XXX "
-              "X   X"
-              "  X  "
-              " X X "
-              " X   "
-              " X X "
-              "  X  "
-              "X   X"
-              " XXX "
-            end
+            " XXX "
+            "X   X"
+            "  X  "
+            " X X "
+            " X   "
+            " X X "
+            "  X  "
+            "X   X"
+            " XXX "
+          end
       },
       ?€ => %{
         name: "euro sign",
@@ -1581,24 +1581,24 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "acute accent",
         bitmap:
           defbitmap baseline_y: 5 do
-              " X"
-              "X "
-            end
+            " X"
+            "X "
+          end
       },
       ?µ => %{
         name: "micro sign",
         bitmap:
           defbitmap baseline_y: -1 do
-              "    "
-              "    "
-              "    "
-              "   X"
-              "X  X"
-              "X  X"
-              "XXX "
-              "X   "
-              "X   "
-            end
+            "    "
+            "    "
+            "    "
+            "   X"
+            "X  X"
+            "X  X"
+            "XXX "
+            "X   "
+            "X   "
+          end
       },
       ?· => %{
         name: "middle dot",
@@ -1847,31 +1847,31 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "wind",
         bitmap:
           defbitmap baseline_y: -1 do
-              "     XX   "
-              "       X  "
-              "XXXXXXX   "
-              "          "
-              "XXXXXXXXX "
-              "         X"
-              "XXXX   XX "
-              "    X     "
-              "  XX      "
-            end
+            "     XX   "
+            "       X  "
+            "XXXXXXX   "
+            "          "
+            "XXXXXXXXX "
+            "         X"
+            "XXXX   XX "
+            "    X     "
+            "  XX      "
+          end
       },
       0xF73D => %{
         name: "rain",
         bitmap:
           defbitmap baseline_y: -1 do
-              "  XX     "
-              " XXXX XX "
-              "XXXXXXXXX"
-              "XXXXXXXXX"
-              "XXXXXXXXX"
-              " XXXXXXX "
-              "         "
-              " X  X  X "
-              "  X  X  X"
-            end
+            "  XX     "
+            " XXXX XX "
+            "XXXXXXXXX"
+            "XXXXXXXXX"
+            "XXXXXXXXX"
+            " XXXXXXX "
+            "         "
+            " X  X  X "
+            "  X  X  X"
+          end
       },
       0xF017 => %{
         name: "clock",
@@ -1955,16 +1955,16 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "snowflake",
         bitmap:
           defbitmap baseline_y: -1 do
-              "    X    "
-              " X  X  X "
-              "  X X X  "
-              "   XXX   "
-              "XXXX XXXX"
-              "   XXX   "
-              "  X X X  "
-              " X  X  X "
-              "    X    "
-            end
+            "    X    "
+            " X  X  X "
+            "  X X X  "
+            "   XXX   "
+            "XXXX XXXX"
+            "   XXX   "
+            "  X X X  "
+            " X  X  X "
+            "    X    "
+          end
       },
       ?ツ => %{
         name: "katakana-letter-tu",
@@ -1983,16 +1983,16 @@ defmodule Fliplove.Font.Fonts.Flipdot do
         name: "thermometer-half",
         bitmap:
           defbitmap baseline_y: -1 do
-              "   XXX   "
-              "  X   X  "
-              "  X   X  "
-              "  X X X  "
-              "  X X X  "
-              " X XXX X "
-              "X XXXXX X"
-              " X XXX X "
-              "  XXXXX  "
-            end
+            "   XXX   "
+            "  X   X  "
+            "  X   X  "
+            "  X X X  "
+            "  X X X  "
+            " X XXX X "
+            "X XXXXX X"
+            " X XXX X "
+            "  XXXXX  "
+          end
       }
     }
   }
