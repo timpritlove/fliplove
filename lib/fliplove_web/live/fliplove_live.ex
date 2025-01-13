@@ -680,7 +680,7 @@ defmodule FliploveWeb.FliploveLive do
                     class="px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                     phx-debounce="300"
                   >
-                    <%= Phoenix.HTML.Form.options_for_select(@font_select, @font_name) %>
+                    {Phoenix.HTML.Form.options_for_select(@font_select, @font_name)}
                   </select>
                 </div>
                 <button type="submit" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg">
@@ -707,20 +707,20 @@ defmodule FliploveWeb.FliploveLive do
                     <%= for entry <- @uploads.frame.entries do %>
                       <div class="mt-2">
                         <div class="text-sm text-gray-400">
-                          <%= entry.client_name %>
+                          {entry.client_name}
                           <%= if entry.progress > 0 do %>
-                            - <%= entry.progress %>%
+                            - {entry.progress}%
                           <% end %>
                         </div>
 
                         <%= for err <- upload_errors(@uploads.frame, entry) do %>
-                          <div class="text-red-500 text-sm"><%= err %></div>
+                          <div class="text-red-500 text-sm">{err}</div>
                         <% end %>
                       </div>
                     <% end %>
 
                     <%= for err <- upload_errors(@uploads.frame) do %>
-                      <div class="text-red-500 text-sm"><%= err %></div>
+                      <div class="text-red-500 text-sm">{err}</div>
                     <% end %>
                   </div>
                 </form>
@@ -732,7 +732,7 @@ defmodule FliploveWeb.FliploveLive do
         <%!-- Clock in bottom right --%>
         <div class="fixed bottom-4 right-4 bg-gray-800 px-4 py-2 rounded-lg shadow-lg">
           <div class="font-mono text-sm text-gray-400">
-            <%= @clock %>
+            {@clock}
           </div>
         </div>
       </div>
@@ -758,10 +758,14 @@ defmodule FliploveWeb.FliploveLive do
         (@mode == @self && "text-gray-200") || "text-gray-200"
       ]}>
         <%= case @icon do %>
-          <% "pencil" -> %><Heroicons.pencil class="h-5 w-5" />
-          <% "fill" -> %><Heroicons.paint_brush class="h-5 w-5" />
-          <% "draw-polygon" -> %><Heroicons.squares_2x2 class="h-5 w-5" />
-          <% "vector-square" -> %><Heroicons.square_3_stack_3d class="h-5 w-5" />
+          <% "pencil" -> %>
+            <Heroicons.pencil class="h-5 w-5" />
+          <% "fill" -> %>
+            <Heroicons.paint_brush class="h-5 w-5" />
+          <% "draw-polygon" -> %>
+            <Heroicons.squares_2x2 class="h-5 w-5" />
+          <% "vector-square" -> %>
+            <Heroicons.square_3_stack_3d class="h-5 w-5" />
         <% end %>
       </div>
     </button>
@@ -786,13 +790,20 @@ defmodule FliploveWeb.FliploveLive do
         (@app == @self && "text-gray-200") || "text-gray-200"
       ]}>
         <%= case @icon do %>
-          <% "gauge-high" -> %><Heroicons.chart_bar class="h-5 w-5" />
-          <% "images" -> %><Heroicons.squares_2x2 class="h-5 w-5" />
-          <% "hat-wizard" -> %><Heroicons.sparkles class="h-5 w-5" />
-          <% "icons" -> %><Heroicons.squares_plus class="h-5 w-5" />
-          <% "server" -> %><Heroicons.server class="h-5 w-5" />
-          <% "clock" -> %><Heroicons.clock class="h-5 w-5" />
-          <% "train" -> %><Heroicons.truck class="h-5 w-5" />
+          <% "gauge-high" -> %>
+            <Heroicons.chart_bar class="h-5 w-5" />
+          <% "images" -> %>
+            <Heroicons.squares_2x2 class="h-5 w-5" />
+          <% "hat-wizard" -> %>
+            <Heroicons.sparkles class="h-5 w-5" />
+          <% "icons" -> %>
+            <Heroicons.squares_plus class="h-5 w-5" />
+          <% "server" -> %>
+            <Heroicons.server class="h-5 w-5" />
+          <% "clock" -> %>
+            <Heroicons.clock class="h-5 w-5" />
+          <% "train" -> %>
+            <Heroicons.truck class="h-5 w-5" />
         <% end %>
       </div>
     </button>
@@ -809,15 +820,24 @@ defmodule FliploveWeb.FliploveLive do
     >
       <div class="text-gray-200">
         <%= case @icon do %>
-          <% "arrow-up" -> %><Heroicons.arrow_up class="h-5 w-5" />
-          <% "arrow-down" -> %><Heroicons.arrow_down class="h-5 w-5" />
-          <% "arrow-left" -> %><Heroicons.arrow_left class="h-5 w-5" />
-          <% "arrow-right" -> %><Heroicons.arrow_right class="h-5 w-5" />
-          <% "arrow-down-up-across-line" -> %><Heroicons.arrows_up_down class="h-5 w-5" />
-          <% "arrow-right-arrow-left" -> %><Heroicons.arrows_right_left class="h-5 w-5" />
-          <% "image" -> %><Heroicons.photo class="h-5 w-5" />
-          <% "eraser" -> %><Heroicons.backspace class="h-5 w-5" />
-          <% "chess-board" -> %><Heroicons.squares_2x2 class="h-5 w-5" />
+          <% "arrow-up" -> %>
+            <Heroicons.arrow_up class="h-5 w-5" />
+          <% "arrow-down" -> %>
+            <Heroicons.arrow_down class="h-5 w-5" />
+          <% "arrow-left" -> %>
+            <Heroicons.arrow_left class="h-5 w-5" />
+          <% "arrow-right" -> %>
+            <Heroicons.arrow_right class="h-5 w-5" />
+          <% "arrow-down-up-across-line" -> %>
+            <Heroicons.arrows_up_down class="h-5 w-5" />
+          <% "arrow-right-arrow-left" -> %>
+            <Heroicons.arrows_right_left class="h-5 w-5" />
+          <% "image" -> %>
+            <Heroicons.photo class="h-5 w-5" />
+          <% "eraser" -> %>
+            <Heroicons.backspace class="h-5 w-5" />
+          <% "chess-board" -> %>
+            <Heroicons.squares_2x2 class="h-5 w-5" />
         <% end %>
       </div>
     </button>
@@ -835,7 +855,7 @@ defmodule FliploveWeb.FliploveLive do
       value={@value}
     >
       <div class="h-16 w-32 flex items-center justify-center [&>svg]:fill-gray-200">
-        <%= raw(Bitmap.to_svg(@image, scale: 2)) %>
+        {raw(Bitmap.to_svg(@image, scale: 2))}
       </div>
     </button>
     """
@@ -846,9 +866,9 @@ defmodule FliploveWeb.FliploveLive do
 
     ~H"""
     <div class="bg-gray-800 p-4 rounded-lg">
-      <h2 class="text-xl font-bold mb-4"><%= @title %></h2>
+      <h2 class="text-xl font-bold mb-4">{@title}</h2>
       <div class={@class}>
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
     </div>
     """
@@ -857,7 +877,7 @@ defmodule FliploveWeb.FliploveLive do
   def button_group(assigns) do
     ~H"""
     <div class="flex flex-wrap gap-2">
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -873,12 +893,18 @@ defmodule FliploveWeb.FliploveLive do
     >
       <div class="text-gray-200">
         <%= case @icon do %>
-          <% "eraser" -> %><Heroicons.backspace class="h-5 w-5" />
-          <% "circle-half-stroke" -> %><Heroicons.adjustments_horizontal class="h-5 w-5" />
-          <% "power-off" -> %><Heroicons.power class="h-5 w-5" />
-          <% "signal" -> %><Heroicons.signal class="h-5 w-5" />
-          <% "ban" -> %><Heroicons.no_symbol class="h-5 w-5" />
-          <% "list" -> %><Heroicons.list_bullet class="h-5 w-5" />
+          <% "eraser" -> %>
+            <Heroicons.backspace class="h-5 w-5" />
+          <% "circle-half-stroke" -> %>
+            <Heroicons.adjustments_horizontal class="h-5 w-5" />
+          <% "power-off" -> %>
+            <Heroicons.power class="h-5 w-5" />
+          <% "signal" -> %>
+            <Heroicons.signal class="h-5 w-5" />
+          <% "ban" -> %>
+            <Heroicons.no_symbol class="h-5 w-5" />
+          <% "list" -> %>
+            <Heroicons.list_bullet class="h-5 w-5" />
         <% end %>
       </div>
     </button>

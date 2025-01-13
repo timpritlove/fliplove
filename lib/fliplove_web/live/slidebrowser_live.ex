@@ -290,7 +290,7 @@ defmodule FliploveWeb.SlidebrowserLive do
                     if(@selected_file == path, do: "bg-indigo-600", else: "bg-gray-700")
                   ]}>
                     <div class="flex items-center">
-                      <span class="text-gray-400 text-sm"><%= folder %>/</span>
+                      <span class="text-gray-400 text-sm">{folder}/</span>
                       <form phx-submit="rename_file" class="flex-1" phx-click="stop_propagation">
                         <input
                           type="text"
@@ -318,13 +318,13 @@ defmodule FliploveWeb.SlidebrowserLive do
                     tabindex={if(@focused_index == index, do: "0", else: "-1")}
                     autofocus={@focused_index == index}
                   >
-                    <span class="text-gray-400 text-sm"><%= folder %>/</span>
+                    <span class="text-gray-400 text-sm">{folder}/</span>
                     <span
                       class="text-gray-100 cursor-pointer hover:underline"
                       phx-click="edit_filename"
                       phx-value-path={path}
                     >
-                      <%= filename %>
+                      {filename}
                     </span>
                   </div>
                 <% end %>
