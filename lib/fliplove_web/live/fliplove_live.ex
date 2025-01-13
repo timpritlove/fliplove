@@ -273,6 +273,7 @@ defmodule FliploveWeb.FlipdotLive do
     socket = socket |> assign(:app, Fliplove.Apps.running_app())
     {:noreply, socket}
   end
+
   @impl true
   def handle_event("image", %{"value" => ""}, socket) do
     {:noreply, socket}
@@ -351,6 +352,7 @@ defmodule FliploveWeb.FlipdotLive do
     if bitmap = socket.assigns.display_images[image] do
       Display.set(bitmap)
     end
+
     {:noreply, socket}
   end
 
@@ -584,11 +586,7 @@ defmodule FliploveWeb.FlipdotLive do
             <.section :if={@usb_mode?} title="USB Commands">
               <.button_group>
                 <.usb_command tooltip="Clear Display" command="flipdot_clear" icon="eraser" />
-                <.usb_command
-                  tooltip="Clear Display (Inverted)"
-                  command="flipdot_clear --invert"
-                  icon="circle-half-stroke"
-                />
+                <.usb_command tooltip="Clear Display (Inverted)" command="flipdot_clear --invert" icon="circle-half-stroke" />
                 <.usb_command tooltip="Reboot Device" command="reboot" icon="power-off" />
                 <.usb_command tooltip="Start WiFi" command="wifi start" icon="signal" />
                 <.usb_command tooltip="Stop WiFi" command="wifi stop" icon="ban" />
