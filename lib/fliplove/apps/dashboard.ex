@@ -24,8 +24,10 @@ defmodule Fliplove.Apps.Dashboard do
     case Weather.start() do
       {:ok, _pid} ->
         Logger.info("Weather service started")
+
       {:error, {:already_started, _pid}} ->
         Logger.info("Weather service was already running")
+
       {:error, reason} ->
         Logger.error("Failed to start Weather service: #{inspect(reason)}")
         raise "Failed to start Weather service"
@@ -35,6 +37,7 @@ defmodule Fliplove.Apps.Dashboard do
       font: Library.get_font_by_name(@font),
       bitmap: nil
     }
+
     update_dashboard(state)
 
     schedule_next_minute(:clock_timer)
@@ -74,8 +77,10 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp schedule_next_minute(message) do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
-    now = DateTime.utc_now()
-           |> DateTime.add(offset_minutes, :minute)
+
+    now =
+      DateTime.utc_now()
+      |> DateTime.add(offset_minutes, :minute)
 
     # Calculate milliseconds until the next minute in local time
     {microseconds, _precision} = now.microsecond
@@ -94,7 +99,9 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp get_max_min_temps do
     case get_hourly_forecast() do
-      [] -> {nil, nil}
+      [] ->
+        {nil, nil}
+
       temperatures ->
         temperatures
         |> Enum.map(& &1.temperature)
@@ -103,6 +110,7 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp format_temp(nil), do: "N/A"
+
   defp format_temp(temp) do
     temp = if temp == 0.0 or temp == -0.0, do: 0.0, else: temp
     :erlang.float_to_binary(temp / 1, decimals: 1) <> "°"
@@ -136,6 +144,7 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp render_temperature_extremes(bitmap, font) do
     {max_temp, min_temp} = get_max_min_temps()
+
     bitmap
     |> place_text(font, format_temp(max_temp), :top, :right)
     |> place_text(font, format_temp(min_temp), :bottom, :right)
@@ -145,6 +154,7 @@ defmodule Fliplove.Apps.Dashboard do
     if new_bitmap != current_bitmap do
       Display.set(new_bitmap)
     end
+
     new_bitmap
   end
 
@@ -152,7 +162,8 @@ defmodule Fliplove.Apps.Dashboard do
   defp create_temperature_chart(height) do
     forecast = get_hourly_forecast()
     width = length(forecast)
-    chart_height = height - 2  # Reduce height by 2 for frame
+    # Reduce height by 2 for frame
+    chart_height = height - 2
 
     forecast
     |> convert_to_local_times()
@@ -168,9 +179,10 @@ defmodule Fliplove.Apps.Dashboard do
     temperatures
     |> Enum.with_index()
     |> Enum.map(fn {temp, index} ->
-      local_hour = temp.datetime
-                   |> DateTime.add(offset_minutes, :minute)
-                   |> Map.get(:hour)
+      local_hour =
+        temp.datetime
+        |> DateTime.add(offset_minutes, :minute)
+        |> Map.get(:hour)
 
       %{
         temperature: temp.temperature,
@@ -196,8 +208,10 @@ defmodule Fliplove.Apps.Dashboard do
     temp_matrix =
       for temp <- scaled_temps,
           into: %{} do
-        {{temp.index + 1, temp.y + 1}, 1}  # Offset by 1 for frame
+        # Offset by 1 for frame
+        {{temp.index + 1, temp.y + 1}, 1}
       end
+
     {Bitmap.new(width, height, temp_matrix), scaled_temps}
   end
 
@@ -231,12 +245,13 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp add_frame({bitmap, scaled_temps}) do
-    frame_matrix = for x <- 0..(bitmap.width - 1),
-        y <- 0..(bitmap.height - 1),
-        is_frame_pixel?(x, y, bitmap.width, bitmap.height, scaled_temps),
-        into: %{} do
-      {{x, y}, 1}
-    end
+    frame_matrix =
+      for x <- 0..(bitmap.width - 1),
+          y <- 0..(bitmap.height - 1),
+          is_frame_pixel?(x, y, bitmap.width, bitmap.height, scaled_temps),
+          into: %{} do
+        {{x, y}, 1}
+      end
 
     frame_bitmap = Bitmap.new(bitmap.width, bitmap.height, frame_matrix)
     Bitmap.overlay(bitmap, frame_bitmap)
@@ -245,7 +260,9 @@ defmodule Fliplove.Apps.Dashboard do
   defp is_frame_pixel?(x, y, width, height, temps) do
     cond do
       # Left and right borders
-      x == 0 or x == width - 1 -> true
+      x == 0 or x == width - 1 ->
+        true
+
       # Top and bottom borders with special markers
       y == 0 or y == height - 1 ->
         case Enum.find(temps, fn t -> t.index + 1 == x end) do
@@ -253,7 +270,9 @@ defmodule Fliplove.Apps.Dashboard do
           %{hour: hour} when hour in [0, 12] -> true
           _ -> false
         end
-      true -> false
+
+      true ->
+        false
     end
   end
 
@@ -279,7 +298,9 @@ defmodule Fliplove.Apps.Dashboard do
       [] ->
         Logger.warning("No hourly forecast data available")
         []
-      forecast -> forecast
+
+      forecast ->
+        forecast
     end
   end
 end

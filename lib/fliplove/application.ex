@@ -42,7 +42,10 @@ defmodule Fliplove.Application do
     # Use rest_for_one strategy to ensure services start in order and
     # if a service crashes, all services that depend on it are restarted
     opts = [strategy: :rest_for_one, name: Fliplove.Supervisor]
-    Logger.debug("Starting supervisor with #{length(children)} core services and #{length(optional_children)} optional services...")
+
+    Logger.debug(
+      "Starting supervisor with #{length(children)} core services and #{length(optional_children)} optional services..."
+    )
 
     result = Supervisor.start_link(children ++ optional_children, opts)
     Logger.debug("Supervisor started with result: #{inspect(result)}")
