@@ -1,4 +1,4 @@
-defmodule FliploveWeb.FlipdotLive do
+defmodule FliploveWeb.FliploveLive do
   use FliploveWeb, :live_view
   alias Fliplove.Bitmap
   alias Fliplove.Display
@@ -9,6 +9,7 @@ defmodule FliploveWeb.FlipdotLive do
   alias Fliplove.Bitmap.Generator
   alias FliploveWeb.VirtualDisplay
   import FliploveWeb.VirtualDisplayComponent
+  import FliploveWeb.CoreComponents
 
   require Logger
   require Integer
@@ -533,7 +534,7 @@ defmodule FliploveWeb.FlipdotLive do
               phx-click="download"
               class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-2"
             >
-              <FontAwesome.LiveView.icon name="download" type="solid" class="h-5 w-5" />
+              <.icon name="hero-arrow-down-tray" class="h-5 w-5" />
               <span>Download Display</span>
             </button>
           </div>
@@ -696,11 +697,7 @@ defmodule FliploveWeb.FlipdotLive do
                     class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-indigo-500 transition-colors duration-200 cursor-pointer"
                     phx-drop-target={@uploads.frame.ref}
                   >
-                    <FontAwesome.LiveView.icon
-                      name="file-arrow-up"
-                      type="solid"
-                      class="h-12 w-12 mx-auto mb-4 text-gray-400"
-                    />
+                    <.icon name="hero-arrow-up-tray" class="h-12 w-12 mx-auto mb-4 text-gray-400" />
                     <p class="text-gray-400">Drag and drop or click to select</p>
                     <.live_file_input
                       upload={@uploads.frame}
@@ -757,10 +754,15 @@ defmodule FliploveWeb.FlipdotLive do
     >
       <div class={[
         "transition-colors duration-200",
-        "hover:fill-yellow-300",
-        (@mode == @self && "fill-gray-200") || "fill-gray-200"
+        "hover:text-yellow-300",
+        (@mode == @self && "text-gray-200") || "text-gray-200"
       ]}>
-        <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
+        <%= case @icon do %>
+          <% "pencil" -> %><Heroicons.pencil class="h-5 w-5" />
+          <% "fill" -> %><Heroicons.paint_brush class="h-5 w-5" />
+          <% "draw-polygon" -> %><Heroicons.squares_2x2 class="h-5 w-5" />
+          <% "vector-square" -> %><Heroicons.square_3_stack_3d class="h-5 w-5" />
+        <% end %>
       </div>
     </button>
     """
@@ -780,10 +782,18 @@ defmodule FliploveWeb.FlipdotLive do
     >
       <div class={[
         "transition-colors duration-200",
-        "hover:fill-yellow-300",
-        (@app == @self && "fill-gray-200") || "fill-gray-200"
+        "hover:text-yellow-300",
+        (@app == @self && "text-gray-200") || "text-gray-200"
       ]}>
-        <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
+        <%= case @icon do %>
+          <% "gauge-high" -> %><Heroicons.chart_bar class="h-5 w-5" />
+          <% "images" -> %><Heroicons.squares_2x2 class="h-5 w-5" />
+          <% "hat-wizard" -> %><Heroicons.sparkles class="h-5 w-5" />
+          <% "icons" -> %><Heroicons.squares_plus class="h-5 w-5" />
+          <% "server" -> %><Heroicons.server class="h-5 w-5" />
+          <% "clock" -> %><Heroicons.clock class="h-5 w-5" />
+          <% "train" -> %><Heroicons.truck class="h-5 w-5" />
+        <% end %>
       </div>
     </button>
     """
@@ -797,8 +807,18 @@ defmodule FliploveWeb.FlipdotLive do
              hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       phx-click={@target}
     >
-      <div class="fill-gray-200">
-        <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
+      <div class="text-gray-200">
+        <%= case @icon do %>
+          <% "arrow-up" -> %><Heroicons.arrow_up class="h-5 w-5" />
+          <% "arrow-down" -> %><Heroicons.arrow_down class="h-5 w-5" />
+          <% "arrow-left" -> %><Heroicons.arrow_left class="h-5 w-5" />
+          <% "arrow-right" -> %><Heroicons.arrow_right class="h-5 w-5" />
+          <% "arrow-down-up-across-line" -> %><Heroicons.arrows_up_down class="h-5 w-5" />
+          <% "arrow-right-arrow-left" -> %><Heroicons.arrows_right_left class="h-5 w-5" />
+          <% "image" -> %><Heroicons.photo class="h-5 w-5" />
+          <% "eraser" -> %><Heroicons.backspace class="h-5 w-5" />
+          <% "chess-board" -> %><Heroicons.squares_2x2 class="h-5 w-5" />
+        <% end %>
       </div>
     </button>
     """
@@ -851,8 +871,15 @@ defmodule FliploveWeb.FlipdotLive do
       phx-click="usb-command"
       phx-value-command={@command}
     >
-      <div class="fill-gray-200">
-        <FontAwesome.LiveView.icon name={@icon} type="solid" class="h-5 w-5" />
+      <div class="text-gray-200">
+        <%= case @icon do %>
+          <% "eraser" -> %><Heroicons.backspace class="h-5 w-5" />
+          <% "circle-half-stroke" -> %><Heroicons.adjustments_horizontal class="h-5 w-5" />
+          <% "power-off" -> %><Heroicons.power class="h-5 w-5" />
+          <% "signal" -> %><Heroicons.signal class="h-5 w-5" />
+          <% "ban" -> %><Heroicons.no_symbol class="h-5 w-5" />
+          <% "list" -> %><Heroicons.list_bullet class="h-5 w-5" />
+        <% end %>
       </div>
     </button>
     """

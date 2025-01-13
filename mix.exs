@@ -44,10 +44,10 @@ defmodule Fliplove.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.7.0"},
-      {:phoenix_html, ">= 3.3.3"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.20.1"},
+      {:phoenix, "~> 1.7.10"},
+      {:phoenix_html, "~> 4.0"},
+      {:phoenix_live_reload, "~> 1.4", only: :dev},
+      {:phoenix_live_view, "~> 1.0.2"},
       {:heroicons, "~> 0.5"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
@@ -68,7 +68,6 @@ defmodule Fliplove.MixProject do
       {:tz, ">= 0.24.0"},
       {:gen_icmp, git: "https://github.com/hauleth/gen_icmp.git"},
       # {:pixel_generator, git: "https://github.com/Reimerei/pixel_generator.git"},
-      {:ex_fontawesome, ">= 0.7.2"},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:mix_audit, "~> 2.0", only: [:dev, :test], runtime: false},
       {:easing, "~> 0.3.1"},
