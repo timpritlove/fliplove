@@ -97,11 +97,11 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         bitmap:
           defbitmap do
             "X X"
-            "X X"
+            "  X"
             "  X"
             " X "
             "X  "
-            "X X"
+            "X  "
             "X X"
           end
       },
