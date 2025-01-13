@@ -64,7 +64,9 @@ defmodule Fliplove.Weather do
 
   def get_rain do
     case get_weather() do
-      nil -> {0.0, 0}
+      nil ->
+        {0.0, 0}
+
       weather ->
         rainfall_rate = weather.rainfall_rate
         {rainfall_rate, rainfall_intensity(rainfall_rate)}
@@ -88,7 +90,6 @@ defmodule Fliplove.Weather do
 
     with {:ok, service_module} <- get_service_module(),
          {:ok, lat, lon, source} <- get_location() do
-
       service_name = service_module |> Module.split() |> List.last()
       Logger.debug("Selected weather service: #{service_name}")
       Logger.debug("Location: #{lat}, #{lon} (source: #{source})")
@@ -105,12 +106,7 @@ defmodule Fliplove.Weather do
       Logger.info("Weather service enabled: #{service_name}")
       Logger.info("Weather service using #{source} location (#{lat}, #{lon})")
 
-      {:ok, %{state |
-        service_module: service_module,
-        latitude: lat,
-        longitude: lon,
-        timer: periodic_timer
-      }}
+      {:ok, %{state | service_module: service_module, latitude: lat, longitude: lon, timer: periodic_timer}}
     else
       {:error, reason} ->
         Logger.error("Failed to initialize weather service: #{inspect(reason)}")
@@ -161,6 +157,7 @@ defmodule Fliplove.Weather do
 
   defp update_weather(state) do
     Logger.debug("Fetching weather data from service...")
+
     case state.service_module.get_current_weather(state.latitude, state.longitude) do
       {:ok, weather} ->
         timestamp = DateTime.utc_now()
@@ -233,6 +230,7 @@ defmodule Fliplove.Weather do
             case Nominatim.resolve_location(location) do
               {:ok, {lat, lon}} ->
                 {:ok, lat, lon, "Nominatim location lookup"}
+
               {:error, reason} ->
                 Logger.warning("Failed to resolve location '#{location}' via Nominatim: #{inspect(reason)}")
                 Logger.info("Falling back to IP geolocation")
@@ -265,18 +263,29 @@ defmodule Fliplove.Weather do
   def get_weather_with_timestamp(), do: GenServer.call(__MODULE__, :get_weather_with_timestamp)
 
   defp get_service_module do
-    service = case System.get_env(@weather_service_env) do
-      "openweather" -> :open_weather
-      "openmeteo" -> :open_meteo
-      nil -> Application.get_env(:fliplove, :weather, []) |> Keyword.get(:service, @default_service)
-      other ->
-        Logger.warning("Unknown weather service in environment: #{inspect(other)}, using default")
-        @default_service
-    end
+    service =
+      case System.get_env(@weather_service_env) do
+        "openweather" ->
+          :open_weather
+
+        "openmeteo" ->
+          :open_meteo
+
+        nil ->
+          Application.get_env(:fliplove, :weather, []) |> Keyword.get(:service, @default_service)
+
+        other ->
+          Logger.warning("Unknown weather service in environment: #{inspect(other)}, using default")
+          @default_service
+      end
 
     case service do
-      :open_meteo -> {:ok, Fliplove.Weather.OpenMeteo}
-      :open_weather -> {:ok, Fliplove.Weather.OpenWeather}
+      :open_meteo ->
+        {:ok, Fliplove.Weather.OpenMeteo}
+
+      :open_weather ->
+        {:ok, Fliplove.Weather.OpenWeather}
+
       other ->
         Logger.error("Unknown weather service configured: #{inspect(other)}")
         {:error, :invalid_service}

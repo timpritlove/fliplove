@@ -95,7 +95,6 @@ defmodule Fliplove.Apps.Symbols do
       Bitmap.overlay(bitmap, symbol, cursor_x: x_pos)
     end)
     |> Display.set()
-
   end
 
   # Helper to recursively load symbols from a directory

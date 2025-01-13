@@ -6,16 +6,24 @@ defmodule Fliplove.Apps.Timetable do
   require Logger
 
   # Default refresh intervals in milliseconds
-  @initial_refresh_interval 1_000   # 1 second for the first fetch after startup
-  @default_refresh_interval 60_000  # 60 seconds when no data or departures far away
-  @medium_refresh_interval 30_000   # 30 seconds when departure is 2-3 minutes away
-  @fast_refresh_interval 15_000     # 15 seconds when departure is less than 2 minutes away
+  # 1 second for the first fetch after startup
+  @initial_refresh_interval 1_000
+  # 60 seconds when no data or departures far away
+  @default_refresh_interval 60_000
+  # 30 seconds when departure is 2-3 minutes away
+  @medium_refresh_interval 30_000
+  # 15 seconds when departure is less than 2 minutes away
+  @fast_refresh_interval 15_000
   @api_base_url "https://v6.bvg.transport.rest"
   @stop_name_cleanup [
-    {"(Berlin)", :end},    # Remove "(Berlin)" at the end of names
-    {"S+U ", :start},      # Remove "S+U " at the start
-    {"S ", :start},         # Remove "S " at the start
-    {"U ", :start}     # Remove "S+U " at the start
+    # Remove "(Berlin)" at the end of names
+    {"(Berlin)", :end},
+    # Remove "S+U " at the start
+    {"S+U ", :start},
+    # Remove "S " at the start
+    {"S ", :start},
+    # Remove "S+U " at the start
+    {"U ", :start}
   ]
 
   @moduledoc """
@@ -49,6 +57,7 @@ defmodule Fliplove.Apps.Timetable do
           stop_id: stop_id,
           refresh_interval: @initial_refresh_interval
         }
+
         timer = schedule_refresh(initial_state)
 
         {:ok, %__MODULE__{initial_state | timer: timer}}
@@ -75,11 +84,7 @@ defmodule Fliplove.Apps.Timetable do
         new_refresh_interval = calculate_refresh_interval(departures)
         new_timer = schedule_refresh(%__MODULE__{refresh_interval: new_refresh_interval})
 
-        %__MODULE__{state |
-          last_departures: departures,
-          refresh_interval: new_refresh_interval,
-          timer: new_timer
-        }
+        %__MODULE__{state | last_departures: departures, refresh_interval: new_refresh_interval, timer: new_timer}
 
       {:error, reason} ->
         Logger.error("Failed to fetch departures: #{inspect(reason)}")
@@ -112,28 +117,41 @@ defmodule Fliplove.Apps.Timetable do
             now = DateTime.now!("Etc/UTC")
             minutes_until = DateTime.diff(departure_time, now, :minute)
 
-            interval = cond do
-              minutes_until >= 3 -> @default_refresh_interval
-              minutes_until >= 2 -> @medium_refresh_interval
-              true -> @fast_refresh_interval
-            end
+            interval =
+              cond do
+                minutes_until >= 3 -> @default_refresh_interval
+                minutes_until >= 2 -> @medium_refresh_interval
+                true -> @fast_refresh_interval
+              end
 
-            Logger.debug("Next departure in #{minutes_until} minutes, setting refresh interval to #{div(interval, 1000)} seconds")
+            Logger.debug(
+              "Next departure in #{minutes_until} minutes, setting refresh interval to #{div(interval, 1000)} seconds"
+            )
+
             interval
 
           _error ->
-            Logger.debug("Could not parse departure time, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds")
+            Logger.debug(
+              "Could not parse departure time, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds"
+            )
+
             @default_refresh_interval
         end
 
       _no_when ->
-        Logger.debug("No departure time found, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds")
+        Logger.debug(
+          "No departure time found, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds"
+        )
+
         @default_refresh_interval
     end
   end
 
   defp calculate_refresh_interval(_) do
-    Logger.debug("No departures found, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds")
+    Logger.debug(
+      "No departures found, using default refresh interval of #{div(@default_refresh_interval, 1000)} seconds"
+    )
+
     @default_refresh_interval
   end
 
@@ -143,19 +161,23 @@ defmodule Fliplove.Apps.Timetable do
 
     case HTTPoison.get(url) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-
         case Jason.decode(body) do
           {:ok, %{"departures" => departures}} when is_list(departures) ->
-            sorted_departures = departures
+            sorted_departures =
+              departures
               |> Enum.sort_by(& &1["when"])
 
-            sorted_departures = sorted_departures
+            sorted_departures =
+              sorted_departures
               |> Enum.sort_by(& &1["when"])
               |> Enum.take(2)
+
             {:ok, sorted_departures}
+
           {:ok, response} ->
             Logger.error("Unexpected response format: #{inspect(response)}")
             {:error, "Unexpected response format"}
+
           {:error, error} ->
             Logger.error("JSON decode error: #{inspect(error)}")
             {:error, "JSON decode error"}
@@ -173,11 +195,13 @@ defmodule Fliplove.Apps.Timetable do
 
   defp clean_stop_name(name) do
     Enum.reduce(@stop_name_cleanup, name, fn {pattern, position}, acc ->
-      regex = case position do
-        :start -> ~r/^#{Regex.escape(pattern)}/
-        :end -> ~r/#{Regex.escape(pattern)}$/
-        :any -> ~r/#{Regex.escape(pattern)}/
-      end
+      regex =
+        case position do
+          :start -> ~r/^#{Regex.escape(pattern)}/
+          :end -> ~r/#{Regex.escape(pattern)}$/
+          :any -> ~r/#{Regex.escape(pattern)}/
+        end
+
       Regex.replace(regex, acc, "")
     end)
     |> String.trim()
@@ -204,6 +228,7 @@ defmodule Fliplove.Apps.Timetable do
     display = Bitmap.new(Display.width(), Display.height())
 
     single = render_departure(single_departure, font)
+
     display
     |> Bitmap.overlay(single, cursor_y: 8)
     |> Display.set()
@@ -225,8 +250,10 @@ defmodule Fliplove.Apps.Timetable do
     bitmap = Renderer.render_text(bitmap, {0, 0}, font, line)
 
     # Render destination
-    dest_bitmap = Bitmap.new(90, 8)
-    |> Renderer.render_text({0, 0}, font, destination)
+    dest_bitmap =
+      Bitmap.new(90, 8)
+      |> Renderer.render_text({0, 0}, font, destination)
+
     bitmap = Bitmap.overlay(bitmap, dest_bitmap, cursor_x: 15)
 
     # Render time right-aligned
@@ -240,8 +267,12 @@ defmodule Fliplove.Apps.Timetable do
         diff = DateTime.diff(departure_time, now, :minute)
 
         cond do
-          diff <= 0 -> "0m"
-          diff < 60 -> "#{diff}m"
+          diff <= 0 ->
+            "0m"
+
+          diff < 60 ->
+            "#{diff}m"
+
           true ->
             # For departures more than 60 minutes away, show the actual time
             departure_time

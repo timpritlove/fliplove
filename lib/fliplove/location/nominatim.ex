@@ -12,11 +12,12 @@ defmodule Fliplove.Location.Nominatim do
   Returns {:ok, {lat, lon}} on success, {:error, reason} on failure.
   """
   def resolve_location(location) when is_binary(location) do
-    query = URI.encode_query(%{
-      q: location,
-      format: "json",
-      limit: "1"
-    })
+    query =
+      URI.encode_query(%{
+        q: location,
+        format: "json",
+        limit: "1"
+      })
 
     url = "#{@nominatim_url}?#{query}"
     headers = [{"User-Agent", "Fliplove/1.0"}]
@@ -29,13 +30,17 @@ defmodule Fliplove.Location.Nominatim do
             {lon_float, _} = Float.parse(lon)
             Logger.info("Resolved location '#{location}' to coordinates: #{lat_float}, #{lon_float}")
             {:ok, {lat_float, lon_float}}
+
           {:ok, []} ->
             {:error, :location_not_found}
+
           {:error, _} = error ->
             error
         end
+
       {:ok, %{status_code: status}} ->
         {:error, "HTTP error: #{status}"}
+
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, reason}
     end

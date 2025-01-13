@@ -16,6 +16,7 @@ defmodule Fliplove.Apps.Datetime do
     state = %__MODULE__{
       font: Library.get_font_by_name(@font)
     }
+
     update_display(state)
     schedule_next_minute()
     {:ok, state}
@@ -38,8 +39,10 @@ defmodule Fliplove.Apps.Datetime do
 
   defp update_display(%{font: font}) do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
-    now = DateTime.utc_now()
-          |> DateTime.add(offset_minutes, :minute)
+
+    now =
+      DateTime.utc_now()
+      |> DateTime.add(offset_minutes, :minute)
 
     # Format timezone offset as +HH:MM or -HH:MM
     tz_display = format_offset(offset_minutes)
@@ -64,7 +67,8 @@ defmodule Fliplove.Apps.Datetime do
   end
 
   defp format_date(datetime) do
-    Calendar.strftime(datetime, "%d.%m.%y")  # Changed to use 2-digit year
+    # Changed to use 2-digit year
+    Calendar.strftime(datetime, "%d.%m.%y")
   end
 
   defp format_week(datetime) do
@@ -93,13 +97,14 @@ defmodule Fliplove.Apps.Datetime do
     week = div(days_since_week1, 7) + 1
 
     # Handle edge cases
-    week = if week < 1 do
-      # Get the last week of previous year
-      {:ok, prev_dec31} = Date.new(date.year - 1, 12, 31)
-      get_iso_week(DateTime.new!(prev_dec31, Time.utc_now(), datetime.time_zone))
-    else
-      week
-    end
+    week =
+      if week < 1 do
+        # Get the last week of previous year
+        {:ok, prev_dec31} = Date.new(date.year - 1, 12, 31)
+        get_iso_week(DateTime.new!(prev_dec31, Time.utc_now(), datetime.time_zone))
+      else
+        week
+      end
 
     # Format with leading zero
     String.pad_leading("#{week}", 2, "0")

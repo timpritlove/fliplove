@@ -21,7 +21,8 @@ defmodule Fliplove.Weather.OpenWeather do
   @behaviour Fliplove.Weather.WeatherService
 
   @base_url "https://api.openweathermap.org/data/3.0"
-  @max_forecast_hours 120  # OpenWeather supports up to 5 days of hourly data
+  # OpenWeather supports up to 5 days of hourly data
+  @max_forecast_hours 120
   @update_interval :timer.minutes(5)
   @api_key_env "FLIPLOVE_OPENWEATHERMAP_API_KEY"
 
@@ -29,15 +30,15 @@ defmodule Fliplove.Weather.OpenWeather do
   def get_current_weather(latitude, longitude) do
     with {:ok, api_key} <- get_api_key(),
          {:ok, data} <- call_api("/onecall", api_key, latitude, longitude) do
-
       current = data["current"]
       rain_last_hour = get_in(current, ["rain", "1h"]) || 0.0
 
-      {:ok, %{
-        temperature: current["temp"],
-        wind_speed: current["wind_speed"],
-        rainfall_rate: rain_last_hour
-      }}
+      {:ok,
+       %{
+         temperature: current["temp"],
+         wind_speed: current["wind_speed"],
+         rainfall_rate: rain_last_hour
+       }}
     end
   end
 
@@ -45,37 +46,48 @@ defmodule Fliplove.Weather.OpenWeather do
   def get_hourly_forecast(latitude, longitude, hours) when hours > 0 do
     with {:ok, api_key} <- get_api_key(),
          {:ok, data} <- call_api("/onecall", api_key, latitude, longitude) do
-
       hourly_data = data["hourly"]
 
       # Take only the requested number of hours, up to the maximum supported
       hours = min(hours, @max_forecast_hours)
-      hourly = hourly_data
-      |> Enum.take(hours)
-      |> Enum.map(fn hour ->
-        hour_utc = DateTime.from_unix!(hour["dt"])
 
-        # OpenWeather provides day/night information in the weather icon code
-        # The icon code ends with:
-        # - 'd' for day (e.g. "01d", "02d", "03d", etc.)
-        # - 'n' for night (e.g. "01n", "02n", "03n", etc.)
-        [weather | _] = hour["weather"]
-        icon = weather["icon"]
-        is_night = cond do
-          String.ends_with?(icon, "d") -> false  # 'd' indicates day
-          String.ends_with?(icon, "n") -> true   # 'n' indicates night
-          true ->  # default case
-            Logger.warning("Unexpected OpenWeather icon format: #{icon}")
-            true   # Default to night if format is unexpected
-        end
+      hourly =
+        hourly_data
+        |> Enum.take(hours)
+        |> Enum.map(fn hour ->
+          hour_utc = DateTime.from_unix!(hour["dt"])
 
-        %{
-          datetime: hour_utc,
-          temperature: hour["temp"],
-          rainfall_rate: get_in(hour, ["rain", "1h"]) || 0.0,
-          is_night: is_night
-        }
-      end)
+          # OpenWeather provides day/night information in the weather icon code
+          # The icon code ends with:
+          # - 'd' for day (e.g. "01d", "02d", "03d", etc.)
+          # - 'n' for night (e.g. "01n", "02n", "03n", etc.)
+          [weather | _] = hour["weather"]
+          icon = weather["icon"]
+
+          is_night =
+            cond do
+              # 'd' indicates day
+              String.ends_with?(icon, "d") ->
+                false
+
+              # 'n' indicates night
+              String.ends_with?(icon, "n") ->
+                true
+
+              # default case
+              true ->
+                Logger.warning("Unexpected OpenWeather icon format: #{icon}")
+                # Default to night if format is unexpected
+                true
+            end
+
+          %{
+            datetime: hour_utc,
+            temperature: hour["temp"],
+            rainfall_rate: get_in(hour, ["rain", "1h"]) || 0.0,
+            is_night: is_night
+          }
+        end)
 
       {:ok, hourly}
     end
@@ -91,7 +103,9 @@ defmodule Fliplove.Weather.OpenWeather do
       nil ->
         Logger.error("OpenWeather API key not found in environment variable #{@api_key_env}")
         {:error, :missing_api_key}
-      key -> {:ok, key}
+
+      key ->
+        {:ok, key}
     end
   end
 
@@ -103,13 +117,16 @@ defmodule Fliplove.Weather.OpenWeather do
       {"lon", longitude},
       {"units", "metric"},
       {"appid", api_key},
-      {"timezone", "auto"}  # Get times in the local timezone of the coordinates
+      # Get times in the local timezone of the coordinates
+      {"timezone", "auto"}
     ]
 
     case HTTPoison.get(url, [], params: params) do
       {:ok, %{status_code: 200, body: body}} ->
         case Jason.decode(body) do
-          {:ok, data} -> {:ok, data}
+          {:ok, data} ->
+            {:ok, data}
+
           {:error, reason} ->
             Logger.error("Failed to parse OpenWeather response: #{inspect(reason)}")
             {:error, :invalid_response}

@@ -26,10 +26,11 @@ defmodule Fliplove.Bitmap do
   """
   # Handle do-block syntax with options
   defmacro defbitmap(opts \\ [], do: block) do
-    lines = case block do
-      {:__block__, _, lines} -> lines
-      line -> [line]
-    end
+    lines =
+      case block do
+        {:__block__, _, lines} -> lines
+        line -> [line]
+      end
 
     quote do
       bitmap =

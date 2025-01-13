@@ -14,8 +14,10 @@ defmodule Fliplove.Megabitmeter do
 
   defmodule State do
     defstruct [
-      :uart,        # The UART process
-      :device,      # Device path
+      # The UART process
+      :uart,
+      # Device path
+      :device,
       :pending_value,
       :current_value,
       :target_value,
@@ -60,6 +62,7 @@ defmodule Fliplove.Megabitmeter do
             animation_timer: nil,
             step_size: nil
           }
+
           {:ok, state, {:continue, :connect}}
 
         {:error, reason} ->
@@ -113,7 +116,9 @@ defmodule Fliplove.Megabitmeter do
 
     # Set any pending value that was stored during boot
     case new_state.pending_value do
-      nil -> :ok
+      nil ->
+        :ok
+
       value ->
         Logger.debug("Setting pending value #{value} after boot")
         write_value(state, value)
@@ -205,16 +210,22 @@ defmodule Fliplove.Megabitmeter do
 
   defp write_value(%{uart: uart} = state, value, retry_count) do
     message = "#{value}\n"
+
     case Circuits.UART.write(uart, message) do
-      :ok -> :ok
+      :ok ->
+        :ok
+
       {:error, :ebadf} ->
         # Port is closed, trigger reconnect
         send(self(), {:circuits_uart, uart, {:error, :ebadf}})
         {:error, :not_connected}
+
       {:error, _reason} when retry_count < @max_write_retries ->
         Process.sleep(100)
         write_value(state, value, retry_count + 1)
-      error -> error
+
+      error ->
+        error
     end
   end
 

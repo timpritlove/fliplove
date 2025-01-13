@@ -9,7 +9,8 @@ defmodule Fliplove.Weather.OpenMeteo do
   @behaviour Fliplove.Weather.WeatherService
 
   @base_url "https://api.open-meteo.com/v1"
-  @max_forecast_hours 168  # OpenMeteo supports up to 7 days of hourly data
+  # OpenMeteo supports up to 7 days of hourly data
+  @max_forecast_hours 168
   @update_interval :timer.minutes(5)
 
   @impl true
@@ -28,11 +29,14 @@ defmodule Fliplove.Weather.OpenMeteo do
         case Jason.decode(body) do
           {:ok, data} ->
             current = data["current_weather"]
-            {:ok, %{
-              temperature: current["temperature"],
-              wind_speed: current["windspeed"],
-              rainfall_rate: 0.0  # OpenMeteo doesn't provide current rainfall in free tier
-            }}
+
+            {:ok,
+             %{
+               temperature: current["temperature"],
+               wind_speed: current["windspeed"],
+               # OpenMeteo doesn't provide current rainfall in free tier
+               rainfall_rate: 0.0
+             }}
 
           {:error, reason} ->
             Logger.error("Failed to parse OpenMeteo response: #{inspect(reason)}")
@@ -69,21 +73,27 @@ defmodule Fliplove.Weather.OpenMeteo do
             hourly_data = data["hourly"]
             timezone = data["timezone"]
 
-            hourly = Enum.zip_with([
-              hourly_data["time"],
-              hourly_data["temperature_2m"],
-              hourly_data["precipitation"],
-              hourly_data["is_day"]
-            ], fn [time, temp, precip, is_day] ->
-              datetime = parse_time(time, timezone)
-              is_night = is_day == 0  # OpenMeteo uses 1 for day, 0 for night
-              %{
-                datetime: datetime,
-                temperature: temp,
-                rainfall_rate: precip,
-                is_night: is_night
-              }
-            end)
+            hourly =
+              Enum.zip_with(
+                [
+                  hourly_data["time"],
+                  hourly_data["temperature_2m"],
+                  hourly_data["precipitation"],
+                  hourly_data["is_day"]
+                ],
+                fn [time, temp, precip, is_day] ->
+                  datetime = parse_time(time, timezone)
+                  # OpenMeteo uses 1 for day, 0 for night
+                  is_night = is_day == 0
+
+                  %{
+                    datetime: datetime,
+                    temperature: temp,
+                    rainfall_rate: precip,
+                    is_night: is_night
+                  }
+                end
+              )
 
             {:ok, hourly}
 

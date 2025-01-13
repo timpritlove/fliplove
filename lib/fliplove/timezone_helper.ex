@@ -22,12 +22,19 @@ defmodule Fliplove.TimezoneHelper do
       nil ->
         # Try application config next
         case Application.get_env(:fliplove, :timezone) do
-          nil -> get_system_offset_minutes()  # Fallback to system timezone if no config
-          :system -> get_system_offset_minutes()  # Explicitly use system timezone
-          offset when is_binary(offset) -> parse_offset_minutes(offset)  # Parse configured offset
-          _ -> get_system_offset_minutes()  # Fallback for invalid config values
+          # Fallback to system timezone if no config
+          nil -> get_system_offset_minutes()
+          # Explicitly use system timezone
+          :system -> get_system_offset_minutes()
+          # Parse configured offset
+          offset when is_binary(offset) -> parse_offset_minutes(offset)
+          # Fallback for invalid config values
+          _ -> get_system_offset_minutes()
         end
-      offset -> parse_offset_minutes(offset)  # Environment variable takes precedence
+
+      # Environment variable takes precedence
+      offset ->
+        parse_offset_minutes(offset)
     end
   end
 
@@ -42,14 +49,19 @@ defmodule Fliplove.TimezoneHelper do
     case Regex.run(~r/^([+-])(\d{2}):?(\d{2})$/, String.trim(offset)) do
       [_, sign, hours, mins] ->
         minutes = String.to_integer(hours) * 60 + String.to_integer(mins)
+
         case sign do
           "+" -> minutes
           "-" -> -minutes
         end
+
       _ ->
         Logger.warning("Invalid timezone offset format: #{inspect(offset)}, falling back to UTC")
-        0  # fallback to UTC
+        # fallback to UTC
+        0
     end
   end
-  defp parse_offset_minutes(_), do: 0  # fallback to UTC for non-binary input
+
+  # fallback to UTC for non-binary input
+  defp parse_offset_minutes(_), do: 0
 end

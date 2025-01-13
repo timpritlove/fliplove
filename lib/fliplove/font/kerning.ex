@@ -61,24 +61,24 @@ defmodule Fliplove.Font.Kerning do
         "Tu" => -1,
         "Tr" => -1,
         "Ty" => -1
-      },
-    },
-      "flipdot_condensed" => %{
-        7 => %{
-          "Fa" => -1,
-          "Fe" => -1,
-          "Fo" => -1,
-          "Fu" => -1,
-          "Fr" => -1,
-          "Fy" => -1,
-          "Ta" => -1,
-          "Te" => -1,
-          "To" => -1,
-          "Tu" => -1,
-          "Tr" => -1,
-          "Ty" => -1
-        }
       }
+    },
+    "flipdot_condensed" => %{
+      7 => %{
+        "Fa" => -1,
+        "Fe" => -1,
+        "Fo" => -1,
+        "Fu" => -1,
+        "Fr" => -1,
+        "Fy" => -1,
+        "Ta" => -1,
+        "Te" => -1,
+        "To" => -1,
+        "Tu" => -1,
+        "Tr" => -1,
+        "Ty" => -1
+      }
+    }
   }
 
   def get_kerning(font, pair) do
