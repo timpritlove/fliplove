@@ -551,13 +551,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "I",
         bitmap:
           defbitmap do
-            "X"
-            "X"
-            "X"
-            "X"
-            "X"
-            "X"
-            "X"
+            "XXX"
+            " X "
+            " X "
+            " X "
+            " X "
+            " X "
+            "XXX"
           end
       },
       ?J => %{
@@ -713,7 +713,7 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
             "X X"
             "X X"
             "X X"
-            "XXX"
+            " X "
           end
       },
       ?V => %{
@@ -725,7 +725,7 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
             "X X"
             "X X"
             "X X"
-            "X X"
+            " X "
             " X "
           end
       },
@@ -1125,13 +1125,13 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
         name: "t",
         bitmap:
           defbitmap do
-            "X "
-            "X "
-            "XX"
-            "X "
-            "X "
-            "X "
-            " X"
+            " X "
+            " X "
+            "XXX"
+            " X "
+            " X "
+            " X "
+            "  X"
           end
       },
       ?u => %{
@@ -1144,7 +1144,7 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
             "X X"
             "X X"
             "X X"
-            "XXX"
+            " XX"
           end
       },
       ?v => %{
@@ -1156,7 +1156,7 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
             "X X"
             "X X"
             "X X"
-            "X X"
+            " X "
             " X "
           end
       },
