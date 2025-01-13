@@ -9,7 +9,7 @@ defmodule Fliplove.MixProject do
         authors: ["Tim Pritlove"],
         logo: "data/fliplove-logo-64.jpg"
       ],
-      version: "0.2.0",
+      version: "0.3.0",
       elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
