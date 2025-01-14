@@ -245,18 +245,29 @@ defmodule Fliplove.Weather do
   end
 
   defp get_location_from_ip do
-    case HTTPoison.get(@ip_geolocation_url) do
-      {:ok, %{status_code: 200, body: body}} ->
-        case Jason.decode!(body) do
-          %{"lat" => lat, "lon" => lon} ->
-            {:ok, lat, lon, "IP geolocation"}
+    # Configure Req with retries
+    request_options = [
+      retry: :transient,  # Retry on network-related errors
+      max_retries: 3,
+      retry_delay: fn attempt -> # Exponential backoff
+        trunc(:math.pow(2, attempt - 1) * 500)
+      end,
+      connect_options: [
+        timeout: 10_000  # 10 seconds timeout
+      ]
+    ]
 
-          _ ->
-            {:error, "Invalid response from IP geolocation service"}
-        end
+    case Req.get(@ip_geolocation_url, request_options) do
+      {:ok, %Req.Response{status: 200, body: %{"lat" => lat, "lon" => lon}}} ->
+        {:ok, lat, lon, "IP geolocation"}
 
-      {:error, reason} ->
-        {:error, "Failed to get location from IP: #{inspect(reason)}"}
+      {:ok, response} ->
+        Logger.error("Unexpected response from IP geolocation service: #{inspect(response)}")
+        {:error, "Invalid response from IP geolocation service"}
+
+      {:error, exception} ->
+        Logger.error("Failed to get location from IP after retries: #{inspect(exception)}")
+        {:error, "Failed to get location from IP after retries"}
     end
   end
 
