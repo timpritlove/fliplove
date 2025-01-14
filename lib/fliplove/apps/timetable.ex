@@ -159,37 +159,58 @@ defmodule Fliplove.Apps.Timetable do
     url = "#{@api_base_url}/stops/#{stop_id}/departures?duration=30"
     Logger.debug("Fetching departures from #{url}")
 
-    case HTTPoison.get(url) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        case Jason.decode(body) do
-          {:ok, %{"departures" => departures}} when is_list(departures) ->
-            sorted_departures =
-              departures
-              |> Enum.sort_by(& &1["when"])
-
-            sorted_departures =
-              sorted_departures
-              |> Enum.sort_by(& &1["when"])
-              |> Enum.take(2)
-
-            {:ok, sorted_departures}
-
-          {:ok, response} ->
-            Logger.error("Unexpected response format: #{inspect(response)}")
-            {:error, "Unexpected response format"}
-
-          {:error, error} ->
-            Logger.error("JSON decode error: #{inspect(error)}")
-            {:error, "JSON decode error"}
+    case Req.get(url) do
+      {:ok, %{status: 200, body: %{"departures" => departures}}} when is_list(departures) ->
+        # Log the first departure for debugging
+        if length(departures) > 0 do
+          Logger.debug("First departure data: #{inspect(List.first(departures))}")
         end
 
-      {:ok, %HTTPoison.Response{status_code: status, body: body}} ->
-        Logger.error("HTTP #{status}: #{body}")
-        {:error, "HTTP #{status}: #{body}"}
+        # Validate departure data before sorting
+        valid_departures = Enum.filter(departures, fn departure ->
+          case departure do
+            # Valid departure with real-time data
+            %{"when" => when_str, "line" => %{"name" => _}, "destination" => %{"name" => _}}
+            when not is_nil(when_str) -> true
 
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        Logger.error("Request failed: #{inspect(reason)}")
-        {:error, reason}
+            # Cancelled departure with planned time
+            %{
+              "cancelled" => true,
+              "plannedWhen" => planned_when,
+              "line" => %{"name" => _},
+              "destination" => %{"name" => _}
+            } when not is_nil(planned_when) -> true
+
+            invalid_departure ->
+              Logger.warning("Skipping invalid departure: #{inspect(invalid_departure)}")
+              false
+          end
+        end)
+
+        # Transform departures to include cancelled status and fallback time
+        departures_with_time = Enum.map(valid_departures, fn departure ->
+          time = departure["when"] || departure["plannedWhen"]
+          Map.merge(departure, %{"effective_when" => time, "is_cancelled" => departure["cancelled"] == true})
+        end)
+
+        sorted_departures =
+          departures_with_time
+          |> Enum.sort_by(& &1["effective_when"])
+          |> Enum.take(2)
+
+        {:ok, sorted_departures}
+
+      {:ok, %{status: 200, body: body}} ->
+        Logger.error("Unexpected response body format: #{inspect(body)}")
+        {:error, "Unexpected response format"}
+
+      {:ok, %{status: status, body: body}} ->
+        Logger.error("HTTP #{status}: #{inspect(body)}")
+        {:error, "HTTP #{status}"}
+
+      {:error, error} ->
+        Logger.error("Request failed: #{inspect(error)}")
+        {:error, error}
     end
   end
 
@@ -245,7 +266,15 @@ defmodule Fliplove.Apps.Timetable do
     # Format departure info
     line = departure["line"]["name"]
     destination = departure["destination"]["name"] |> clean_stop_name()
-    when_str = format_time_until(departure["when"])
+
+    # Use effective_when for time display and add cancelled indicator
+    when_str =
+      if departure["is_cancelled"] do
+        "X" <> format_time_until(departure["effective_when"])
+      else
+        format_time_until(departure["effective_when"])
+      end
+
     # Render line number at x=0
     bitmap = Renderer.render_text(bitmap, {0, 0}, font, line)
 
@@ -260,7 +289,12 @@ defmodule Fliplove.Apps.Timetable do
     Renderer.place_text(bitmap, font, when_str, align: :right)
   end
 
-  defp format_time_until(when_str) do
+  defp format_time_until(nil) do
+    Logger.warning("Received nil departure time")
+    "??"
+  end
+
+  defp format_time_until(when_str) when is_binary(when_str) do
     case DateTime.from_iso8601(when_str) do
       {:ok, departure_time, _offset} ->
         now = DateTime.now!("Etc/UTC")
@@ -284,6 +318,11 @@ defmodule Fliplove.Apps.Timetable do
         Logger.error("Time formatting failed: #{inspect(error)}")
         "??"
     end
+  end
+
+  defp format_time_until(invalid) do
+    Logger.error("Invalid departure time format: #{inspect(invalid)}")
+    "??"
   end
 
   @impl Fliplove.Apps.Base
