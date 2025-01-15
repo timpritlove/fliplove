@@ -10,7 +10,8 @@ import Config
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 
 config :fliplove,
-  timezone: :system  # Will use system's UTC offset
+  # Will use system's UTC offset
+  timezone: :system
 
 # Configures the endpoint
 config :fliplove, FliploveWeb.Endpoint,
@@ -65,7 +66,7 @@ config :logger,
   level: :info,
   backends: [:console]
 
-  # Use Jason for JSON parsing in Phoenix
+# Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
 # Import environment specific config. This must remain at the bottom
