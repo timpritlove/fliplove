@@ -62,7 +62,7 @@ defmodule Fliplove.MixProject do
       {:nimble_options, "~> 1.0", override: true},
       {:bandit, ">= 0.6.9"},
       {:telegram, github: "visciang/telegram", tag: "0.22.4"},
-      {:httpoison, "~> 2.0"},
+      {:httpoison, "~> 2.2.1"},
       {:req, "~> 0.5.8"},
       {:pngex, "~> 0.1.0"},
       {:ex_png, "~> 1.0.0"},
