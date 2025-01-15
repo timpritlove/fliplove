@@ -119,11 +119,22 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp update_dashboard(state) do
     Bitmap.new(Display.width(), Display.height())
-    |> render_current_temperature(state.font)
     |> render_time(state.font)
-    |> render_temperature_chart()
-    |> render_temperature_extremes(state.font)
+    |> render_weather_data(state.font)
     |> maybe_update_display(state.bitmap)
+  end
+
+  defp render_weather_data(bitmap, font) do
+    case Weather.get_current_temperature() do
+      nil ->
+        # If no current temperature, skip all weather rendering
+        bitmap
+      _temp ->
+        bitmap
+        |> render_current_temperature(font)
+        |> render_temperature_chart()
+        |> render_temperature_extremes(font)
+    end
   end
 
   defp render_current_temperature(bitmap, font) do
@@ -144,11 +155,13 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp render_temperature_extremes(bitmap, font) do
-    {max_temp, min_temp} = get_max_min_temps()
-
-    bitmap
-    |> place_text(font, format_temp(max_temp), :top, :right)
-    |> place_text(font, format_temp(min_temp), :bottom, :right)
+    case get_max_min_temps() do
+      {nil, nil} -> bitmap
+      {max_temp, min_temp} ->
+        bitmap
+        |> place_text(font, format_temp(max_temp), :top, :right)
+        |> place_text(font, format_temp(min_temp), :bottom, :right)
+    end
   end
 
   defp maybe_update_display(new_bitmap, current_bitmap) do

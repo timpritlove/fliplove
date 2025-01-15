@@ -137,38 +137,61 @@ defmodule Fliplove.Weather do
 
   @impl true
   def handle_call(:update_weather, _from, state) do
-    {:reply, :ok, update_weather(state)}
+    {:reply, :ok, do_update_weather(state)}
   end
 
   @impl true
   def handle_call({:get_hourly_forecast, hours}, _from, state) do
     case state.service_module.get_hourly_forecast(state.latitude, state.longitude, hours) do
-      {:ok, forecast} -> {:reply, forecast, state}
-      {:error, _reason} -> {:reply, [], state}
+      {:ok, forecast} ->
+        {:reply, forecast, state}
+      {:error, reason} ->
+        Logger.warning("Failed to get hourly forecast: #{inspect(reason)}")
+        {:reply, [], state}
     end
   end
 
   @impl true
   def handle_info(:update_weather, state) do
     Logger.debug("Updating weather data...")
-    state = update_weather(state)
-    {:noreply, state}
+    {:noreply, do_update_weather(state)}
   end
 
-  defp update_weather(state) do
+  defp do_update_weather(%{service_module: nil} = state) do
+    Logger.warning("Weather service module not initialized")
+    state
+  end
+
+  defp do_update_weather(state) do
     Logger.debug("Fetching weather data from service...")
 
-    case state.service_module.get_current_weather(state.latitude, state.longitude) do
-      {:ok, weather} ->
-        timestamp = DateTime.utc_now()
-        Logger.debug("Weather data updated successfully")
-        PubSub.broadcast(Fliplove.PubSub, topic(), {:update_weather, weather})
-        %{state | weather: weather, weather_timestamp: timestamp}
+    try do
+      case state.service_module.get_current_weather(state.latitude, state.longitude) do
+        {:ok, weather} ->
+          timestamp = DateTime.utc_now()
+          Logger.debug("Weather data updated successfully")
+          broadcast_weather_update(weather)
+          %{state | weather: weather, weather_timestamp: timestamp}
 
-      {:error, reason} ->
-        Logger.warning("Failed to update weather: #{inspect(reason)}")
+        {:error, reason} ->
+          Logger.warning("Failed to update weather: #{inspect(reason)}")
+          broadcast_weather_update(state.weather)
+          state
+      end
+    rescue
+      error ->
+        Logger.error("Unexpected error updating weather: #{inspect(error)}")
         state
     end
+  end
+
+  defp broadcast_weather_update(nil), do: :ok
+  defp broadcast_weather_update(weather) do
+    PubSub.broadcast(Fliplove.PubSub, topic(), {:update_weather, weather})
+  rescue
+    error ->
+      Logger.error("Failed to broadcast weather update: #{inspect(error)}")
+      :error
   end
 
   # Rainfall intensity calculation using pattern matching
