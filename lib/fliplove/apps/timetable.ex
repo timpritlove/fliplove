@@ -167,31 +167,36 @@ defmodule Fliplove.Apps.Timetable do
         end
 
         # Validate departure data before sorting
-        valid_departures = Enum.filter(departures, fn departure ->
-          case departure do
-            # Valid departure with real-time data
-            %{"when" => when_str, "line" => %{"name" => _}, "destination" => %{"name" => _}}
-            when not is_nil(when_str) -> true
+        valid_departures =
+          Enum.filter(departures, fn departure ->
+            case departure do
+              # Valid departure with real-time data
+              %{"when" => when_str, "line" => %{"name" => _}, "destination" => %{"name" => _}}
+              when not is_nil(when_str) ->
+                true
 
-            # Cancelled departure with planned time
-            %{
-              "cancelled" => true,
-              "plannedWhen" => planned_when,
-              "line" => %{"name" => _},
-              "destination" => %{"name" => _}
-            } when not is_nil(planned_when) -> true
+              # Cancelled departure with planned time
+              %{
+                "cancelled" => true,
+                "plannedWhen" => planned_when,
+                "line" => %{"name" => _},
+                "destination" => %{"name" => _}
+              }
+              when not is_nil(planned_when) ->
+                true
 
-            invalid_departure ->
-              Logger.warning("Skipping invalid departure: #{inspect(invalid_departure)}")
-              false
-          end
-        end)
+              invalid_departure ->
+                Logger.warning("Skipping invalid departure: #{inspect(invalid_departure)}")
+                false
+            end
+          end)
 
         # Transform departures to include cancelled status and fallback time
-        departures_with_time = Enum.map(valid_departures, fn departure ->
-          time = departure["when"] || departure["plannedWhen"]
-          Map.merge(departure, %{"effective_when" => time, "is_cancelled" => departure["cancelled"] == true})
-        end)
+        departures_with_time =
+          Enum.map(valid_departures, fn departure ->
+            time = departure["when"] || departure["plannedWhen"]
+            Map.merge(departure, %{"effective_when" => time, "is_cancelled" => departure["cancelled"] == true})
+          end)
 
         sorted_departures =
           departures_with_time

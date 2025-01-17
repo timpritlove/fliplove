@@ -129,6 +129,7 @@ defmodule Fliplove.Apps.Dashboard do
       nil ->
         # If no current temperature, skip all weather rendering
         bitmap
+
       _temp ->
         bitmap
         |> render_current_temperature(font)
@@ -156,7 +157,9 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp render_temperature_extremes(bitmap, font) do
     case get_max_min_temps() do
-      {nil, nil} -> bitmap
+      {nil, nil} ->
+        bitmap
+
       {max_temp, min_temp} ->
         bitmap
         |> place_text(font, format_temp(max_temp), :top, :right)

@@ -145,6 +145,7 @@ defmodule Fliplove.Weather do
     case state.service_module.get_hourly_forecast(state.latitude, state.longitude, hours) do
       {:ok, forecast} ->
         {:reply, forecast, state}
+
       {:error, reason} ->
         Logger.warning("Failed to get hourly forecast: #{inspect(reason)}")
         {:reply, [], state}
@@ -186,6 +187,7 @@ defmodule Fliplove.Weather do
   end
 
   defp broadcast_weather_update(nil), do: :ok
+
   defp broadcast_weather_update(weather) do
     PubSub.broadcast(Fliplove.PubSub, topic(), {:update_weather, weather})
   rescue
@@ -270,13 +272,16 @@ defmodule Fliplove.Weather do
   defp get_location_from_ip do
     # Configure Req with retries
     request_options = [
-      retry: :transient,  # Retry on network-related errors
+      # Retry on network-related errors
+      retry: :transient,
       max_retries: 3,
-      retry_delay: fn attempt -> # Exponential backoff
+      # Exponential backoff
+      retry_delay: fn attempt ->
         trunc(:math.pow(2, attempt - 1) * 500)
       end,
       connect_options: [
-        timeout: 10_000  # 10 seconds timeout
+        # 10 seconds timeout
+        timeout: 10_000
       ]
     ]
 
