@@ -307,10 +307,10 @@ defmodule Fliplove.Apps.Timetable do
 
         cond do
           diff <= 0 ->
-            "0m"
+            "0 min"
 
           diff < 60 ->
-            "#{diff}m"
+            "#{diff} min"
 
           true ->
             # For departures more than 60 minutes away, show the actual time
