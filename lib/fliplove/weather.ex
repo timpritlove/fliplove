@@ -150,12 +150,21 @@ defmodule Fliplove.Weather do
         Logger.warning("Failed to get hourly forecast: #{inspect(reason)}")
         {:reply, [], state}
     end
+  rescue
+    error ->
+      Logger.error("Unexpected error getting hourly forecast: #{inspect(error)}")
+      {:reply, [], state}
   end
 
   @impl true
   def handle_info(:update_weather, state) do
-    Logger.debug("Updating weather data...")
-    {:noreply, do_update_weather(state)}
+    # Don't crash on update failures
+    new_state = do_update_weather(state)
+    {:noreply, new_state}
+  rescue
+    error ->
+      Logger.error("Unexpected error in weather update: #{inspect(error)}")
+      {:noreply, state}
   end
 
   defp do_update_weather(%{service_module: nil} = state) do
@@ -166,24 +175,24 @@ defmodule Fliplove.Weather do
   defp do_update_weather(state) do
     Logger.debug("Fetching weather data from service...")
 
-    try do
-      case state.service_module.get_current_weather(state.latitude, state.longitude) do
-        {:ok, weather} ->
-          timestamp = DateTime.utc_now()
-          Logger.debug("Weather data updated successfully")
-          broadcast_weather_update(weather)
-          %{state | weather: weather, weather_timestamp: timestamp}
+    case state.service_module.get_current_weather(state.latitude, state.longitude) do
+      {:ok, weather} ->
+        timestamp = DateTime.utc_now()
+        Logger.debug("Weather data updated successfully")
+        broadcast_weather_update(weather)
+        %{state | weather: weather, weather_timestamp: timestamp}
 
-        {:error, reason} ->
-          Logger.warning("Failed to update weather: #{inspect(reason)}")
-          broadcast_weather_update(state.weather)
-          state
-      end
-    rescue
-      error ->
-        Logger.error("Unexpected error updating weather: #{inspect(error)}")
+      {:error, reason} ->
+        Logger.warning("Failed to update weather: #{inspect(reason)}")
+        # Keep existing weather data and continue running
+        broadcast_weather_update(state.weather)
         state
     end
+  rescue
+    error ->
+      Logger.error("Unexpected error updating weather: #{inspect(error)}")
+      # Keep existing weather data and continue running
+      state
   end
 
   defp broadcast_weather_update(nil), do: :ok

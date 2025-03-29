@@ -210,7 +210,7 @@ defmodule Fliplove.Apps.Dashboard do
     end)
   end
 
-  defp scale_temperatures(temp_data, chart_height) do
+  defp scale_temperatures(temp_data, chart_height) when length(temp_data) > 0 do
     temperatures = Enum.map(temp_data, & &1.temperature)
     min_temp = Enum.min(temperatures)
     range = Enum.max(temperatures) - min_temp
@@ -220,6 +220,8 @@ defmodule Fliplove.Apps.Dashboard do
       Map.put(temp, :y, y)
     end)
   end
+
+  defp scale_temperatures(_temp_data, _chart_height), do: []
 
   defp create_temperature_bitmap(scaled_temps, width, height) do
     temp_matrix =

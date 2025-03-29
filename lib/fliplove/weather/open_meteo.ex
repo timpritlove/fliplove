@@ -24,7 +24,10 @@ defmodule Fliplove.Weather.OpenMeteo do
       {"timezone", "auto"}
     ]
 
-    case HTTPoison.get(url, [], params: params) do
+    # Add timeout options to HTTPoison request
+    options = [recv_timeout: 10_000, timeout: 10_000]
+
+    case HTTPoison.get(url, [], params: params, options: options) do
       {:ok, %{status_code: 200, body: body}} ->
         case Jason.decode(body) do
           {:ok, data} ->
@@ -66,7 +69,10 @@ defmodule Fliplove.Weather.OpenMeteo do
       {"forecast_hours", hours}
     ]
 
-    case HTTPoison.get(url, [], params: params) do
+    # Add timeout options to HTTPoison request
+    options = [recv_timeout: 10_000, timeout: 10_000]
+
+    case HTTPoison.get(url, [], params: params, options: options) do
       {:ok, %{status_code: 200, body: body}} ->
         case Jason.decode(body) do
           {:ok, data} ->
