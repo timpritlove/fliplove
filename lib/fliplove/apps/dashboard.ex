@@ -104,9 +104,17 @@ defmodule Fliplove.Apps.Dashboard do
         {nil, nil}
 
       temperatures ->
-        temperatures
-        |> Enum.map(& &1.temperature)
-        |> then(fn temps -> {Enum.max(temps), Enum.min(temps)} end)
+        try do
+          temperatures
+          |> Enum.map(& &1.temperature)
+          |> then(fn temps -> {Enum.max(temps), Enum.min(temps)} end)
+        rescue
+          Enum.EmptyError ->
+            {nil, nil}
+          error ->
+            Logger.error("Error calculating temperature extremes: #{inspect(error)}")
+            {nil, nil}
+        end
     end
   end
 
@@ -150,9 +158,19 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   defp render_temperature_chart(bitmap) do
-    weather_bitmap = create_temperature_chart(Display.height())
-    result = Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
-    Bitmap.overlay(bitmap, result)
+    case get_hourly_forecast() do
+      [] -> bitmap
+      _forecast ->
+        try do
+          weather_bitmap = create_temperature_chart(Display.height())
+          result = Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
+          Bitmap.overlay(bitmap, result)
+        rescue
+          error ->
+            Logger.error("Failed to render temperature chart: #{inspect(error)}")
+            bitmap
+        end
+    end
   end
 
   defp render_temperature_extremes(bitmap, font) do
@@ -313,13 +331,26 @@ defmodule Fliplove.Apps.Dashboard do
 
   # Add helper to get hourly forecast with maximum available hours
   defp get_hourly_forecast do
-    case Weather.get_hourly_forecast(@forecast_hours) do
-      [] ->
-        Logger.warning("No hourly forecast data available")
-        []
+    try do
+      case Weather.get_hourly_forecast(@forecast_hours) do
+        [] ->
+          Logger.warning("No hourly forecast data available")
+          []
 
-      forecast ->
-        forecast
+        forecast ->
+          forecast
+      end
+    rescue
+      error ->
+        Logger.error("Failed to get hourly forecast: #{inspect(error)}")
+        []
+    catch
+      :exit, reason ->
+        Logger.error("Weather service call timed out: #{inspect(reason)}")
+        []
+      :throw, reason ->
+        Logger.error("Weather service call failed: #{inspect(reason)}")
+        []
     end
   end
 end
