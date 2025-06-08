@@ -68,9 +68,9 @@ defmodule Fliplove.Font.Parser do
   bdf_COMMENT =
     string("COMMENT")
     |> ignore(whitespace)
-    |> concat(quoted_string)
-    |> concat(eol)
-    |> wrap()
+    |> ignore(ascii_string([0x20..0x7E], min: 0))
+    |> ignore(eol)
+    |> replace(%{})
 
   bdf_ENDFONT = string("ENDFONT")
 
