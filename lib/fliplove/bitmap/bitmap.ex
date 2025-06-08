@@ -189,7 +189,10 @@ defmodule Fliplove.Bitmap do
   The coordinate must be passed as a tuple {x,y}.
   """
   def set_pixel(bitmap, {x, y} = _coordinate, value) do
-    new(width(bitmap), height(bitmap), Map.put(bitmap.matrix, {x, y}, value))
+    new(width(bitmap), height(bitmap), Map.put(bitmap.matrix, {x, y}, value),
+      baseline_x: bitmap.baseline_x,
+      baseline_y: bitmap.baseline_y
+    )
   end
 
   @doc """
@@ -278,7 +281,7 @@ defmodule Fliplove.Bitmap do
         {{pos_x, pos_y}, get_pixel(bitmap, {x, y})}
       end
 
-    new(width, height, matrix)
+    new(width, height, matrix, baseline_x: bitmap.baseline_x, baseline_y: bitmap.baseline_y)
   end
 
   @doc """
@@ -288,11 +291,15 @@ defmodule Fliplove.Bitmap do
     {width, height} = dimensions(bitmap)
 
     matrix =
-      for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
-        {{x, y}, 1 - get_pixel(bitmap, {x, y})}
+      if width > 0 and height > 0 do
+        for x <- 0..(width - 1), y <- 0..(height - 1), into: %{} do
+          {{x, y}, 1 - get_pixel(bitmap, {x, y})}
+        end
+      else
+        %{}
       end
 
-    new(width, height, matrix)
+    new(width, height, matrix, baseline_x: bitmap.baseline_x, baseline_y: bitmap.baseline_y)
   end
 
   @doc """
@@ -306,7 +313,7 @@ defmodule Fliplove.Bitmap do
         {{x, y}, get_pixel(bitmap, {width - 1 - x, y})}
       end
 
-    new(width, height, matrix)
+    new(width, height, matrix, baseline_x: bitmap.baseline_x, baseline_y: bitmap.baseline_y)
   end
 
   @doc """
@@ -321,7 +328,7 @@ defmodule Fliplove.Bitmap do
         {{x, y}, get_pixel(bitmap, {x, height - 1 - y})}
       end
 
-    new(width, height, matrix)
+    new(width, height, matrix, baseline_x: bitmap.baseline_x, baseline_y: bitmap.baseline_y)
   end
 
   @doc """
