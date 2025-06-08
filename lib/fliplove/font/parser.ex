@@ -176,6 +176,19 @@ defmodule Fliplove.Font.Parser do
     |> wrap()
     |> map(:swidth1_map)
 
+  # Support for additional BDF properties that might be encountered
+  defp metricsset_map([_, direction]) do
+    %{metricsset: direction}
+  end
+
+  bdf_METRICSSET =
+    string("METRICSSET")
+    |> ignore(whitespace)
+    |> concat(bdf_number)
+    |> concat(eol)
+    |> wrap()
+    |> map(:metricsset_map)
+
   defp fix_it([first_char | [rest]]) do
     <<first_char>> <> rest
   end
@@ -287,12 +300,36 @@ defmodule Fliplove.Font.Parser do
     string("BITMAP")
     |> concat(eol)
 
-  def hex_to_bin([hexstring]) do
-    hexstring
-    |> List.to_string()
-    |> String.to_integer(16)
-    |> Integer.to_string(2)
-    |> String.pad_leading(Enum.count(hexstring) * 4, "0")
+  @doc """
+  Converts a hex string to binary string representation.
+  Optimized for BDF bitmap parsing.
+
+  ## Examples
+
+      iex> Fliplove.Font.Parser.hex_to_bin(["F0"])
+      "11110000"
+
+      iex> Fliplove.Font.Parser.hex_to_bin(["A5"])
+      "10100101"
+  """
+  def hex_to_bin([hexstring]) when is_list(hexstring) do
+    # Convert charlist to string once
+    hex_str = List.to_string(hexstring)
+    hex_length = String.length(hex_str)
+
+    # Use more efficient conversion
+    case Integer.parse(hex_str, 16) do
+      {int_val, ""} ->
+        # Pad to correct bit width (4 bits per hex digit)
+        int_val
+        |> Integer.to_string(2)
+        |> String.pad_leading(hex_length * 4, "0")
+
+      _ ->
+        # Return a special error marker instead of raising
+        # This allows parsing to continue and we can handle the error later
+        {:error, "Invalid hex string: #{hex_str}"}
+    end
   end
 
   bdf_char_bitmap_line = times(hexbyte, min: 1) |> concat(eol) |> wrap() |> reduce({:hex_to_bin, []})
@@ -318,29 +355,93 @@ defmodule Fliplove.Font.Parser do
         bdf_SWIDTH,
         bdf_SWIDTH1,
         bdf_VVECTOR,
-        bdf_BBX
+        bdf_BBX,
+        bdf_METRICSSET
       ])
     )
     |> concat(bdf_char_bitmap)
 
-  defp char_map(properties) do
-    # First merge all properties
-    char = Enum.reduce(properties, %{}, fn map, acc -> Map.merge(map, acc) end)
-    # Now create the bitmap with the correct baseline offsets from BBX
-    if Map.has_key?(char, :bitmap_lines) and Map.has_key?(char, :bb_x_off) and Map.has_key?(char, :bb_y_off) do
-      bitmap =
-        Bitmap.from_lines_of_text(
-          char.bitmap_lines,
-          baseline_x: char.bb_x_off,
-          baseline_y: char.bb_y_off
-        )
+  defp char_map([startchar_map | char_properties]) do
+    # Flatten the structure: startchar_map + list of char properties
+    all_properties = [startchar_map | List.flatten(char_properties)]
 
-      # Remove bb_x_off and bb_y_off from char map since they're now in the bitmap
-      char = Map.drop(char, [:bb_x_off, :bb_y_off, :bitmap_lines])
-      Map.put(char, :bitmap, bitmap)
-    else
-      char
+    # First merge all properties
+    char = Enum.reduce(all_properties, %{}, fn map, acc -> Map.merge(map, acc) end)
+
+    # Validate required character fields - raise exceptions that will be caught by parse_font/1
+    unless Map.has_key?(char, :encoding) do
+      throw({:validation_error, "Character missing required ENCODING field"})
     end
+
+    unless Map.has_key?(char, :name) do
+      throw({:validation_error, "Character missing required name field"})
+    end
+
+    # Create bitmap if we have the required data
+    char =
+      if Map.has_key?(char, :bitmap_lines) and Map.has_key?(char, :bb_x_off) and Map.has_key?(char, :bb_y_off) do
+        # Check if any bitmap lines contain error markers
+        has_errors =
+          Enum.any?(char.bitmap_lines, fn line ->
+            is_tuple(line) and elem(line, 0) == :error
+          end)
+
+        if has_errors do
+          error_lines =
+            Enum.filter(char.bitmap_lines, fn line ->
+              is_tuple(line) and elem(line, 0) == :error
+            end)
+
+          error_messages = Enum.map(error_lines, fn {:error, msg} -> msg end)
+
+          # Store warning information in the character for later extraction
+          char
+          |> Map.put(:_parsing_warnings, [
+            %{
+              type: :invalid_bitmap,
+              message: "Invalid hex data: #{Enum.join(error_messages, ", ")}",
+              data: error_lines
+            }
+          ])
+          |> Map.drop([:bitmap_lines])
+        else
+          try do
+            bitmap =
+              Bitmap.from_lines_of_text(
+                char.bitmap_lines,
+                baseline_x: char.bb_x_off,
+                baseline_y: char.bb_y_off
+              )
+
+            # Remove bb_x_off and bb_y_off from char map since they're now in the bitmap
+            char
+            |> Map.drop([:bb_x_off, :bb_y_off, :bitmap_lines])
+            |> Map.put(:bitmap, bitmap)
+          rescue
+            e ->
+              # Store warning information in the character for later extraction
+              char
+              |> Map.put(:_parsing_warnings, [
+                %{
+                  type: :bitmap_creation_failed,
+                  message: "Failed to create bitmap: #{Exception.message(e)}"
+                }
+              ])
+              |> Map.drop([:bb_x_off, :bb_y_off, :bitmap_lines])
+          end
+        end
+      else
+        # Store warning information in the character for later extraction
+        char
+        |> Map.put(:_parsing_warnings, [
+          %{
+            type: :missing_bitmap_data,
+            message: "Character missing bitmap data or bounding box information"
+          }
+        ])
+      end
+
+    char
   end
 
   bdf_char_section =
@@ -403,6 +504,7 @@ defmodule Fliplove.Font.Parser do
         bdf_DWIDTH1,
         bdf_SWIDTH,
         bdf_SWIDTH1,
+        bdf_METRICSSET,
         bdf_property_section
       ])
     )
@@ -415,14 +517,59 @@ defmodule Fliplove.Font.Parser do
 
   defparsec(:parse_bdf, parsec(:bdf))
 
-  def parse_font(path) do
+  def parse_font(path) when is_binary(path) do
+    unless File.exists?(path) do
+      raise File.Error, reason: :enoent, action: "open", path: path
+    end
+
     try do
-      {:ok, [font], _, _, _, _} = path |> File.read!() |> parse_bdf()
-      font
+      content = File.read!(path)
+
+      case parse_bdf(content) do
+        {:ok, [font], _, _, _, _} ->
+          validate_font!(font, path)
+          font
+
+        {:error, reason, remaining, _context, _line, _column} ->
+          raise ArgumentError, """
+          Failed to parse BDF font file: #{path}
+          Error: #{reason}
+          Remaining content: #{String.slice(remaining, 0, 100)}#{if String.length(remaining) > 100, do: "...", else: ""}
+          """
+
+        other ->
+          raise ArgumentError, "Unexpected parse result for #{path}: #{inspect(other)}"
+      end
     rescue
+      File.Error ->
+        reraise File.Error, __STACKTRACE__
+
+      ArgumentError ->
+        reraise ArgumentError, __STACKTRACE__
+
       e ->
         Logger.error("Failed to parse font file #{path}: #{inspect(e)}")
-        reraise e, __STACKTRACE__
+        raise ArgumentError, "Failed to parse BDF font file #{path}: #{Exception.message(e)}"
+    catch
+      {:validation_error, message} ->
+        raise ArgumentError, message
     end
+  end
+
+  # Validates that the parsed font has required fields
+  defp validate_font!(font, path) do
+    unless font.name && is_binary(font.name) do
+      raise ArgumentError, "Font file #{path} is missing required FONT name"
+    end
+
+    unless font.characters && is_map(font.characters) do
+      raise ArgumentError, "Font file #{path} has no valid characters"
+    end
+
+    if map_size(font.characters) == 0 do
+      Logger.warning("Font file #{path} contains no characters")
+    end
+
+    :ok
   end
 end
