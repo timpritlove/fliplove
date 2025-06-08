@@ -735,7 +735,7 @@ defmodule BitmapComprehensiveTest do
 
     test "from_lines_of_text with mixed input types" do
       # Test with both strings and charlists
-      lines = ["X.X", '.X.', "X.X"]
+      lines = ["X.X", ~c".X.", "X.X"]
       bitmap = Bitmap.from_lines_of_text(lines, on: [?X], off: [?.])
 
       assert Bitmap.dimensions(bitmap) == {3, 3}
