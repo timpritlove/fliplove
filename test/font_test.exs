@@ -57,6 +57,102 @@ defmodule Fliplove.FontTest do
       assert char == nil
     end
 
+    test "character_count returns correct count" do
+      font = %Font{
+        characters: %{
+          65 => %{name: "A"},
+          66 => %{name: "B"},
+          67 => %{name: "C"}
+        }
+      }
+
+      assert Font.character_count(font) == 3
+    end
+
+    test "encodings returns list of all encodings" do
+      font = %Font{
+        characters: %{
+          65 => %{name: "A"},
+          66 => %{name: "B"},
+          32 => %{name: "space"}
+        }
+      }
+
+      encodings = Font.encodings(font)
+      assert Enum.sort(encodings) == [32, 65, 66]
+    end
+
+    test "character_names returns sorted list of names" do
+      font = %Font{
+        characters: %{
+          65 => %{name: "A"},
+          66 => %{name: "B"},
+          32 => %{name: "space"}
+        }
+      }
+
+      names = Font.character_names(font)
+      assert names == ["A", "B", "space"]
+    end
+
+    test "has_encoding? returns true for existing encoding" do
+      font = %Font{characters: %{65 => %{name: "A"}}}
+      assert Font.has_encoding?(font, 65) == true
+      assert Font.has_encoding?(font, 99) == false
+    end
+
+    test "has_character? returns true for existing character" do
+      font = %Font{characters: %{65 => %{name: "A"}}}
+      assert Font.has_character?(font, "A") == true
+      assert Font.has_character?(font, "Z") == false
+    end
+
+    test "ascii_characters returns only ASCII range characters" do
+      font = %Font{
+        characters: %{
+          # Below ASCII printable
+          31 => %{name: "control"},
+          # ASCII printable start
+          32 => %{name: "space"},
+          # ASCII printable
+          65 => %{name: "A"},
+          # ASCII printable end
+          126 => %{name: "tilde"},
+          # Above ASCII printable
+          127 => %{name: "del"},
+          # Extended ASCII
+          200 => %{name: "extended"}
+        }
+      }
+
+      ascii_chars = Font.ascii_characters(font)
+      encodings = Map.keys(ascii_chars) |> Enum.sort()
+      assert encodings == [32, 65, 126]
+    end
+
+    test "metrics returns font metrics information" do
+      font = %Font{
+        characters: %{65 => %{name: "A"}},
+        fbb_x: 8,
+        fbb_y: 12,
+        fbb_x_off: 0,
+        fbb_y_off: -2,
+        size: 10,
+        xres: 75,
+        yres: 75
+      }
+
+      metrics = Font.metrics(font)
+      assert metrics.character_count == 1
+      assert metrics.font_bounding_box.width == 8
+      assert metrics.font_bounding_box.height == 12
+      assert metrics.font_bounding_box.x_offset == 0
+      assert metrics.font_bounding_box.y_offset == -2
+      assert metrics.size == 10
+      assert metrics.resolution.x == 75
+      assert metrics.resolution.y == 75
+    end
+
     test "inspect implementation shows font name" do
       font = %Font{name: "Test Font"}
       inspected = inspect(font)
@@ -389,7 +485,192 @@ defmodule Fliplove.FontTest do
 
       try do
         # Should raise an error for malformed BDF
-        assert_raise MatchError, fn ->
+        assert_raise ArgumentError, fn ->
+          Parser.parse_font(temp_path)
+        end
+      after
+        File.rm(temp_path)
+      end
+    end
+
+    test "detects fonts with invalid hex bitmap data" do
+      invalid_hex_bdf = """
+      STARTFONT 2.1
+      FONT -Test-Font--4-40-75-75-C-20-ISO10646-1
+      SIZE 4 75 75
+      FONTBOUNDINGBOX 2 4 0 0
+      CHARS 1
+      STARTCHAR bad_hex
+      ENCODING 88
+      DWIDTH 2 0
+      BBX 2 4 0 0
+      BITMAP
+      GG
+      ZZ
+      FF
+      00
+      ENDCHAR
+      ENDFONT
+      """
+
+      temp_path = "test/support/invalid_hex_font.bdf"
+      File.write!(temp_path, invalid_hex_bdf)
+
+      try do
+        # Should fail to parse due to invalid hex characters "GG" and "ZZ"
+        assert_raise ArgumentError, fn ->
+          Parser.parse_font(temp_path)
+        end
+      after
+        File.rm(temp_path)
+      end
+    end
+
+    test "detects fonts with mixed valid and invalid bitmap data" do
+      mixed_bdf = """
+      STARTFONT 2.1
+      FONT -Test-Font--4-40-75-75-C-20-ISO10646-1
+      SIZE 4 75 75
+      FONTBOUNDINGBOX 2 4 0 0
+      CHARS 3
+      STARTCHAR good_char
+      ENCODING 65
+      DWIDTH 2 0
+      BBX 2 4 0 0
+      BITMAP
+      C0
+      A0
+      A0
+      00
+      ENDCHAR
+      STARTCHAR bad_char
+      ENCODING 66
+      DWIDTH 2 0
+      BBX 2 4 0 0
+      BITMAP
+      GG
+      HH
+      II
+      00
+      ENDCHAR
+      STARTCHAR another_good_char
+      ENCODING 67
+      DWIDTH 2 0
+      BBX 2 4 0 0
+      BITMAP
+      F0
+      90
+      90
+      F0
+      ENDCHAR
+      ENDFONT
+      """
+
+      temp_path = "test/support/mixed_font.bdf"
+      File.write!(temp_path, mixed_bdf)
+
+      try do
+        # Should fail to parse due to invalid hex characters in bad_char
+        assert_raise ArgumentError, fn ->
+          Parser.parse_font(temp_path)
+        end
+      after
+        File.rm(temp_path)
+      end
+    end
+
+    test "detects fonts with characters missing required bitmap fields" do
+      missing_fields_bdf = """
+      STARTFONT 2.1
+      FONT -Test-Font--4-40-75-75-C-20-ISO10646-1
+      SIZE 4 75 75
+      FONTBOUNDINGBOX 2 4 0 0
+      CHARS 2
+      STARTCHAR no_bbx
+      ENCODING 65
+      DWIDTH 2 0
+      BITMAP
+      C0
+      A0
+      ENDCHAR
+      STARTCHAR no_bitmap
+      ENCODING 66
+      DWIDTH 2 0
+      BBX 2 4 0 0
+      ENDCHAR
+      ENDFONT
+      """
+
+      temp_path = "test/support/missing_fields_font.bdf"
+      File.write!(temp_path, missing_fields_bdf)
+
+      try do
+        # Should fail to parse due to malformed character structure
+        # (BITMAP without BBX is invalid BDF format)
+        assert_raise ArgumentError, fn ->
+          Parser.parse_font(temp_path)
+        end
+      after
+        File.rm(temp_path)
+      end
+    end
+
+    test "handles fonts with characters missing required fields" do
+      missing_required_bdf = """
+      STARTFONT 2.1
+      FONT -Test-Font--4-40-75-75-C-20-ISO10646-1
+      SIZE 4 75 75
+      FONTBOUNDINGBOX 2 4 0 0
+      CHARS 1
+      STARTCHAR no_encoding
+      DWIDTH 2 0
+      BBX 2 4 0 0
+      BITMAP
+      C0
+      A0
+      ENDCHAR
+      ENDFONT
+      """
+
+      temp_path = "test/support/missing_required_font.bdf"
+      File.write!(temp_path, missing_required_bdf)
+
+      try do
+        # Should raise an error for missing required ENCODING field
+        assert_raise ArgumentError, ~r/Character missing required ENCODING field/, fn ->
+          Parser.parse_font(temp_path)
+        end
+      after
+        File.rm(temp_path)
+      end
+    end
+
+    test "detects fonts with odd-length hex strings" do
+      odd_hex_bdf = """
+      STARTFONT 2.1
+      FONT -Test-Font--4-40-75-75-C-20-ISO10646-1
+      SIZE 4 75 75
+      FONTBOUNDINGBOX 2 4 0 0
+      CHARS 1
+      STARTCHAR odd_hex
+      ENCODING 88
+      DWIDTH 2 0
+      BBX 2 4 0 0
+      BITMAP
+      F
+      A0
+      C
+      00
+      ENDCHAR
+      ENDFONT
+      """
+
+      temp_path = "test/support/odd_hex_font.bdf"
+      File.write!(temp_path, odd_hex_bdf)
+
+      try do
+        # Should fail to parse due to odd-length hex strings "F" and "C"
+        assert_raise ArgumentError, fn ->
           Parser.parse_font(temp_path)
         end
       after
