@@ -48,6 +48,20 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  # Enable HTTPS if requested via environment variable
+  if System.get_env("FLIPLOVE_HTTPS") == "true" do
+    keyfile = System.get_env("FLIPLOVE_SSL_KEY_PATH") || "/etc/ssl/fliplove/ssl.key"
+    certfile = System.get_env("FLIPLOVE_SSL_CERT_PATH") || "/etc/ssl/fliplove/ssl.crt"
+
+    config :fliplove, FliploveWeb.Endpoint,
+      https: [
+        port: 443,
+        cipher_suite: :strong,
+        keyfile: keyfile,
+        certfile: certfile
+      ]
+  end
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
