@@ -6,11 +6,12 @@ defmodule Fliplove do
   Contexts are also responsible for managing your data, regardless
   if it comes from the database, an external API or others.
   """
+
   def priv_dir do
-    Path.join([:code.priv_dir(:fliplove)])
+    Application.app_dir(:fliplove, "priv")
   end
 
   def static_dir do
-    Path.join([priv_dir(), "static"])
+    Application.app_dir(:fliplove, "priv/static")
   end
 end
