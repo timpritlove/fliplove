@@ -1,5 +1,6 @@
 defmodule FliploveWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :fliplove
+  require Logger
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
@@ -47,4 +48,26 @@ defmodule FliploveWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
   plug FliploveWeb.Router
+
+  @impl true
+  def init(_key, config) do
+    http_config = Keyword.get(config, :http)
+    https_config = Keyword.get(config, :https)
+
+    if http_config do
+      port = Keyword.get(http_config, :port, "unknown")
+      Logger.info("[FliploveWeb.Endpoint] HTTP enabled on port #{port}")
+    end
+
+    if https_config do
+      port = Keyword.get(https_config, :port, "unknown")
+      keyfile = Keyword.get(https_config, :keyfile, "not set")
+      certfile = Keyword.get(https_config, :certfile, "not set")
+      Logger.info("[FliploveWeb.Endpoint] HTTPS enabled on port #{port} (keyfile: #{keyfile}, certfile: #{certfile})")
+    else
+      Logger.info("[FliploveWeb.Endpoint] HTTPS is not enabled.")
+    end
+
+    {:ok, config}
+  end
 end
