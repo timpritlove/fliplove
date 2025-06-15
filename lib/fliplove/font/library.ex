@@ -21,17 +21,31 @@ defmodule Fliplove.Font.Library do
     Logger.debug("Initializing Font Library")
     Process.flag(:trap_exit, true)
 
-    # Start with built-in fonts
-    initial_fonts = [
-      Fliplove.Font.Fonts.SpaceInvaders.get(),
-      Fliplove.Font.Fonts.Flipdot.get(),
-      Fliplove.Font.Fonts.FlipdotCondensed.get()
-    ]
+    # Start with built-in fonts - wrap in try/catch for fatal error logging
+    initial_fonts =
+      try do
+        fonts = [
+          Fliplove.Font.Fonts.SpaceInvaders.get(),
+          Fliplove.Font.Fonts.Flipdot.get(),
+          Fliplove.Font.Fonts.FlipdotCondensed.get()
+        ]
 
-    Logger.debug("Loaded #{length(initial_fonts)} built-in fonts: #{inspect(initial_fonts)}")
+        Logger.debug("Loaded #{length(fonts)} built-in fonts")
+        fonts
+      rescue
+        error ->
+          Logger.error("FATAL: Failed to load built-in fonts: #{inspect(error)}")
+          Logger.error("FATAL: Font Library cannot start without built-in fonts")
+          Logger.error("FATAL: This will cause the Font Library to terminate")
+          reraise error, __STACKTRACE__
+      catch
+        :exit, reason ->
+          Logger.error("FATAL: Exit while loading built-in fonts: #{inspect(reason)}")
+          Logger.error("FATAL: Font Library cannot start without built-in fonts")
+          exit(reason)
+      end
 
     {:ok, task_supervisor} = Task.Supervisor.start_link()
-    Logger.debug("Started Task Supervisor")
 
     state = %__MODULE__{fonts: initial_fonts, task_supervisor: task_supervisor, parsing_tasks: []}
     Phoenix.PubSub.broadcast(Fliplove.PubSub, @topic, :font_library_update)
@@ -50,13 +64,20 @@ defmodule Fliplove.Font.Library do
           font_files = Enum.filter(files, fn file_name -> String.ends_with?(file_name, ".bdf") end)
           Logger.debug("Found #{length(font_files)} .bdf files")
 
-          Enum.map(font_files, fn font_file ->
-            path = Path.join([font_dir, font_file])
-            Task.Supervisor.async_nolink(state.task_supervisor, Parser, :parse_font, [path])
-          end)
+          if length(font_files) == 0 do
+            Logger.warning("No .bdf font files found in #{font_dir}")
+            Logger.info("Continuing with built-in fonts only")
+            []
+          else
+            Enum.map(font_files, fn font_file ->
+              path = Path.join([font_dir, font_file])
+              Task.Supervisor.async_nolink(state.task_supervisor, Parser, :parse_font, [path])
+            end)
+          end
 
         {:error, reason} ->
-          Logger.error("Failed to list font directory: #{inspect(reason)}")
+          Logger.error("Failed to list font directory #{font_dir}: #{inspect(reason)}")
+          Logger.info("Continuing with built-in fonts only")
           []
       end
 
@@ -94,11 +115,30 @@ defmodule Fliplove.Font.Library do
   end
 
   def terminate(reason, state) do
-    Logger.warning("Font Library terminating: #{inspect(reason)}")
+    case reason do
+      :normal ->
+        Logger.info("Font Library terminating normally")
+
+      :shutdown ->
+        Logger.info("Font Library shutting down")
+
+      {:shutdown, _} ->
+        Logger.info("Font Library shutting down: #{inspect(reason)}")
+
+      _ ->
+        Logger.error("FATAL: Font Library terminating unexpectedly: #{inspect(reason)}")
+        Logger.error("FATAL: This may cause dependent services to restart")
+        Logger.error("FATAL: Font Library state at termination: #{inspect(state)}")
+    end
+
     # Cancel any ongoing parsing tasks
-    Enum.each(state.parsing_tasks, fn task ->
-      Task.Supervisor.terminate_child(state.task_supervisor, task.pid)
-    end)
+    if state.parsing_tasks && length(state.parsing_tasks) > 0 do
+      Logger.debug("Cancelling #{length(state.parsing_tasks)} ongoing font parsing tasks")
+
+      Enum.each(state.parsing_tasks, fn task ->
+        Task.Supervisor.terminate_child(state.task_supervisor, task.pid)
+      end)
+    end
   end
 
   def get_fonts() do
