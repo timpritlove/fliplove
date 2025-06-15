@@ -49,8 +49,8 @@ defmodule FliploveWeb.Endpoint do
   plug Plug.Session, @session_options
   plug FliploveWeb.Router
 
-  @impl true
-  def init(_key, config) do
+  # Startup logging for HTTP/HTTPS configuration
+  def init(config) do
     http_config = Keyword.get(config, :http)
     https_config = Keyword.get(config, :https)
 
