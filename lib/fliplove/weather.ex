@@ -10,7 +10,21 @@ defmodule Fliplove.Weather do
 
   alias Fliplove.Location.Nominatim
 
-  defstruct [:timer, :service_module, :latitude, :longitude, :weather, :weather_timestamp, :last_error, :last_success]
+  defstruct [
+    :timer,
+    :service_module,
+    :latitude,
+    :longitude,
+    :weather,
+    :weather_timestamp,
+    :last_error,
+    :last_success,
+    # Circuit breaker state
+    :circuit_breaker_state,
+    :failure_count,
+    :last_failure_time,
+    :retry_timer
+  ]
 
   @latitude_env "FLIPLOVE_LATITUDE"
   @longitude_env "FLIPLOVE_LONGITUDE"
@@ -23,6 +37,14 @@ defmodule Fliplove.Weather do
   # Add service module constants
   @weather_service_env "FLIPLOVE_WEATHER_SERVICE"
   @default_service :open_meteo
+
+  # Circuit breaker configuration
+  @max_failures 3
+  @circuit_breaker_timeout :timer.minutes(5)
+  @retry_interval :timer.minutes(1)
+
+  # GenServer call timeout
+  @call_timeout 3_000
 
   def topic, do: @topic
 
@@ -41,11 +63,39 @@ defmodule Fliplove.Weather do
   end
 
   def get_weather do
-    GenServer.call(__MODULE__, :get_current_weather)
+    try do
+      GenServer.call(__MODULE__, :get_current_weather, @call_timeout)
+    catch
+      :exit, {:timeout, _} ->
+        Logger.warning("Weather service call timed out")
+        nil
+
+      :exit, {:noproc, _} ->
+        Logger.warning("Weather service not available")
+        nil
+
+      :exit, reason ->
+        Logger.warning("Weather service call failed: #{inspect(reason)}")
+        nil
+    end
   end
 
   def update_weather do
-    GenServer.call(__MODULE__, :update_weather)
+    try do
+      GenServer.call(__MODULE__, :update_weather, @call_timeout)
+    catch
+      :exit, {:timeout, _} ->
+        Logger.warning("Weather service update call timed out")
+        :error
+
+      :exit, {:noproc, _} ->
+        Logger.warning("Weather service not available for update")
+        :error
+
+      :exit, reason ->
+        Logger.warning("Weather service update call failed: #{inspect(reason)}")
+        :error
+    end
   end
 
   def get_current_temperature do
@@ -79,7 +129,21 @@ defmodule Fliplove.Weather do
   The actual number of hours returned may be less than requested, depending on the service's capabilities.
   """
   def get_hourly_forecast(hours) when is_integer(hours) and hours > 0 do
-    GenServer.call(__MODULE__, {:get_hourly_forecast, hours})
+    try do
+      GenServer.call(__MODULE__, {:get_hourly_forecast, hours}, @call_timeout)
+    catch
+      :exit, {:timeout, _} ->
+        Logger.warning("Weather service hourly forecast call timed out")
+        []
+
+      :exit, {:noproc, _} ->
+        Logger.warning("Weather service not available for hourly forecast")
+        []
+
+      :exit, reason ->
+        Logger.warning("Weather service hourly forecast call failed: #{inspect(reason)}")
+        []
+    end
   end
 
   # initialization functions
@@ -97,6 +161,18 @@ defmodule Fliplove.Weather do
       update_interval = service_module.get_update_interval()
       Logger.debug("Weather update interval: #{update_interval}ms")
 
+      # Initialize circuit breaker state
+      initial_state = %{
+        state
+        | service_module: service_module,
+          latitude: lat,
+          longitude: lon,
+          circuit_breaker_state: :closed,
+          failure_count: 0,
+          last_failure_time: nil,
+          retry_timer: nil
+      }
+
       # Update weather information in a second and then periodically
       Logger.debug("Scheduling initial weather update...")
       {:ok, _initial_timer} = :timer.send_after(1_000, :update_weather)
@@ -106,11 +182,22 @@ defmodule Fliplove.Weather do
       Logger.info("Weather service enabled: #{service_name}")
       Logger.info("Weather service using #{source} location (#{lat}, #{lon})")
 
-      {:ok, %{state | service_module: service_module, latitude: lat, longitude: lon, timer: periodic_timer}}
+      {:ok, %{initial_state | timer: periodic_timer}}
     else
       {:error, reason} ->
         Logger.error("Failed to initialize weather service: #{inspect(reason)}")
-        {:stop, reason}
+        # Instead of stopping, start in a degraded state and retry later
+        Logger.info("Starting weather service in degraded mode, will retry initialization")
+        {:ok, retry_timer} = :timer.send_after(@retry_interval, :retry_initialization)
+
+        {:ok,
+         %{
+           state
+           | circuit_breaker_state: :open,
+             failure_count: @max_failures,
+             last_failure_time: DateTime.utc_now(),
+             retry_timer: retry_timer
+         }}
     end
   end
 
@@ -118,6 +205,10 @@ defmodule Fliplove.Weather do
   def terminate(_reason, state) do
     if state.timer do
       {:ok, :cancel} = :timer.cancel(state.timer)
+    end
+
+    if state.retry_timer do
+      {:ok, :cancel} = :timer.cancel(state.retry_timer)
     end
 
     Logger.info("Terminating weather service")
@@ -142,18 +233,26 @@ defmodule Fliplove.Weather do
 
   @impl true
   def handle_call({:get_hourly_forecast, hours}, _from, state) do
-    case state.service_module.get_hourly_forecast(state.latitude, state.longitude, hours) do
-      {:ok, forecast} ->
-        {:reply, forecast, %{state | last_error: nil, last_success: DateTime.utc_now()}}
+    if circuit_breaker_open?(state) do
+      Logger.debug("Circuit breaker is open, not making weather service call")
+      {:reply, [], state}
+    else
+      case state.service_module.get_hourly_forecast(state.latitude, state.longitude, hours) do
+        {:ok, forecast} ->
+          new_state = record_success(state)
+          {:reply, forecast, new_state}
 
-      {:error, reason} ->
-        Logger.warning("Failed to get hourly forecast: #{inspect(reason)}")
-        {:reply, [], %{state | last_error: reason, last_success: state.last_success}}
+        {:error, reason} ->
+          Logger.warning("Failed to get hourly forecast: #{inspect(reason)}")
+          new_state = record_failure(state, reason)
+          {:reply, [], new_state}
+      end
     end
   rescue
     error ->
       Logger.error("Unexpected error getting hourly forecast: #{inspect(error)}")
-      {:reply, [], %{state | last_error: error, last_success: state.last_success}}
+      new_state = record_failure(state, error)
+      {:reply, [], new_state}
   end
 
   @impl true
@@ -164,41 +263,129 @@ defmodule Fliplove.Weather do
   rescue
     error ->
       Logger.error("Unexpected error in weather update: #{inspect(error)}")
-      {:noreply, %{state | last_error: error, last_success: state.last_success}}
+      new_state = record_failure(state, error)
+      {:noreply, new_state}
+  end
+
+  @impl true
+  def handle_info(:retry_initialization, state) do
+    Logger.info("Retrying weather service initialization...")
+
+    with {:ok, service_module} <- get_service_module(),
+         {:ok, lat, lon, source} <- get_location() do
+      service_name = service_module |> Module.split() |> List.last()
+      Logger.info("Weather service initialization successful: #{service_name}")
+      Logger.info("Weather service using #{source} location (#{lat}, #{lon})")
+
+      update_interval = service_module.get_update_interval()
+      {:ok, periodic_timer} = :timer.send_interval(update_interval, :update_weather)
+
+      # Reset circuit breaker and update state
+      new_state = %{
+        state
+        | service_module: service_module,
+          latitude: lat,
+          longitude: lon,
+          timer: periodic_timer,
+          circuit_breaker_state: :closed,
+          failure_count: 0,
+          last_failure_time: nil,
+          retry_timer: nil
+      }
+
+      # Try to get initial weather data
+      final_state = do_update_weather(new_state)
+      {:noreply, final_state}
+    else
+      {:error, reason} ->
+        Logger.warning("Weather service initialization still failing: #{inspect(reason)}")
+        {:ok, retry_timer} = :timer.send_after(@retry_interval, :retry_initialization)
+        {:noreply, %{state | retry_timer: retry_timer}}
+    end
+  end
+
+  @impl true
+  def handle_info(:retry_weather_service, state) do
+    Logger.debug("Retrying weather service after circuit breaker timeout")
+
+    new_state = %{state | circuit_breaker_state: :half_open, retry_timer: nil}
+
+    final_state = do_update_weather(new_state)
+    {:noreply, final_state}
   end
 
   defp do_update_weather(%{service_module: nil} = state) do
-    Logger.warning("Weather service module not initialized")
+    Logger.debug("Weather service module not initialized, skipping update")
     state
   end
 
   defp do_update_weather(state) do
-    Logger.debug("Fetching weather data from service...")
+    if circuit_breaker_open?(state) do
+      Logger.debug("Circuit breaker is open, skipping weather update")
+      broadcast_weather_update(state.weather)
+      state
+    else
+      Logger.debug("Fetching weather data from service...")
 
-    case state.service_module.get_current_weather(state.latitude, state.longitude) do
-      {:ok, weather} ->
-        timestamp = DateTime.utc_now()
-        Logger.debug("Weather data updated successfully")
-        broadcast_weather_update(weather)
-        %{state |
-          weather: weather,
-          weather_timestamp: timestamp,
-          last_error: nil,
-          last_success: timestamp
-        }
+      case state.service_module.get_current_weather(state.latitude, state.longitude) do
+        {:ok, weather} ->
+          timestamp = DateTime.utc_now()
+          Logger.debug("Weather data updated successfully")
+          broadcast_weather_update(weather)
+          new_state = record_success(state)
+          %{new_state | weather: weather, weather_timestamp: timestamp}
 
-      {:error, reason} ->
-        Logger.warning("Failed to update weather: #{inspect(reason)}")
-        # Keep existing weather data and continue running
-        broadcast_weather_update(state.weather)
-        %{state | last_error: reason, last_success: state.last_success}
+        {:error, reason} ->
+          Logger.warning("Failed to update weather: #{inspect(reason)}")
+          # Keep existing weather data and continue running
+          broadcast_weather_update(state.weather)
+          record_failure(state, reason)
+      end
     end
   rescue
     error ->
       Logger.error("Unexpected error updating weather: #{inspect(error)}")
       # Keep existing weather data and continue running
       broadcast_weather_update(state.weather)
-      %{state | last_error: error, last_success: state.last_success}
+      record_failure(state, error)
+  end
+
+  # Circuit breaker helper functions
+
+  defp circuit_breaker_open?(state) do
+    state.circuit_breaker_state == :open
+  end
+
+  defp record_success(state) do
+    %{
+      state
+      | circuit_breaker_state: :closed,
+        failure_count: 0,
+        last_failure_time: nil,
+        last_error: nil,
+        last_success: DateTime.utc_now()
+    }
+  end
+
+  defp record_failure(state, reason) do
+    new_failure_count = state.failure_count + 1
+    now = DateTime.utc_now()
+
+    new_state = %{
+      state
+      | failure_count: new_failure_count,
+        last_failure_time: now,
+        last_error: reason,
+        last_success: state.last_success
+    }
+
+    if new_failure_count >= @max_failures do
+      Logger.warning("Circuit breaker opened after #{new_failure_count} failures")
+      {:ok, retry_timer} = :timer.send_after(@circuit_breaker_timeout, :retry_weather_service)
+      %{new_state | circuit_breaker_state: :open, retry_timer: retry_timer}
+    else
+      new_state
+    end
   end
 
   defp broadcast_weather_update(nil), do: :ok
