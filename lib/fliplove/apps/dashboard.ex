@@ -111,6 +111,7 @@ defmodule Fliplove.Apps.Dashboard do
         rescue
           Enum.EmptyError ->
             {nil, nil}
+
           error ->
             Logger.error("Error calculating temperature extremes: #{inspect(error)}")
             {nil, nil}
@@ -159,11 +160,16 @@ defmodule Fliplove.Apps.Dashboard do
 
   defp render_temperature_chart(bitmap) do
     case get_hourly_forecast() do
-      [] -> bitmap
+      [] ->
+        bitmap
+
       _forecast ->
         try do
           weather_bitmap = create_temperature_chart(Display.height())
-          result = Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
+
+          result =
+            Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
+
           Bitmap.overlay(bitmap, result)
         rescue
           error ->
@@ -348,6 +354,7 @@ defmodule Fliplove.Apps.Dashboard do
       :exit, reason ->
         Logger.error("Weather service call timed out: #{inspect(reason)}")
         []
+
       :throw, reason ->
         Logger.error("Weather service call failed: #{inspect(reason)}")
         []
