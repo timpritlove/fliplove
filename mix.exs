@@ -13,6 +13,7 @@ defmodule Fliplove.MixProject do
       elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
+      listeners: [Phoenix.CodeReloader],
       aliases: aliases(),
       deps: deps(),
       escript: [
@@ -31,7 +32,7 @@ defmodule Fliplove.MixProject do
   def application do
     [
       mod: {Fliplove.Application, []},
-      extra_applications: [:logger, :runtime_tools, :os_mon, :tz]
+      extra_applications: [:logger, :runtime_tools, :os_mon, :tz, :wx, :observer]
     ]
   end
 
