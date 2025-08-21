@@ -1,9 +1,9 @@
-OPENWEATHERMAP_API_KEY=`security find-generic-password -a tim@pritlove.org -s "OpenWeatherMap API Key" -w` 2>/dev/null
-if [ -n "$OPENWEATHERMAP_API_KEY" ]; then
+OPENWEATHERMAP_API_KEY=`op item get k6jnh2x2bjy6mtxqgay6jrguae --reveal  --fields 'label=API Key'`
+if [ $? -eq 0 ]; then
   export FLIPLOVE_OPENWEATHERMAP_API_KEY=$OPENWEATHERMAP_API_KEY
 fi
-TELEGRAM_BOT_SECRET=`security find-generic-password -a FLIPLOVE_update_bot -s "Telegram" -w` 2>/dev/null
-if [ -n "$TELEGRAM_BOT_SECRET" ]; then
+TELEGRAM_BOT_SECRET=`op item get wo7rthz4u4jlyrshzz53yfhbse --reveal --fields 'label=Passwort'`
+if [ $? -eq 0 ]; then
   export FLIPLOVE_TELEGRAM_BOT_SECRET=$TELEGRAM_BOT_SECRET
 fi
 #export FLIPLOVE_DRIVER=FLUEPDOT_WIFI
