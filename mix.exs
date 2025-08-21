@@ -32,7 +32,7 @@ defmodule Fliplove.MixProject do
   def application do
     [
       mod: {Fliplove.Application, []},
-      extra_applications: [:logger, :runtime_tools, :os_mon, :tz, :wx, :observer]
+      extra_applications: [:logger, :runtime_tools, :os_mon, :tz, :observer]
     ]
   end
 
