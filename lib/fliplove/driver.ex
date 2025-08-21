@@ -70,4 +70,23 @@ defmodule Fliplove.Driver do
     driver_module = @driver[state.driver_module]
     {:reply, driver_module.height(), state}
   end
+
+@impl true
+  def terminate(reason, _) do
+    case reason do
+      :normal ->
+        Logger.info("Driver terminating normally")
+
+      :shutdown ->
+        Logger.info("Driver shutting down")
+
+      {:shutdown, _} ->
+        Logger.info("Driver shutting down: #{inspect(reason)}")
+
+      _ ->
+        Logger.error("FATAL: Driver terminating unexpectedly: #{inspect(reason)}")
+        Logger.error("FATAL: This may cause dependent services to restart")
+    end
 end
+end
+

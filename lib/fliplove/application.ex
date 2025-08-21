@@ -19,7 +19,7 @@ defmodule Fliplove.Application do
         # Start core services first
         Fliplove.Font.Library,
         # Start hardware-related services first since they define display dimensions
-        {Fliplove.Driver, []},
+        Fliplove.Driver,
         Fliplove.Display,
         # Start web-related services after display is ready
         FliploveWeb.VirtualDisplay,
