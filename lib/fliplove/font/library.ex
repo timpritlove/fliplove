@@ -5,6 +5,7 @@ defmodule Fliplove.Font.Library do
   """
   use GenServer
   alias Fliplove.Font.Parser
+  alias Fliplove.Font.Fonts
   require Logger
 
   @topic "font_library_update"
@@ -25,9 +26,9 @@ defmodule Fliplove.Font.Library do
     initial_fonts =
       try do
         fonts = [
-          Fliplove.Font.Fonts.SpaceInvaders.get(),
-          Fliplove.Font.Fonts.Flipdot.get(),
-          Fliplove.Font.Fonts.FlipdotCondensed.get()
+          Fonts.SpaceInvaders.get(),
+          Fonts.Flipdot.get(),
+          Fonts.FlipdotCondensed.get()
         ]
 
         Logger.debug("Loaded #{length(fonts)} built-in fonts")
@@ -148,7 +149,7 @@ defmodule Fliplove.Font.Library do
   def get_font_by_name(font_name) do
     case GenServer.call(__MODULE__, {:get_font_by_name, font_name}) do
       # Fallback to default font
-      nil -> Fliplove.Font.Fonts.Flipdot.get()
+      nil -> Fonts.Flipdot.get()
       font -> font
     end
   end
