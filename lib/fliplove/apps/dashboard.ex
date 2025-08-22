@@ -291,7 +291,7 @@ defmodule Fliplove.Apps.Dashboard do
     frame_matrix =
       for x <- 0..(bitmap.width - 1),
           y <- 0..(bitmap.height - 1),
-          is_frame_pixel?(x, y, bitmap.width, bitmap.height, scaled_temps),
+          frame_pixel?(x, y, bitmap.width, bitmap.height, scaled_temps),
           into: %{} do
         {{x, y}, 1}
       end
@@ -300,7 +300,7 @@ defmodule Fliplove.Apps.Dashboard do
     Bitmap.overlay(bitmap, frame_bitmap)
   end
 
-  defp is_frame_pixel?(x, y, width, height, temps) do
+  defp frame_pixel?(x, y, width, height, temps) do
     cond do
       # Left and right borders
       x == 0 or x == width - 1 ->
