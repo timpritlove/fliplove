@@ -141,7 +141,7 @@ defmodule Fliplove.CLI.SymbolImporter do
   defp symbol_empty?(pixels) do
     pixels
     |> List.flatten()
-    |> Enum.all?(fn pixel -> is_dark_pixel?(pixel) end)
+    |> Enum.all?(fn pixel -> dark_pixel?(pixel) end)
   end
 
   # Converts pixel data to a Bitmap struct
@@ -150,7 +150,7 @@ defmodule Fliplove.CLI.SymbolImporter do
       for {row, y} <- Enum.with_index(pixels),
           {pixel, x} <- Enum.with_index(row),
           into: %{} do
-        value = if is_dark_pixel?(pixel), do: 0, else: 1
+        value = if dark_pixel?(pixel), do: 0, else: 1
         {{x, y}, value}
       end
 
@@ -158,26 +158,26 @@ defmodule Fliplove.CLI.SymbolImporter do
   end
 
   # Helper to determine if a pixel is considered dark
-  defp is_dark_pixel?(<<r, g, b, _a>>) do
+  defp dark_pixel?(<<r, g, b, _a>>) do
     # Convert RGB to grayscale using standard luminance formula
     grayscale = round(0.299 * r + 0.587 * g + 0.114 * b)
     grayscale < @threshold
   end
 
-  defp is_dark_pixel?(<<r, g, b>>) do
-    is_dark_pixel?(<<r, g, b, 255>>)
+  defp dark_pixel?(<<r, g, b>>) do
+    dark_pixel?(<<r, g, b, 255>>)
   end
 
   # Handle tuple format for backwards compatibility
-  defp is_dark_pixel?({r, g, b, _a}) do
+  defp dark_pixel?({r, g, b, _a}) do
     # Convert RGB to grayscale using standard luminance formula
     grayscale = round(0.299 * r + 0.587 * g + 0.114 * b)
     grayscale < @threshold
   end
 
   # Handle RGB pixels without alpha
-  defp is_dark_pixel?({r, g, b}) do
-    is_dark_pixel?({r, g, b, 255})
+  defp dark_pixel?({r, g, b}) do
+    dark_pixel?({r, g, b, 255})
   end
 
   # Pads a number with leading zeros to ensure consistent filenames
