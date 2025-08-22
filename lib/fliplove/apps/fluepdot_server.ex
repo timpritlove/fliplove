@@ -169,24 +169,26 @@ defmodule Fliplove.Apps.FluepdotServer.HttpHandler do
   end
 
   post "/pixel" do
-    with {:ok, x, y} <- validate_coordinates(conn.query_params) do
-      bitmap = Display.get()
-      new_bitmap = Bitmap.set_pixel(bitmap, {x, y}, 1)
-      Display.set(new_bitmap)
-      send_resp(conn, 200, "OK")
-    else
+    case validate_coordinates(conn.query_params) do
+      {:ok, x, y} ->
+        bitmap = Display.get()
+        new_bitmap = Bitmap.set_pixel(bitmap, {x, y}, 1)
+        Display.set(new_bitmap)
+        send_resp(conn, 200, "OK")
+
       {:error, reason} ->
         send_resp(conn, 400, "Bad Request: #{reason}")
     end
   end
 
   delete "/pixel" do
-    with {:ok, x, y} <- validate_coordinates(conn.query_params) do
-      bitmap = Display.get()
-      new_bitmap = Bitmap.set_pixel(bitmap, {x, y}, 0)
-      Display.set(new_bitmap)
-      send_resp(conn, 200, "OK")
-    else
+    case validate_coordinates(conn.query_params) do
+      {:ok, x, y} ->
+        bitmap = Display.get()
+        new_bitmap = Bitmap.set_pixel(bitmap, {x, y}, 0)
+        Display.set(new_bitmap)
+        send_resp(conn, 200, "OK")
+
       {:error, reason} ->
         send_resp(conn, 400, "Bad Request: #{reason}")
     end
