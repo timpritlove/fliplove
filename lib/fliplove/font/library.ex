@@ -64,7 +64,7 @@ defmodule Fliplove.Font.Library do
           font_files = Enum.filter(files, fn file_name -> String.ends_with?(file_name, ".bdf") end)
           Logger.debug("Found #{length(font_files)} .bdf files")
 
-          if length(font_files) == 0 do
+          if Enum.empty?(font_files) do
             Logger.warning("No .bdf font files found in #{font_dir}")
             Logger.info("Continuing with built-in fonts only")
             []

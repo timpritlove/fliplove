@@ -4,6 +4,8 @@ defmodule Fliplove.Font.Parser do
   alias Fliplove.Font
   require Logger
 
+  # credo:disable-for-this-file Credo.Check.Readability.VariableNames
+
   @moduledoc """
   Parser for BDF font files. BDF files contain font definitions for low-resolution monochrome
   pixel fonts.
