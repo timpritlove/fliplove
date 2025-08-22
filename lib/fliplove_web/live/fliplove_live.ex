@@ -1,12 +1,12 @@
 defmodule FliploveWeb.FliploveLive do
   use FliploveWeb, :live_view
   alias Fliplove.Bitmap
-  alias Fliplove.Display
-  alias Fliplove.Font.Renderer
-  alias Fliplove.Font.Library
-  alias Fliplove.Bitmap.Maze
   alias Fliplove.Bitmap.GameOfLife
   alias Fliplove.Bitmap.Generator
+  alias Fliplove.Bitmap.Maze
+  alias Fliplove.Display
+  alias Fliplove.Font.Library
+  alias Fliplove.Font.Renderer
   alias FliploveWeb.VirtualDisplay
   import FliploveWeb.VirtualDisplayComponent
   import FliploveWeb.CoreComponents

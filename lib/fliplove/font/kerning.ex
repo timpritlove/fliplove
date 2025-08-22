@@ -15,8 +15,8 @@ defmodule Fliplove.Font.Kerning do
       kerning = Fliplove.Font.Kerning.get_kerning("Helvetica-Bold", "We")
       # Returns -1 to bring W and e closer together
   """
-  alias Fliplove.Font
   alias Fliplove.Bitmap
+  alias Fliplove.Font
 
   @kerning %{
     "-Adobe-Helvetica-Bold-O-Normal--17-120-100-100-P-92-ISO8859-1" => %{

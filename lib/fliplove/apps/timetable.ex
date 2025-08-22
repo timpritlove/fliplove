@@ -1,8 +1,8 @@
 defmodule Fliplove.Apps.Timetable do
   use Fliplove.Apps.Base
+  alias Fliplove.Bitmap
   alias Fliplove.Display
   alias Fliplove.Font.{Library, Renderer}
-  alias Fliplove.Bitmap
   require Logger
 
   # Default refresh intervals in milliseconds

@@ -3,7 +3,7 @@ defmodule Fliplove.Apps.Datetime do
   Shows current time and date on the flipboard
   """
   use Fliplove.Apps.Base
-  alias Fliplove.{Display, Bitmap}
+  alias Fliplove.{Bitmap, Display}
   alias Fliplove.Font.{Library, Renderer}
   alias Fliplove.TimezoneHelper
   require Logger

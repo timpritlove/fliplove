@@ -7,9 +7,9 @@ defmodule Fliplove.Apps.Dashboard do
   Compose a dashboard to show on flipboard
   """
   use Fliplove.Apps.Base
+  alias Fliplove.Font.Library
+  alias Fliplove.{TimezoneHelper, Weather}
   alias Phoenix.PubSub
-  alias Fliplove.{Weather, TimezoneHelper}
-  alias Fliplove.Font.{Library}
   require Logger
 
   defstruct font: nil, bitmap: nil

@@ -23,8 +23,8 @@ defmodule Fliplove.Driver do
       Fliplove.Driver.set_bitmap(bitmap)
   """
   use GenServer
-  alias Fliplove.PubSub
   alias Fliplove.Display
+  alias Fliplove.PubSub
   require Logger
 
   # network mode
