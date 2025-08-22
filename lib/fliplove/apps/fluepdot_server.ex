@@ -199,10 +199,9 @@ defmodule Fliplove.Apps.FluepdotServer.HttpHandler do
 
     text =
       fonts
-      |> Enum.map(fn font ->
+      |> Enum.map_join("", fn font ->
         "#{font.name}\n#{font.properties.family_name}\n"
       end)
-      |> Enum.join("")
 
     conn
     |> put_resp_content_type("text/plain")
