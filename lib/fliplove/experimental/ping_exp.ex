@@ -12,14 +12,11 @@ defmodule Ping do
 
       receive do
         {:icmp, pid, addr, {:echorep, data}} ->
-          IO.inspect(pid, label: "pid")
-          IO.inspect(addr, label: "addr")
-          IO.inspect(data, label: "data")
-
+          Logger.debug("ICMP echo reply received from #{inspect(addr)}, pid: #{inspect(pid)}, data: #{inspect(data)}")
           :ok
 
         other ->
-          IO.inspect(other, label: "other")
+          Logger.debug("Unexpected ICMP message: #{inspect(other)}")
       end
     end)
     |> Task.await()
