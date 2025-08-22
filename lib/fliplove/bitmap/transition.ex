@@ -44,13 +44,11 @@ defmodule Fliplove.Bitmap.Transition do
         {bitmap_ab, height}
       end,
       fn {bitmap_ab, row} ->
-        cond do
-          row < 0 ->
-            {:halt, nil}
-
-          true ->
-            bitmap = Bitmap.crop(bitmap_ab, {0, row}, width, height)
-            {[bitmap], {bitmap_ab, row - 1}}
+        if row < 0 do
+          {:halt, nil}
+        else
+          bitmap = Bitmap.crop(bitmap_ab, {0, row}, width, height)
+          {[bitmap], {bitmap_ab, row - 1}}
         end
       end,
       fn _ -> nil end
@@ -74,13 +72,11 @@ defmodule Fliplove.Bitmap.Transition do
         {bitmap_ab, 0}
       end,
       fn {bitmap_ab, row} ->
-        cond do
-          row > height ->
-            {:halt, nil}
-
-          true ->
-            bitmap = Bitmap.crop(bitmap_ab, {0, row}, width, height)
-            {[bitmap], {bitmap_ab, row + 1}}
+        if row > height do
+          {:halt, nil}
+        else
+          bitmap = Bitmap.crop(bitmap_ab, {0, row}, width, height)
+          {[bitmap], {bitmap_ab, row + 1}}
         end
       end,
       fn _ -> nil end

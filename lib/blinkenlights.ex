@@ -51,12 +51,10 @@ defmodule Blinkenlights do
       end,
       fn
         {[{ms, bitmap} | frames], blm, opts} ->
-          cond do
-            frames == [] and opts[:loop] ->
-              {[{ms, bitmap}], {blm.frames, blm, opts}}
-
-            true ->
-              {[{ms, bitmap}], {frames, blm, opts}}
+          if frames == [] and opts[:loop] do
+            {[{ms, bitmap}], {blm.frames, blm, opts}}
+          else
+            {[{ms, bitmap}], {frames, blm, opts}}
           end
 
         {[], _, _} ->
