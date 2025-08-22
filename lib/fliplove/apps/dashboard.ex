@@ -308,14 +308,18 @@ defmodule Fliplove.Apps.Dashboard do
 
       # Top and bottom borders with special markers
       y == 0 or y == height - 1 ->
-        case Enum.find(temps, fn t -> t.index + 1 == x end) do
-          %{is_night: true} -> true
-          %{hour: hour} when hour in [0, 12] -> true
-          _ -> false
-        end
+        show_time_marker?(x, temps)
 
       true ->
         false
+    end
+  end
+
+  defp show_time_marker?(x, temps) do
+    case Enum.find(temps, fn t -> t.index + 1 == x end) do
+      %{is_night: true} -> true
+      %{hour: hour} when hour in [0, 12] -> true
+      _ -> false
     end
   end
 
