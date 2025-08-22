@@ -1,4 +1,20 @@
 defmodule Fliplove.Font.Kerning do
+  @moduledoc """
+  Font kerning data and utilities for improved text spacing.
+
+  This module provides kerning information to adjust spacing between specific
+  character pairs for better typography. Kerning helps create more visually
+  pleasing text by reducing or increasing space between certain letter combinations.
+
+  ## Features
+  - Character pair kerning data for various fonts
+  - Kerning value lookup by font name and character pairs
+  - Fallback to zero kerning for unknown pairs
+
+  ## Example
+      kerning = Fliplove.Font.Kerning.get_kerning("Helvetica-Bold", "We")
+      # Returns -1 to bring W and e closer together
+  """
   alias Fliplove.Font
   alias Fliplove.Bitmap
 

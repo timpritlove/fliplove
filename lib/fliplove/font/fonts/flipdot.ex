@@ -1,4 +1,11 @@
 defmodule Fliplove.Font.Fonts.Flipdot do
+  @moduledoc """
+  Flipdot bitmap font data.
+
+  This module contains the bitmap font data for the "Flipdot" font,
+  optimized for flipdot display readability. The font is stored as
+  a compiled module attribute for efficient access.
+  """
   alias Fliplove.Bitmap
   import Bitmap
   alias Fliplove.Font

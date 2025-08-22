@@ -1,4 +1,27 @@
 defmodule Fliplove.Driver do
+  @moduledoc """
+  Hardware driver manager for flipdot displays.
+
+  This GenServer manages the connection to various flipdot display hardware drivers.
+  It provides a unified interface for sending bitmap data to the physical display,
+  regardless of the underlying connection method (WiFi, USB, dummy/simulation).
+
+  The active driver is determined by the `FLIPLOVE_DRIVER` environment variable.
+
+  ## Supported Drivers
+  - `:fluepdot_wifi` - Network-connected FlipDot displays via WiFi
+  - `:fluepdot_usb` - USB-connected FlipDot displays
+  - `:dummy` - Simulation driver for testing without hardware
+  - `:flipflapflop` - Alternative FlipDot implementation
+
+  ## Example
+      # Set driver via environment variable
+      System.put_env("FLIPLOVE_DRIVER", "fluepdot_wifi")
+
+      # Send bitmap to display
+      bitmap = Fliplove.Bitmap.new(20, 16)
+      Fliplove.Driver.set_bitmap(bitmap)
+  """
   use GenServer
   alias Fliplove.PubSub
   alias Fliplove.Display
@@ -71,7 +94,7 @@ defmodule Fliplove.Driver do
     {:reply, driver_module.height(), state}
   end
 
-@impl true
+  @impl true
   def terminate(reason, _) do
     case reason do
       :normal ->
@@ -87,6 +110,5 @@ defmodule Fliplove.Driver do
         Logger.error("FATAL: Driver terminating unexpectedly: #{inspect(reason)}")
         Logger.error("FATAL: This may cause dependent services to restart")
     end
+  end
 end
-end
-

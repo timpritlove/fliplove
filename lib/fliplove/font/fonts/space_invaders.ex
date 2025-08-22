@@ -1,4 +1,10 @@
 defmodule Fliplove.Font.Fonts.SpaceInvaders do
+  @moduledoc """
+  Space Invaders themed bitmap font data.
+
+  This module contains the bitmap font data for the "Space Invaders" font,
+  featuring a retro gaming aesthetic suitable for flipdot displays.
+  """
   alias Fliplove.Bitmap
   import Bitmap
   alias Fliplove.Font

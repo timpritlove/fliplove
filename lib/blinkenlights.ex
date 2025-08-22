@@ -1,4 +1,28 @@
 defmodule Blinkenlights do
+  @moduledoc """
+  Blinkenlights Movie (BLM) file parser and player.
+
+  This module provides functionality for parsing and playing Blinkenlights Movie
+  files (.blm format), which contain frame-based animations suitable for
+  LED matrix displays and flipdot displays.
+
+  ## Features
+  - Parse BLM movie files into structured data
+  - Stream movie frames with timing information
+  - Support for looped playback
+  - Frame-by-frame movie iteration
+
+  ## Example
+      # Parse a BLM movie file
+      movie = Blinkenlights.parse_blm_file("movie.blm")
+
+      # Stream movie frames
+      Blinkenlights.stream_movie(movie)
+      |> Enum.each(fn {delay_ms, frame} ->
+        # Display frame
+        Process.sleep(delay_ms)
+      end)
+  """
   alias Blinkenlights.BLM
 
   # stream a Blinkenlights movie

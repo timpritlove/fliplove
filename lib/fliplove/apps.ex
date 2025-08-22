@@ -1,4 +1,30 @@
 defmodule Fliplove.Apps do
+  @moduledoc """
+  Application manager for flipdot display apps.
+
+  This GenServer manages the lifecycle of various display applications like dashboard,
+  slideshow, maze solver, etc. Only one app can run at a time, and this module handles
+  starting, stopping, and switching between applications.
+
+  ## Available Apps
+  - `:dashboard` - Weather and system information display
+  - `:slideshow` - Image slideshow player
+  - `:maze_solver` - Interactive maze generation and solving
+  - `:symbols` - Symbol and character display
+  - `:fluepdot_server` - HTTP API server for remote control
+  - `:datetime` - Date and time display
+  - `:timetable` - Transport schedule display
+
+  ## Example
+      iex> Fliplove.Apps.start_app(:dashboard)
+      :ok
+
+      iex> Fliplove.Apps.running_app()
+      :dashboard
+
+      iex> Fliplove.Apps.stop_app()
+      :ok
+  """
   use GenServer
   require Logger
 

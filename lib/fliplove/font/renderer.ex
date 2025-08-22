@@ -1,4 +1,28 @@
 defmodule Fliplove.Font.Renderer do
+  @moduledoc """
+  Text rendering engine for bitmap fonts.
+
+  This module handles rendering text strings into bitmaps using bitmap fonts.
+  It supports text alignment, kerning, line wrapping, and various text layout
+  options for flipdot displays.
+
+  ## Features
+  - Multiple font support via the font library
+  - Text alignment (left, center, right)
+  - Vertical alignment (top, middle, bottom)
+  - Automatic kerning between characters
+  - Constrained and unconstrained text rendering
+  - Line wrapping for multi-line text
+
+  ## Example
+      font = Fliplove.Font.Library.get_font_by_name("flipdot")
+      bitmap = Fliplove.Font.Renderer.create_text(font, "Hello World")
+
+      # Render with alignment in a specific area
+      constrained = Fliplove.Font.Renderer.render_text_constrained(
+        font, "Long text", 100, 50, :center, :middle
+      )
+  """
   alias Fliplove.Bitmap
   alias Fliplove.Font
   alias Fliplove.Font.Kerning

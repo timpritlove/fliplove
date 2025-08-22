@@ -1,4 +1,29 @@
 defmodule Fliplove.Driver.FluepdotWifi do
+  @moduledoc """
+  WiFi/Network driver for Fluepdot displays via UDP and HTTP.
+
+  This GenServer driver communicates with Fluepdot displays over a network
+  connection using UDP packets for bitmap data transmission and HTTP for
+  configuration and status queries.
+
+  ## Configuration
+  Configure via environment variables:
+  - `FLIPLOVE_HOST` - Target display IP address
+  - `FLIPLOVE_PORT` - Target port (default: 1337)
+
+  ## Features
+  - Network-based bitmap transmission via UDP
+  - HTTP status monitoring and configuration
+  - Automatic connection retry on network failures
+  - Error handling and logging
+
+  ## Example
+      # Set environment variables
+      System.put_env("FLIPLOVE_HOST", "192.168.1.100")
+      System.put_env("FLIPLOVE_PORT", "1337")
+
+      # Driver will automatically connect when started
+  """
   alias Fliplove.Bitmap
 
   @doc """

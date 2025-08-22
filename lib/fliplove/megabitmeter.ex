@@ -1,4 +1,24 @@
 defmodule Fliplove.Megabitmeter do
+  @moduledoc """
+  Driver for Megabitmeter flipdot display via serial connection.
+
+  This GenServer manages communication with a Megabitmeter flipdot display
+  over serial/UART connection. It handles device connection, bitmap transmission,
+  and provides animated transitions for smooth visual updates.
+
+  ## Features
+  - Automatic serial device discovery and connection
+  - Bitmap data transmission with retry logic
+  - Smooth animated transitions between frames
+  - Device reconnection on connection loss
+  - Configurable baud rate and timing parameters
+
+  ## Configuration
+  - Baud rate: 9600
+  - Boot delay: 5 seconds
+  - Animation: 10 steps over 1000ms
+  - Auto-reconnect on failure
+  """
   use GenServer
   require Logger
 
@@ -13,6 +33,11 @@ defmodule Fliplove.Megabitmeter do
   @max_write_retries 3
 
   defmodule State do
+    @moduledoc """
+    Internal state structure for the Megabitmeter driver GenServer.
+
+    Tracks UART connection, device information, and animation state.
+    """
     defstruct [
       # The UART process
       :uart,

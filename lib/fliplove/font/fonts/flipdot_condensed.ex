@@ -1,4 +1,10 @@
 defmodule Fliplove.Font.Fonts.FlipdotCondensed do
+  @moduledoc """
+  Condensed Flipdot bitmap font data.
+
+  This module contains the bitmap font data for the "Flipdot Condensed" font,
+  a space-efficient variant optimized for displaying more text in limited space.
+  """
   alias Fliplove.Bitmap
   import Bitmap
   alias Fliplove.Font

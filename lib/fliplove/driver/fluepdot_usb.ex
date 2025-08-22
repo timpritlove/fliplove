@@ -1,4 +1,28 @@
 defmodule Fliplove.Driver.FluepdotUsb do
+  @moduledoc """
+  USB/Serial driver for Fluepdot displays.
+
+  This GenServer driver communicates with Fluepdot displays via USB serial
+  connection. It handles serial device discovery, protocol communication,
+  and bitmap data transmission over UART.
+
+  ## Configuration
+  Configure via environment variables:
+  - `FLIPLOVE_DEVICE` - USB device path (e.g., "/dev/ttyUSB0")
+
+  ## Features
+  - USB serial communication at 115,200 baud
+  - Automatic device discovery and connection
+  - Protocol handshake with command prompt detection
+  - Bitmap encoding and transmission
+  - Connection retry logic on failures
+
+  ## Example
+      # Set USB device path
+      System.put_env("FLIPLOVE_DEVICE", "/dev/ttyUSB0")
+
+      # Driver will automatically connect when started
+  """
   alias Fliplove.Bitmap
 
   @doc """
