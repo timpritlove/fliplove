@@ -119,49 +119,69 @@ defmodule Fliplove.Font.Kerning do
     if not has_any_pixels?(bitmap1) or not has_any_pixels?(bitmap2) do
       0
     else
-      # Get dimensions
-      {width1, height1} = Bitmap.dimensions(bitmap1)
-      {width2, height2} = Bitmap.dimensions(bitmap2)
-      max_height = max(height1, height2)
-
-      # For each possible overlap position, check if any pixels get too close
-      # Maximum possible overlap to check
-      max_overlap = width1
-
-      # Try each overlap amount from most aggressive to none
-      Enum.reduce_while(1..max_overlap, 0, fn overlap, _acc ->
-        # Check if any pixels get too close at this overlap amount
-        too_close =
-          Enum.any?(0..(max_height - 1), fn y ->
-            # For each row, check if any pixels in bitmap1 are too close to pixels in bitmap2
-            Enum.any?((width1 - overlap)..(width1 - 1), fn x1 ->
-              pixel1 = Bitmap.get_pixel(bitmap1, {x1, y})
-              # Only check proximity if this pixel is on
-              if pixel1 == 1 do
-                # Check surrounding pixels in bitmap2
-                # Corresponding x in bitmap2
-                x2 = x1 - (width1 - overlap)
-
-                Enum.any?(max(0, x2 - 1)..min(width2 - 1, x2 + 1), fn check_x2 ->
-                  Enum.any?(max(0, y - 1)..min(max_height - 1, y + 1), fn check_y2 ->
-                    Bitmap.get_pixel(bitmap2, {check_x2, check_y2}) == 1
-                  end)
-                end)
-              else
-                false
-              end
-            end)
-          end)
-
-        if too_close do
-          # Found pixels too close, use previous overlap amount
-          {:halt, -(overlap - 1)}
-        else
-          # This overlap amount works, try more
-          {:cont, -overlap}
-        end
-      end)
+      calculate_optimal_overlap(bitmap1, bitmap2)
     end
+  end
+
+  # Calculate the optimal overlap amount between two character bitmaps
+  defp calculate_optimal_overlap(bitmap1, bitmap2) do
+    # Get dimensions
+    {width1, height1} = Bitmap.dimensions(bitmap1)
+    {width2, height2} = Bitmap.dimensions(bitmap2)
+    max_height = max(height1, height2)
+
+    # For each possible overlap position, check if any pixels get too close
+    # Maximum possible overlap to check
+    max_overlap = width1
+
+    # Try each overlap amount from most aggressive to none
+    Enum.reduce_while(1..max_overlap, 0, fn overlap, _acc ->
+      test_overlap_amount(bitmap1, bitmap2, overlap, width1, width2, max_height)
+    end)
+  end
+
+  # Test a specific overlap amount and return appropriate reduce_while result
+  defp test_overlap_amount(bitmap1, bitmap2, overlap, width1, width2, max_height) do
+    if pixels_too_close?(bitmap1, bitmap2, overlap, width1, width2, max_height) do
+      # Found pixels too close, use previous overlap amount
+      {:halt, -(overlap - 1)}
+    else
+      # This overlap amount works, try more
+      {:cont, -overlap}
+    end
+  end
+
+  # Check if pixels would be too close at a given overlap amount
+  defp pixels_too_close?(bitmap1, bitmap2, overlap, width1, width2, max_height) do
+    Enum.any?(0..(max_height - 1), fn y ->
+      # For each row, check if any pixels in bitmap1 are too close to pixels in bitmap2
+      Enum.any?((width1 - overlap)..(width1 - 1), fn x1 ->
+        pixel_at_position_too_close?(bitmap1, bitmap2, x1, y, overlap, width1, width2, max_height)
+      end)
+    end)
+  end
+
+  # Check if a specific pixel position would be too close
+  defp pixel_at_position_too_close?(bitmap1, bitmap2, x1, y, overlap, width1, width2, max_height) do
+    pixel1 = Bitmap.get_pixel(bitmap1, {x1, y})
+    # Only check proximity if this pixel is on
+    if pixel1 == 1 do
+      # Check surrounding pixels in bitmap2
+      # Corresponding x in bitmap2
+      x2 = x1 - (width1 - overlap)
+      has_neighboring_pixel?(bitmap2, x2, y, width2, max_height)
+    else
+      false
+    end
+  end
+
+  # Check if there's a neighboring pixel in the second bitmap
+  defp has_neighboring_pixel?(bitmap2, x2, y, width2, max_height) do
+    Enum.any?(max(0, x2 - 1)..min(width2 - 1, x2 + 1), fn check_x2 ->
+      Enum.any?(max(0, y - 1)..min(max_height - 1, y + 1), fn check_y2 ->
+        Bitmap.get_pixel(bitmap2, {check_x2, check_y2}) == 1
+      end)
+    end)
   end
 
   # Helper function to check if a bitmap has any pixels set to 1
