@@ -1,8 +1,9 @@
 defmodule Fliplove.Bitmap.Transition do
   alias Fliplove.Bitmap
-  # TODO:
-  # * slide transitions in all directions
-  # * push transitions in all directions
+  # TODO: Add more transition effects for complete animation library
+  # * slide transitions in all directions (slide_left, slide_right, slide_up, slide_down)
+  # * push transitions in all directions (push_left, push_right - currently only have up/down)
+  # * Consider adding fade, wipe, and other transition types
 
   def push_up(bitmap_a, bitmap_b) do
     {width, height} = Bitmap.dimensions(bitmap_a)
