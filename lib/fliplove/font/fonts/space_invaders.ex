@@ -1774,5 +1774,5 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
     }
   }
 
-  def get(), do: @font
+  def get, do: @font
 end

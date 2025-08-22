@@ -1743,5 +1743,5 @@ defmodule Fliplove.Font.Fonts.BlinkenLightsRegular do
     }
   }
 
-  def get(), do: @font
+  def get, do: @font
 end

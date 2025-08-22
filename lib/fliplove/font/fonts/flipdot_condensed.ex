@@ -1745,5 +1745,5 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
     }
   }
 
-  def get(), do: @font
+  def get, do: @font
 end

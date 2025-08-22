@@ -1785,5 +1785,5 @@ defmodule Fliplove.Font.Fonts.Letterbox do
     }
   }
 
-  def get(), do: @font
+  def get, do: @font
 end

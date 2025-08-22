@@ -1997,5 +1997,5 @@ defmodule Fliplove.Font.Fonts.Flipdot do
     }
   }
 
-  def get(), do: @font
+  def get, do: @font
 end

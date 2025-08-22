@@ -1735,5 +1735,5 @@ defmodule Fliplove.Font.Fonts.BlinkenlightsBold do
     }
   }
 
-  def get(), do: @font
+  def get, do: @font
 end

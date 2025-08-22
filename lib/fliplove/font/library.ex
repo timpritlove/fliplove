@@ -4,8 +4,8 @@ defmodule Fliplove.Font.Library do
   make them available.
   """
   use GenServer
-  alias Fliplove.Font.Parser
   alias Fliplove.Font.Fonts
+  alias Fliplove.Font.Parser
   require Logger
 
   @topic "font_library_update"
@@ -142,7 +142,7 @@ defmodule Fliplove.Font.Library do
     end
   end
 
-  def get_fonts() do
+  def get_fonts do
     GenServer.call(__MODULE__, :get_fonts)
   end
 

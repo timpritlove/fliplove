@@ -1,7 +1,7 @@
 defmodule Fliplove.Font.Renderer do
+  alias Fliplove.Bitmap
   alias Fliplove.Font
   alias Fliplove.Font.Kerning
-  alias Fliplove.Bitmap
   require Logger
 
   @type alignment :: :left | :center | :right

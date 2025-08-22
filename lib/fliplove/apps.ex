@@ -65,7 +65,7 @@ defmodule Fliplove.Apps do
     end
   end
 
-  def running_app() do
+  def running_app do
     case Registry.lookup(@registry, :running_app) do
       [{_pid, running_app}] -> running_app
       [] -> nil
@@ -92,7 +92,7 @@ defmodule Fliplove.Apps do
     end
   end
 
-  def stop_app() do
+  def stop_app do
     case Registry.lookup(@registry, :running_app) do
       [] ->
         :ok
