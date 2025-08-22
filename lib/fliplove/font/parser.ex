@@ -551,7 +551,7 @@ defmodule Fliplove.Font.Parser do
 
       e ->
         Logger.error("Failed to parse font file #{path}: #{inspect(e)}")
-        raise ArgumentError, "Failed to parse BDF font file #{path}: #{Exception.message(e)}"
+        reraise ArgumentError, "Failed to parse BDF font file #{path}: #{Exception.message(e)}", __STACKTRACE__
     catch
       {:validation_error, message} ->
         raise ArgumentError, message
