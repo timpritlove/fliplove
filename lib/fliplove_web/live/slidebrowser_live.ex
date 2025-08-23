@@ -86,12 +86,7 @@ defmodule FliploveWeb.SlidebrowserLive do
 
         # Space key
         " " ->
-          if socket.assigns.focused_index >= 0 do
-            {_folder, _filename, path} = Enum.at(socket.assigns.image_files, socket.assigns.focused_index)
-            {:noreply, assign(socket, :editing_file, path)}
-          else
-            {:noreply, socket}
-          end
+          handle_space_key(socket)
 
         _ ->
           {:noreply, socket}
@@ -149,17 +144,14 @@ defmodule FliploveWeb.SlidebrowserLive do
           File.write!(new_build_path, file_content)
 
           # Clean up old build file if it exists
-          if File.exists?(old_path), do: File.rm!(old_path)
+          cleanup_old_build_file(old_path)
 
           # Update the image_files list
           image_files = update_image_files_list(socket.assigns.image_files, old_path, new_name, new_build_path)
 
           socket
           |> assign(:image_files, image_files)
-          |> assign(
-            :selected_file,
-            if(socket.assigns.selected_file == old_path, do: new_build_path, else: socket.assigns.selected_file)
-          )
+          |> assign(:selected_file, update_selected_file_path(socket.assigns.selected_file, old_path, new_build_path))
         else
           socket
         end
@@ -181,6 +173,37 @@ defmodule FliploveWeb.SlidebrowserLive do
     enabled = Map.has_key?(params, "delay-enabled")
     VirtualDisplay.set_delay_enabled(enabled)
     {:noreply, assign(socket, :delay_enabled, enabled)}
+  end
+
+  # Helper function to handle space key press for editing files
+  defp handle_space_key(socket) do
+    if socket.assigns.focused_index >= 0 do
+      {_folder, _filename, path} = Enum.at(socket.assigns.image_files, socket.assigns.focused_index)
+      {:noreply, assign(socket, :editing_file, path)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  # Helper function to update the image files list when a file is renamed
+  defp update_image_files_list(image_files, old_path, new_name, new_build_path) do
+    Enum.map(image_files, fn {folder, filename, path} ->
+      if path == old_path do
+        {folder, new_name, new_build_path}
+      else
+        {folder, filename, path}
+      end
+    end)
+  end
+
+  # Helper function to update the selected file path when a file is renamed
+  defp update_selected_file_path(current_selected_file, old_path, new_path) do
+    if current_selected_file == old_path, do: new_path, else: current_selected_file
+  end
+
+  # Helper function to clean up old build file if it exists
+  defp cleanup_old_build_file(old_path) do
+    if File.exists?(old_path), do: File.rm!(old_path)
   end
 
   @impl true
@@ -241,17 +264,6 @@ defmodule FliploveWeb.SlidebrowserLive do
     else
       socket
     end
-  end
-
-  # Helper function to update the image files list when a file is renamed
-  defp update_image_files_list(image_files, old_path, new_name, new_build_path) do
-    Enum.map(image_files, fn {folder, filename, path} ->
-      if path == old_path do
-        {folder, new_name, new_build_path}
-      else
-        {folder, filename, path}
-      end
-    end)
   end
 
   @impl true
