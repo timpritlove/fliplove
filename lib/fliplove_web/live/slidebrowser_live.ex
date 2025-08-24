@@ -269,83 +269,89 @@ defmodule FliploveWeb.SlidebrowserLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="min-h-screen bg-gray-900 text-gray-100 flex flex-col" phx-window-keydown="keydown">
-      <div class="max-w-7xl w-full mx-auto flex-none">
-        <div class="flex justify-between items-center mb-8 p-4">
-          <h1 class="text-3xl font-bold">Flipdot Slide Browser</h1>
-          <div class="flex items-center gap-2">
-            <form phx-change="toggle-delay" class="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="delay-enabled"
-                name="delay-enabled"
-                checked={@delay_enabled}
-                class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500"
-                value="true"
-              />
-              <label for="delay-enabled" class="text-sm text-gray-300">Enable Delay</label>
-            </form>
+    <Layouts.app flash={@flash}>
+      <div class="min-h-screen bg-gray-900 text-gray-100 flex flex-col" phx-window-keydown="keydown">
+        <div class="max-w-7xl w-full mx-auto flex-none">
+          <div class="flex justify-between items-center mb-8 p-4">
+            <h1 class="text-3xl font-bold">Flipdot Slide Browser</h1>
+            <div class="flex items-center gap-2">
+              <form phx-change="toggle-delay" class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="delay-enabled"
+                  name="delay-enabled"
+                  checked={@delay_enabled}
+                  class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500"
+                  value="true"
+                />
+                <label for="delay-enabled" class="text-sm text-gray-300">Enable Delay</label>
+              </form>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center mb-8">
+            <.display bitmap={@virtual_bitmap} width={Display.width()} height={Display.height()} />
           </div>
         </div>
 
-        <div class="flex flex-col items-center mb-8">
-          <.display bitmap={@virtual_bitmap} width={Display.width()} height={Display.height()} />
-        </div>
-      </div>
-
-      <div class="flex-1 overflow-hidden">
-        <div class="max-w-7xl mx-auto">
-          <div class="bg-gray-800 rounded-lg p-4 h-full">
-            <h2 class="text-xl font-bold mb-4 sticky top-0 bg-gray-800 py-2">Available Slides</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto max-h-[calc(100vh-24rem)]">
-              <div :for={{{folder, filename, path}, index} <- Enum.with_index(@image_files)}>
-                <div
-                  :if={@editing_file == path}
-                  class={[
-                    "p-4 rounded-lg transition-colors duration-200",
-                    if(@selected_file == path, do: "bg-indigo-600", else: "bg-gray-700")
-                  ]}
-                >
-                  <div class="flex items-center">
-                    <span class="text-gray-400 text-sm">{folder}/</span>
-                    <form phx-submit="rename_file" class="flex-1" phx-click="stop_propagation">
-                      <input
-                        type="text"
-                        name="value"
-                        value={filename}
-                        class="w-full bg-gray-800 text-gray-100 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        autofocus
-                        phx-blur="rename_file"
-                        phx-click="stop_propagation"
-                      />
-                    </form>
+        <div class="flex-1 overflow-hidden">
+          <div class="max-w-7xl mx-auto">
+            <div class="bg-gray-800 rounded-lg p-4 h-full">
+              <h2 class="text-xl font-bold mb-4 sticky top-0 bg-gray-800 py-2">Available Slides</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto max-h-[calc(100vh-24rem)]">
+                <div :for={{{folder, filename, path}, index} <- Enum.with_index(@image_files)}>
+                  <div
+                    :if={@editing_file == path}
+                    class={[
+                      "p-4 rounded-lg transition-colors duration-200",
+                      if(@selected_file == path, do: "bg-indigo-600", else: "bg-gray-700")
+                    ]}
+                  >
+                    <div class="flex items-center">
+                      <span class="text-gray-400 text-sm">{folder}/</span>
+                      <form phx-submit="rename_file" class="flex-1" phx-click="stop_propagation">
+                        <input
+                          type="text"
+                          name="value"
+                          value={filename}
+                          class="w-full bg-gray-800 text-gray-100 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          autofocus
+                          phx-blur="rename_file"
+                          phx-click="stop_propagation"
+                        />
+                      </form>
+                    </div>
                   </div>
-                </div>
-                <div
-                  :if={@editing_file != path}
-                  class={[
-                    "w-full p-4 rounded-lg transition-colors duration-200 text-left outline-none",
-                    cond do
-                      @selected_file == path || @focused_index == index -> "bg-indigo-600"
-                      true -> "bg-gray-700 hover:bg-gray-600"
-                    end
-                  ]}
-                  phx-click="load_image"
-                  phx-value-path={path}
-                  tabindex={if(@focused_index == index, do: "0", else: "-1")}
-                  autofocus={@focused_index == index}
-                >
-                  <span class="text-gray-400 text-sm">{folder}/</span>
-                  <span class="text-gray-100 cursor-pointer hover:underline" phx-click="edit_filename" phx-value-path={path}>
-                    {filename}
-                  </span>
+                  <div
+                    :if={@editing_file != path}
+                    class={[
+                      "w-full p-4 rounded-lg transition-colors duration-200 text-left outline-none",
+                      cond do
+                        @selected_file == path || @focused_index == index -> "bg-indigo-600"
+                        true -> "bg-gray-700 hover:bg-gray-600"
+                      end
+                    ]}
+                    phx-click="load_image"
+                    phx-value-path={path}
+                    tabindex={if(@focused_index == index, do: "0", else: "-1")}
+                    autofocus={@focused_index == index}
+                  >
+                    <span class="text-gray-400 text-sm">{folder}/</span>
+                    <span
+                      class="text-gray-100 cursor-pointer hover:underline"
+                      phx-click="edit_filename"
+                      phx-value-path={path}
+                    >
+                      {filename}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Layouts.app>
     """
   end
 end
