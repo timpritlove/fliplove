@@ -1,4 +1,24 @@
 defmodule Fliplove.Bitmap.Maze do
+  @moduledoc """
+  Maze generation algorithms for bitmap displays.
+
+  This module provides procedural maze generation using recursive backtracking
+  algorithm. The generated mazes are suitable for display on flipdot screens
+  and can be used for games or visual demonstrations.
+
+  ## Features
+  - Recursive backtracking maze generation
+  - Configurable maze dimensions (must be odd numbers)
+  - Returns bitmap representation of the maze
+
+  ## Example
+      # Generate a 21x15 maze (dimensions must be odd)
+      maze_bitmap = Fliplove.Bitmap.Maze.generate_maze(21, 15)
+
+      # Or generate based on existing bitmap dimensions
+      bitmap = Fliplove.Bitmap.new(21, 15)
+      maze_bitmap = Fliplove.Bitmap.Maze.generate_maze(bitmap)
+  """
   alias Fliplove.Bitmap
 
   @doc """

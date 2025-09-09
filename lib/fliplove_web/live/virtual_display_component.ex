@@ -1,4 +1,19 @@
 defmodule FliploveWeb.VirtualDisplayComponent do
+  @moduledoc """
+  Phoenix LiveView component for rendering virtual flipdot display.
+
+  This component provides a visual representation of the flipdot display
+  in the web interface, with interactive pixels and real-time updates.
+
+  ## Features
+  - Visual flipdot pixel grid rendering
+  - Interactive pixel clicking for manual control
+  - Real-time updates from display state changes
+  - Responsive CSS styling for different screen sizes
+
+  The component subscribes to display updates and re-renders automatically
+  when the bitmap content changes.
+  """
   use Phoenix.Component
   alias Fliplove.Bitmap
 

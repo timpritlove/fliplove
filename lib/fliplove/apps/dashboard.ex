@@ -7,9 +7,9 @@ defmodule Fliplove.Apps.Dashboard do
   Compose a dashboard to show on flipboard
   """
   use Fliplove.Apps.Base
+  alias Fliplove.Font.Library
+  alias Fliplove.{TimezoneHelper, Weather}
   alias Phoenix.PubSub
-  alias Fliplove.{Weather, TimezoneHelper}
-  alias Fliplove.Font.{Library}
   require Logger
 
   defstruct font: nil, bitmap: nil
@@ -291,7 +291,7 @@ defmodule Fliplove.Apps.Dashboard do
     frame_matrix =
       for x <- 0..(bitmap.width - 1),
           y <- 0..(bitmap.height - 1),
-          is_frame_pixel?(x, y, bitmap.width, bitmap.height, scaled_temps),
+          frame_pixel?(x, y, bitmap.width, bitmap.height, scaled_temps),
           into: %{} do
         {{x, y}, 1}
       end
@@ -300,7 +300,7 @@ defmodule Fliplove.Apps.Dashboard do
     Bitmap.overlay(bitmap, frame_bitmap)
   end
 
-  defp is_frame_pixel?(x, y, width, height, temps) do
+  defp frame_pixel?(x, y, width, height, temps) do
     cond do
       # Left and right borders
       x == 0 or x == width - 1 ->
@@ -308,14 +308,18 @@ defmodule Fliplove.Apps.Dashboard do
 
       # Top and bottom borders with special markers
       y == 0 or y == height - 1 ->
-        case Enum.find(temps, fn t -> t.index + 1 == x end) do
-          %{is_night: true} -> true
-          %{hour: hour} when hour in [0, 12] -> true
-          _ -> false
-        end
+        show_time_marker?(x, temps)
 
       true ->
         false
+    end
+  end
+
+  defp show_time_marker?(x, temps) do
+    case Enum.find(temps, fn t -> t.index + 1 == x end) do
+      %{is_night: true} -> true
+      %{hour: hour} when hour in [0, 12] -> true
+      _ -> false
     end
   end
 

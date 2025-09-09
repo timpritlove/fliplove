@@ -1,12 +1,12 @@
 defmodule FliploveWeb.FliploveLive do
   use FliploveWeb, :live_view
   alias Fliplove.Bitmap
-  alias Fliplove.Display
-  alias Fliplove.Font.Renderer
-  alias Fliplove.Font.Library
-  alias Fliplove.Bitmap.Maze
   alias Fliplove.Bitmap.GameOfLife
   alias Fliplove.Bitmap.Generator
+  alias Fliplove.Bitmap.Maze
+  alias Fliplove.Display
+  alias Fliplove.Font.Library
+  alias Fliplove.Font.Renderer
   alias FliploveWeb.VirtualDisplay
   import FliploveWeb.VirtualDisplayComponent
   import FliploveWeb.CoreComponents
@@ -512,225 +512,231 @@ defmodule FliploveWeb.FliploveLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="min-h-screen bg-gray-900 text-gray-100">
-      <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-          <h1 class="text-3xl font-bold">Fliplove</h1>
-          <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2">
-              <form phx-change="toggle-delay" class="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="delay-enabled"
-                  name="delay-enabled"
-                  checked={@delay_enabled}
-                  class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500"
-                  value="true"
-                />
-                <label for="delay-enabled" class="text-sm text-gray-300">Enable Delay</label>
-              </form>
-            </div>
-            <button
-              phx-click="download"
-              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-2"
-            >
-              <.icon name="hero-arrow-down-tray" class="h-5 w-5" />
-              <span>Download Display</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="flex flex-col items-center mb-8">
-          <.display bitmap={@virtual_bitmap} width={Display.width()} height={Display.height()} />
-        </div>
-
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          <%!-- Left Column --%>
-          <div class="space-y-6">
-            <%!-- Tools Section --%>
-            <.section title="Drawing Tools" class="flex gap-2">
-              <.tool mode={@mode} tooltip="Pencil Tool" value="pencil" self={:pencil} icon="pencil" />
-              <.tool mode={@mode} tooltip="Fill Tool" value="fill" self={:fill} icon="fill" />
-              <.tool mode={@mode} tooltip="Line Tool" value="line" self={:line} icon="draw-polygon" />
-              <.tool mode={@mode} tooltip="Frame Tool" value="frame" self={:frame} icon="vector-square" />
-            </.section>
-
-            <%!-- Modifiers Section --%>
-            <.section title="Modifiers">
-              <.button_group>
-                <.filter target="translate-up" tooltip="Translate UP" icon="arrow-up" />
-                <.filter target="translate-down" tooltip="Translate DOWN" icon="arrow-down" />
-                <.filter target="translate-left" tooltip="Translate LEFT" icon="arrow-left" />
-                <.filter target="translate-right" tooltip="Translate RIGHT" icon="arrow-right" />
-                <.filter target="flip-vertically" tooltip="Flip vertically" icon="arrow-down-up-across-line" />
-                <.filter target="flip-horizontally" tooltip="Flip horizontally" icon="arrow-right-arrow-left" />
-                <.filter target="invert" tooltip="Invert" icon="image" />
-                <.filter target="erase" tooltip="Erase" icon="eraser" />
-                <.filter target="game-of-life" tooltip="Game of Life" icon="chess-board" />
-              </.button_group>
-            </.section>
-
-            <%!-- Apps Section --%>
-            <.section title="Apps">
-              <.button_group>
-                <.app app={@app} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
-                <.app app={@app} tooltip="Slideshow" value="slideshow" self={:slideshow} icon="images" />
-                <.app app={@app} tooltip="Maze Solver" value="maze_solver" self={:maze_solver} icon="hat-wizard" />
-                <.app app={@app} tooltip="Symbols" value="symbols" self={:symbols} icon="icons" />
-                <.app app={@app} tooltip="Fluepdot Server" value="fluepdot_server" self={:fluepdot_server} icon="server" />
-                <.app app={@app} tooltip="Date & Time" value="datetime" self={:datetime} icon="clock" />
-                <.app app={@app} tooltip="Timetable" value="timetable" self={:timetable} icon="train" />
-              </.button_group>
-            </.section>
-
-            <%!-- USB Commands Section --%>
-            <.section :if={@usb_mode?} title="USB Commands">
-              <.button_group>
-                <.usb_command tooltip="Clear Display" command="flipdot_clear" icon="eraser" />
-                <.usb_command tooltip="Clear Display (Inverted)" command="flipdot_clear --invert" icon="circle-half-stroke" />
-                <.usb_command tooltip="Reboot Device" command="reboot" icon="power-off" />
-                <.usb_command tooltip="Start WiFi" command="wifi start" icon="signal" />
-                <.usb_command tooltip="Stop WiFi" command="wifi stop" icon="ban" />
-                <.usb_command tooltip="Show Tasks" command="show_tasks" icon="list" />
-              </.button_group>
-            </.section>
-          </div>
-
-          <%!-- Right Column --%>
-          <div class="space-y-6">
-            <%!-- Generators Section --%>
-            <.section title="Generators">
-              <.button_group>
-                <.image_button tooltip="Noise" image={Generator.random(Display.width(), Display.height())} value="random" />
-                <.image_button
-                  tooltip="Perlin Noise"
-                  image={Generator.random_perlin_noise(Display.width(), Display.height())}
-                  value="perlin"
-                />
-                <.image_button
-                  tooltip="Flow Field"
-                  image={Generator.flow_field(Display.width(), Display.height())}
-                  value="flow-field"
-                />
-                <.image_button
-                  tooltip="Wave Interference"
-                  image={Generator.wave_interference(Display.width(), Display.height())}
-                  value="wave-interference"
-                />
-                <.image_button
-                  tooltip="Recursive Subdivision"
-                  image={Generator.recursive_subdivision(Display.width(), Display.height())}
-                  value="recursive-subdivision"
-                />
-                <.image_button
-                  tooltip="Mandelbrot"
-                  image={Generator.mandelbrot(Display.width(), Display.height())}
-                  value="mandelbrot"
-                />
-                <.image_button
-                  tooltip="Gradient H"
-                  image={Generator.gradient_h(Display.width(), Display.height())}
-                  value="gradient-h"
-                />
-                <.image_button
-                  tooltip="Gradient V"
-                  image={Generator.gradient_v(Display.width(), Display.height())}
-                  value="gradient-v"
-                />
-                <.image_button
-                  tooltip="Maze"
-                  image={
-                    Maze.generate_maze(
-                      if(Integer.is_odd(Display.width()), do: Display.width(), else: Display.width() - 1),
-                      if(Integer.is_odd(Display.height()), do: Display.height(), else: Display.height() - 1)
-                    )
-                  }
-                  value="maze"
-                />
-              </.button_group>
-            </.section>
-
-            <%!-- Images Section --%>
-            <.section title="Images">
-              <div class="overflow-x-auto pb-2">
-                <.button_group>
-                  <.image_button :for={{name, image} <- @display_images} tooltip={name} image={image} value={name} />
-                </.button_group>
-              </div>
-            </.section>
-
-            <%!-- Text Generator Section --%>
-            <.section title="Text Generator">
-              <form phx-change="render-text" phx-submit="render-text" class="space-y-4">
-                <div class="flex flex-col gap-4">
+    <Layouts.app flash={@flash}>
+      <div class="min-h-screen bg-gray-900 text-gray-100">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold">Fliplove</h1>
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2">
+                <form phx-change="toggle-delay" class="flex items-center gap-2">
                   <input
-                    type="text"
-                    name="text"
-                    value={@text}
-                    placeholder="Type some text…"
-                    class="px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    autofocus
-                    autocomplete="off"
-                    phx-debounce="300"
+                    type="checkbox"
+                    id="delay-enabled"
+                    name="delay-enabled"
+                    checked={@delay_enabled}
+                    class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500"
+                    value="true"
                   />
-                  <select
-                    :if={@font_select}
-                    name="font"
-                    id="font-select"
-                    class="px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                    phx-debounce="300"
-                  >
-                    {Phoenix.HTML.Form.options_for_select(@font_select, @font_name)}
-                  </select>
-                </div>
-                <button type="submit" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg">
-                  Render Text
-                </button>
-              </form>
-            </.section>
-
-            <%!-- Upload Section --%>
-            <.section title="Upload Bitmap">
-              <div class="relative">
-                <form phx-change="validate" phx-submit="upload">
-                  <div
-                    class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-indigo-500 transition-colors duration-200 cursor-pointer"
-                    phx-drop-target={@uploads.frame.ref}
-                  >
-                    <.icon name="hero-arrow-up-tray" class="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p class="text-gray-400">Drag and drop or click to select</p>
-                    <.live_file_input
-                      upload={@uploads.frame}
-                      class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-
-                    <div :for={entry <- @uploads.frame.entries} class="mt-2">
-                      <div class="text-sm text-gray-400">
-                        {entry.client_name}
-                        <span :if={entry.progress > 0}>
-                          - {entry.progress}%
-                        </span>
-                      </div>
-
-                      <div :for={err <- upload_errors(@uploads.frame, entry)} class="text-red-500 text-sm">{err}</div>
-                    </div>
-
-                    <div :for={err <- upload_errors(@uploads.frame)} class="text-red-500 text-sm">{err}</div>
-                  </div>
+                  <label for="delay-enabled" class="text-sm text-gray-300">Enable Delay</label>
                 </form>
               </div>
-            </.section>
+              <button
+                phx-click="download"
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-2"
+              >
+                <.icon name="hero-arrow-down-tray" class="h-5 w-5" />
+                <span>Download Display</span>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <%!-- Clock in bottom right --%>
-        <div class="fixed bottom-4 right-4 bg-gray-800 px-4 py-2 rounded-lg shadow-lg">
-          <div class="font-mono text-sm text-gray-400">
-            {@clock}
+          <div class="flex flex-col items-center mb-8">
+            <.display bitmap={@virtual_bitmap} width={Display.width()} height={Display.height()} />
+          </div>
+
+          <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <%!-- Left Column --%>
+            <div class="space-y-6">
+              <%!-- Tools Section --%>
+              <.section title="Drawing Tools" class="flex gap-2">
+                <.tool mode={@mode} tooltip="Pencil Tool" value="pencil" self={:pencil} icon="pencil" />
+                <.tool mode={@mode} tooltip="Fill Tool" value="fill" self={:fill} icon="fill" />
+                <.tool mode={@mode} tooltip="Line Tool" value="line" self={:line} icon="draw-polygon" />
+                <.tool mode={@mode} tooltip="Frame Tool" value="frame" self={:frame} icon="vector-square" />
+              </.section>
+
+              <%!-- Modifiers Section --%>
+              <.section title="Modifiers">
+                <.button_group>
+                  <.filter target="translate-up" tooltip="Translate UP" icon="arrow-up" />
+                  <.filter target="translate-down" tooltip="Translate DOWN" icon="arrow-down" />
+                  <.filter target="translate-left" tooltip="Translate LEFT" icon="arrow-left" />
+                  <.filter target="translate-right" tooltip="Translate RIGHT" icon="arrow-right" />
+                  <.filter target="flip-vertically" tooltip="Flip vertically" icon="arrow-down-up-across-line" />
+                  <.filter target="flip-horizontally" tooltip="Flip horizontally" icon="arrow-right-arrow-left" />
+                  <.filter target="invert" tooltip="Invert" icon="image" />
+                  <.filter target="erase" tooltip="Erase" icon="eraser" />
+                  <.filter target="game-of-life" tooltip="Game of Life" icon="chess-board" />
+                </.button_group>
+              </.section>
+
+              <%!-- Apps Section --%>
+              <.section title="Apps">
+                <.button_group>
+                  <.app app={@app} tooltip="Dashboard" value="dashboard" self={:dashboard} icon="gauge-high" />
+                  <.app app={@app} tooltip="Slideshow" value="slideshow" self={:slideshow} icon="images" />
+                  <.app app={@app} tooltip="Maze Solver" value="maze_solver" self={:maze_solver} icon="hat-wizard" />
+                  <.app app={@app} tooltip="Symbols" value="symbols" self={:symbols} icon="icons" />
+                  <.app app={@app} tooltip="Fluepdot Server" value="fluepdot_server" self={:fluepdot_server} icon="server" />
+                  <.app app={@app} tooltip="Date & Time" value="datetime" self={:datetime} icon="clock" />
+                  <.app app={@app} tooltip="Timetable" value="timetable" self={:timetable} icon="train" />
+                </.button_group>
+              </.section>
+
+              <%!-- USB Commands Section --%>
+              <.section :if={@usb_mode?} title="USB Commands">
+                <.button_group>
+                  <.usb_command tooltip="Clear Display" command="flipdot_clear" icon="eraser" />
+                  <.usb_command
+                    tooltip="Clear Display (Inverted)"
+                    command="flipdot_clear --invert"
+                    icon="circle-half-stroke"
+                  />
+                  <.usb_command tooltip="Reboot Device" command="reboot" icon="power-off" />
+                  <.usb_command tooltip="Start WiFi" command="wifi start" icon="signal" />
+                  <.usb_command tooltip="Stop WiFi" command="wifi stop" icon="ban" />
+                  <.usb_command tooltip="Show Tasks" command="show_tasks" icon="list" />
+                </.button_group>
+              </.section>
+            </div>
+
+            <%!-- Right Column --%>
+            <div class="space-y-6">
+              <%!-- Generators Section --%>
+              <.section title="Generators">
+                <.button_group>
+                  <.image_button tooltip="Noise" image={Generator.random(Display.width(), Display.height())} value="random" />
+                  <.image_button
+                    tooltip="Perlin Noise"
+                    image={Generator.random_perlin_noise(Display.width(), Display.height())}
+                    value="perlin"
+                  />
+                  <.image_button
+                    tooltip="Flow Field"
+                    image={Generator.flow_field(Display.width(), Display.height())}
+                    value="flow-field"
+                  />
+                  <.image_button
+                    tooltip="Wave Interference"
+                    image={Generator.wave_interference(Display.width(), Display.height())}
+                    value="wave-interference"
+                  />
+                  <.image_button
+                    tooltip="Recursive Subdivision"
+                    image={Generator.recursive_subdivision(Display.width(), Display.height())}
+                    value="recursive-subdivision"
+                  />
+                  <.image_button
+                    tooltip="Mandelbrot"
+                    image={Generator.mandelbrot(Display.width(), Display.height())}
+                    value="mandelbrot"
+                  />
+                  <.image_button
+                    tooltip="Gradient H"
+                    image={Generator.gradient_h(Display.width(), Display.height())}
+                    value="gradient-h"
+                  />
+                  <.image_button
+                    tooltip="Gradient V"
+                    image={Generator.gradient_v(Display.width(), Display.height())}
+                    value="gradient-v"
+                  />
+                  <.image_button
+                    tooltip="Maze"
+                    image={
+                      Maze.generate_maze(
+                        if(Integer.is_odd(Display.width()), do: Display.width(), else: Display.width() - 1),
+                        if(Integer.is_odd(Display.height()), do: Display.height(), else: Display.height() - 1)
+                      )
+                    }
+                    value="maze"
+                  />
+                </.button_group>
+              </.section>
+
+              <%!-- Images Section --%>
+              <.section title="Images">
+                <div class="overflow-x-auto pb-2">
+                  <.button_group>
+                    <.image_button :for={{name, image} <- @display_images} tooltip={name} image={image} value={name} />
+                  </.button_group>
+                </div>
+              </.section>
+
+              <%!-- Text Generator Section --%>
+              <.section title="Text Generator">
+                <form phx-change="render-text" phx-submit="render-text" class="space-y-4">
+                  <div class="flex flex-col gap-4">
+                    <input
+                      type="text"
+                      name="text"
+                      value={@text}
+                      placeholder="Type some text…"
+                      class="px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      autofocus
+                      autocomplete="off"
+                      phx-debounce="300"
+                    />
+                    <select
+                      :if={@font_select}
+                      name="font"
+                      id="font-select"
+                      class="px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                      phx-debounce="300"
+                    >
+                      {Phoenix.HTML.Form.options_for_select(@font_select, @font_name)}
+                    </select>
+                  </div>
+                  <button type="submit" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg">
+                    Render Text
+                  </button>
+                </form>
+              </.section>
+
+              <%!-- Upload Section --%>
+              <.section title="Upload Bitmap">
+                <div class="relative">
+                  <form phx-change="validate" phx-submit="upload">
+                    <div
+                      class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-indigo-500 transition-colors duration-200 cursor-pointer"
+                      phx-drop-target={@uploads.frame.ref}
+                    >
+                      <.icon name="hero-arrow-up-tray" class="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                      <p class="text-gray-400">Drag and drop or click to select</p>
+                      <.live_file_input
+                        upload={@uploads.frame}
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+
+                      <div :for={entry <- @uploads.frame.entries} class="mt-2">
+                        <div class="text-sm text-gray-400">
+                          {entry.client_name}
+                          <span :if={entry.progress > 0}>
+                            - {entry.progress}%
+                          </span>
+                        </div>
+
+                        <div :for={err <- upload_errors(@uploads.frame, entry)} class="text-red-500 text-sm">{err}</div>
+                      </div>
+
+                      <div :for={err <- upload_errors(@uploads.frame)} class="text-red-500 text-sm">{err}</div>
+                    </div>
+                  </form>
+                </div>
+              </.section>
+            </div>
+          </div>
+
+          <%!-- Clock in bottom right --%>
+          <div class="fixed bottom-4 right-4 bg-gray-800 px-4 py-2 rounded-lg shadow-lg">
+            <div class="font-mono text-sm text-gray-400">
+              {@clock}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Layouts.app>
     """
   end
 

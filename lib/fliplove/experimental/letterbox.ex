@@ -1,4 +1,21 @@
 defmodule Fliplove.Experimental.Letterbox do
+  @moduledoc """
+  Experimental letterbox-style text animations.
+
+  This module provides experimental functionality for creating letterbox-style
+  text animations with smooth transitions between characters or words.
+  Uses the Letterbox font for cinematic text display effects.
+
+  ## Features
+  - Letter-by-letter text animation
+  - Smooth transitions between characters
+  - Configurable timing for transitions and display
+  - TLA (Three Letter Acronym) movie rendering
+
+  ## Example
+      # Create animated text sequence
+      Fliplove.Experimental.Letterbox.render_tla_movie("ABC")
+  """
   alias Fliplove.Bitmap
   alias Fliplove.Bitmap.Transition
   alias Fliplove.Font.Renderer

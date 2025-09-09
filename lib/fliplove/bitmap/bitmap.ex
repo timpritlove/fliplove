@@ -630,9 +630,10 @@ defmodule Fliplove.Bitmap do
     # Convert any strings to charlists
     lines =
       Enum.map(lines, fn line ->
-        cond do
-          is_binary(line) -> to_charlist(line)
-          true -> line
+        if is_binary(line) do
+          to_charlist(line)
+        else
+          line
         end
       end)
 

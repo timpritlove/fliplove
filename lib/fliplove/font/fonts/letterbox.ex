@@ -1,4 +1,10 @@
 defmodule Fliplove.Font.Fonts.Letterbox do
+  @moduledoc """
+  Letterbox bitmap font data.
+
+  This module contains the bitmap font data for the "Letterbox" font,
+  designed for clear letterbox-style display formatting.
+  """
   alias Fliplove.Bitmap
   import Bitmap
   alias Fliplove.Font
@@ -1785,5 +1791,5 @@ defmodule Fliplove.Font.Fonts.Letterbox do
     }
   }
 
-  def get(), do: @font
+  def get, do: @font
 end

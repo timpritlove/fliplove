@@ -4,6 +4,7 @@ defmodule Fliplove.Font.Library do
   make them available.
   """
   use GenServer
+  alias Fliplove.Font.Fonts
   alias Fliplove.Font.Parser
   require Logger
 
@@ -25,9 +26,9 @@ defmodule Fliplove.Font.Library do
     initial_fonts =
       try do
         fonts = [
-          Fliplove.Font.Fonts.SpaceInvaders.get(),
-          Fliplove.Font.Fonts.Flipdot.get(),
-          Fliplove.Font.Fonts.FlipdotCondensed.get()
+          Fonts.SpaceInvaders.get(),
+          Fonts.Flipdot.get(),
+          Fonts.FlipdotCondensed.get()
         ]
 
         Logger.debug("Loaded #{length(fonts)} built-in fonts")
@@ -64,7 +65,7 @@ defmodule Fliplove.Font.Library do
           font_files = Enum.filter(files, fn file_name -> String.ends_with?(file_name, ".bdf") end)
           Logger.debug("Found #{length(font_files)} .bdf files")
 
-          if length(font_files) == 0 do
+          if Enum.empty?(font_files) do
             Logger.warning("No .bdf font files found in #{font_dir}")
             Logger.info("Continuing with built-in fonts only")
             []
@@ -141,14 +142,14 @@ defmodule Fliplove.Font.Library do
     end
   end
 
-  def get_fonts() do
+  def get_fonts do
     GenServer.call(__MODULE__, :get_fonts)
   end
 
   def get_font_by_name(font_name) do
     case GenServer.call(__MODULE__, {:get_font_by_name, font_name}) do
       # Fallback to default font
-      nil -> Fliplove.Font.Fonts.Flipdot.get()
+      nil -> Fonts.Flipdot.get()
       font -> font
     end
   end

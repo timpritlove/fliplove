@@ -501,7 +501,7 @@ defmodule Fliplove.Weather do
     end
   end
 
-  def get_weather_with_timestamp(), do: GenServer.call(__MODULE__, :get_weather_with_timestamp)
+  def get_weather_with_timestamp, do: GenServer.call(__MODULE__, :get_weather_with_timestamp)
 
   defp get_service_module do
     service =

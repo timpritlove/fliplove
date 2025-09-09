@@ -1,4 +1,10 @@
 defmodule Fliplove.Font.Fonts.BlinkenlightsBold do
+  @moduledoc """
+  Blinkenlights Bold bitmap font data.
+
+  This module contains the bitmap font data for the "Blinkenlights Bold" font,
+  a bold variant inspired by classic LED matrix display typography.
+  """
   alias Fliplove.Bitmap
   import Bitmap
   alias Fliplove.Font
@@ -1735,5 +1741,5 @@ defmodule Fliplove.Font.Fonts.BlinkenlightsBold do
     }
   }
 
-  def get(), do: @font
+  def get, do: @font
 end

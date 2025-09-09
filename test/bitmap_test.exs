@@ -3,7 +3,7 @@ defmodule BitmapTest do
   doctest Fliplove.Bitmap
   alias Fliplove.Bitmap
 
-  def invader() do
+  def invader do
     Bitmap.from_lines_of_text([
       "  X     X  ",
       "   X   X   ",
@@ -16,7 +16,7 @@ defmodule BitmapTest do
     ])
   end
 
-  def inverted_invader() do
+  def inverted_invader do
     invader() |> Bitmap.invert()
   end
 

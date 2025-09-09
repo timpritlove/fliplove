@@ -1,4 +1,20 @@
 defmodule Fliplove.Driver.Dummy do
+  @moduledoc """
+  Dummy driver for flipdot display simulation and testing.
+
+  This driver provides a no-op implementation for testing and development
+  without requiring actual flipdot hardware. It logs bitmap updates and
+  maintains the expected driver interface.
+
+  Useful for development, testing, and demonstrations when physical
+  hardware is not available.
+
+  ## Configuration
+  - Device dimensions: 115x16 pixels
+  - Logs all bitmap updates at debug level
+  - No actual hardware communication
+  """
+
   @doc """
   Dummy driver that just logs updates
   """

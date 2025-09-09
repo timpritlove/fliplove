@@ -4,6 +4,8 @@ defmodule Fliplove.Font.Parser do
   alias Fliplove.Font
   require Logger
 
+  # credo:disable-for-this-file Credo.Check.Readability.VariableNames
+
   @moduledoc """
   Parser for BDF font files. BDF files contain font definitions for low-resolution monochrome
   pixel fonts.
@@ -549,7 +551,7 @@ defmodule Fliplove.Font.Parser do
 
       e ->
         Logger.error("Failed to parse font file #{path}: #{inspect(e)}")
-        raise ArgumentError, "Failed to parse BDF font file #{path}: #{Exception.message(e)}"
+        reraise ArgumentError, "Failed to parse BDF font file #{path}: #{Exception.message(e)}", __STACKTRACE__
     catch
       {:validation_error, message} ->
         raise ArgumentError, message

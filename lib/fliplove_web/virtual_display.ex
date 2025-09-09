@@ -1,4 +1,20 @@
 defmodule FliploveWeb.VirtualDisplay do
+  @moduledoc """
+  Virtual flipdot display simulation for web interface.
+
+  This GenServer provides a virtual representation of the flipdot display
+  that can be viewed through the web interface. It simulates the column-by-column
+  update behavior of real flipdot hardware and broadcasts updates via PubSub.
+
+  ## Features
+  - Column-by-column update simulation
+  - Real-time web display updates via PubSub
+  - Configurable update delays to match hardware
+  - Bitmap state management and transitions
+
+  The virtual display allows testing and demonstration of flipdot content
+  without requiring physical hardware.
+  """
   use GenServer
   alias Fliplove.Bitmap
   require Logger
@@ -7,6 +23,11 @@ defmodule FliploveWeb.VirtualDisplay do
   @update_delay 10
 
   defmodule State do
+    @moduledoc """
+    Internal state structure for the virtual display GenServer.
+
+    Tracks the current and target bitmaps, update progress, and timing configuration.
+    """
     defstruct [:current_bitmap, :target_bitmap, :current_column, :width, :height, :timer_ref, delay_enabled: false]
   end
 

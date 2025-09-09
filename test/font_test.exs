@@ -1,8 +1,8 @@
 defmodule Fliplove.FontTest do
   use ExUnit.Case, async: true
+  alias Fliplove.Bitmap
   alias Fliplove.Font
   alias Fliplove.Font.Parser
-  alias Fliplove.Bitmap
 
   @test_font_path "test/support/test_font.bdf"
 
