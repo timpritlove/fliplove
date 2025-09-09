@@ -76,7 +76,8 @@ defmodule Fliplove.MixProject do
       {:logger_file_backend, "~> 0.0.13"},
       {:circuits_uart, "~> 1.5"},
       {:mdns_lite, "~> 0.8.11"},
-      {:observer_cli, "~> 1.7"}
+      {:observer_cli, "~> 1.7"},
+      {:usage_rules, "~> 0.1.24"}
     ]
   end
 
