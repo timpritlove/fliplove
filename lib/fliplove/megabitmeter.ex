@@ -67,7 +67,7 @@ defmodule Fliplove.Megabitmeter do
 
   def set_level(_value, _max_value), do: {:error, :invalid_value}
 
-  @impl true
+  @impl GenServer
   def init(_) do
     Process.flag(:trap_exit, true)
     device = System.get_env("FLIPLOVE_MEGABITMETER_DEVICE")
@@ -97,7 +97,7 @@ defmodule Fliplove.Megabitmeter do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_continue(:connect, state) do
     case try_connect(state) do
       {:ok, new_state} ->
@@ -112,7 +112,7 @@ defmodule Fliplove.Megabitmeter do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_cast({:set_level, value}, %State{connected?: true, booting?: false} = state) do
     Logger.debug("Setting Megabitmeter level to #{value}")
 
@@ -134,7 +134,7 @@ defmodule Fliplove.Megabitmeter do
     {:noreply, %State{state | pending_value: value}}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:boot_complete, state) do
     Logger.info("Megabitmeter boot complete at #{state.device}")
     new_state = %State{state | connected?: true, booting?: false}
@@ -274,7 +274,7 @@ defmodule Fliplove.Megabitmeter do
     end
   end
 
-  @impl true
+  @impl GenServer
   def terminate(_reason, state) do
     if state.uart do
       Circuits.UART.close(state.uart)

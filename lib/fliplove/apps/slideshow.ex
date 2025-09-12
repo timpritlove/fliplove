@@ -23,7 +23,7 @@ defmodule Fliplove.Apps.Slideshow do
     :ok
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:next_slide, state) do
     remaining =
       case state.remaining do

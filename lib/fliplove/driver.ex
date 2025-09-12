@@ -50,7 +50,7 @@ defmodule Fliplove.Driver do
     GenServer.call(__MODULE__, :height)
   end
 
-  @impl true
+  @impl GenServer
   def init(state) do
     mode_string = System.get_env(@mode_env)
 
@@ -76,25 +76,25 @@ defmodule Fliplove.Driver do
     {:ok, %{state | driver_module: driver_module, driver_pid: driver_pid}}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:display_updated, bitmap}, state) do
     send(state.driver_pid, {:display_updated, bitmap})
     {:noreply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:width, _from, state) do
     driver_module = @driver[state.driver_module]
     {:reply, driver_module.width(), state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:height, _from, state) do
     driver_module = @driver[state.driver_module]
     {:reply, driver_module.height(), state}
   end
 
-  @impl true
+  @impl GenServer
   def terminate(reason, _) do
     case reason do
       :normal ->

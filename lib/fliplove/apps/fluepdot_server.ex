@@ -43,7 +43,7 @@ defmodule Fliplove.Apps.FluepdotServer do
     {:ok, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:udp, _socket, _address, _port, data}, state) do
     Logger.debug("Received UDP packet")
 
@@ -94,14 +94,14 @@ defmodule Fliplove.Apps.FluepdotServer do
     GenServer.call(__MODULE__, {:set_rendering_mode, mode})
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:get_rendering_mode, _from, state) do
     mode = Map.get(state, :rendering_mode, :differential)
     Logger.debug("Getting rendering mode: #{mode}")
     {:reply, mode, Map.put(state, :rendering_mode, mode)}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:set_rendering_mode, mode}, _from, state) do
     Logger.debug("Setting rendering mode to: #{mode}")
     {:reply, :ok, Map.put(state, :rendering_mode, mode)}

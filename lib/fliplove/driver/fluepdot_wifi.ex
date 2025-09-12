@@ -58,7 +58,7 @@ defmodule Fliplove.Driver.FluepdotWifi do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
-  @impl true
+  @impl GenServer
   def init(state) do
     case System.get_env(@host_env) do
       nil ->
@@ -112,7 +112,7 @@ defmodule Fliplove.Driver.FluepdotWifi do
     {:noreply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:check_connection, %{connected: true} = state) do
     {:noreply, state}
   end
@@ -177,7 +177,7 @@ defmodule Fliplove.Driver.FluepdotWifi do
     Process.send_after(self(), :check_connection, @retry_interval)
   end
 
-  @impl true
+  @impl GenServer
   def terminate(_reason, state) do
     if state.socket do
       :gen_udp.close(state.socket)

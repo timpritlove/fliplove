@@ -9,7 +9,7 @@ defmodule FliploveWeb.SlidebrowserLive do
 
   @images_path "priv/static/symbols"
 
-  @impl true
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     if connected?(socket) do
       VirtualDisplay.subscribe()
@@ -46,7 +46,7 @@ defmodule FliploveWeb.SlidebrowserLive do
     {:ok, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("edit_filename", %{"path" => path}, socket) do
     # Load the image if it's not already selected
     socket =
@@ -61,7 +61,7 @@ defmodule FliploveWeb.SlidebrowserLive do
     {:noreply, assign(socket, :editing_file, path)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("keydown", %{"key" => key}, socket) do
     # Ignore navigation keys when editing a filename
     if socket.assigns.editing_file do
@@ -94,7 +94,7 @@ defmodule FliploveWeb.SlidebrowserLive do
     end
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("load_image", %{"path" => path}, socket) do
     bitmap = Bitmap.from_file(path)
     VirtualDisplay.update_bitmap(bitmap)
@@ -114,7 +114,7 @@ defmodule FliploveWeb.SlidebrowserLive do
      |> assign(:editing_file, nil)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("rename_file", params, socket) do
     old_path = socket.assigns.editing_file
     new_name = params["value"]
@@ -162,12 +162,12 @@ defmodule FliploveWeb.SlidebrowserLive do
     {:noreply, assign(socket, :editing_file, nil)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("stop_propagation", _params, socket) do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("toggle-delay", params, socket) do
     # When checkbox is checked, we get the value. When unchecked, the param is not present
     enabled = Map.has_key?(params, "delay-enabled")
@@ -206,7 +206,7 @@ defmodule FliploveWeb.SlidebrowserLive do
     if File.exists?(old_path), do: File.rm!(old_path)
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info({:virtual_display_updated, bitmap}, socket) do
     {:noreply, assign(socket, :virtual_bitmap, bitmap)}
   end
@@ -266,7 +266,7 @@ defmodule FliploveWeb.SlidebrowserLive do
     end
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>

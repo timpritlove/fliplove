@@ -59,7 +59,7 @@ defmodule Fliplove.Apps.Symbols do
     :ok
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:next_display, state) do
     # Pick a random position to replace, excluding the last replaced position
     {old_symbol, position} =

@@ -15,14 +15,14 @@ defmodule Fliplove.Apps.Base do
         GenServer.start_link(__MODULE__, opts, name: __MODULE__)
       end
 
-      @impl true
+      @impl GenServer
       def init(opts) do
         app_name = opts[:app_name]
         Registry.register(Fliplove.Apps.Registry, :running_app, app_name)
         init_app(opts)
       end
 
-      @impl true
+      @impl GenServer
       def terminate(reason, state) do
         Logger.debug("#{__MODULE__} terminate called with reason: #{inspect(reason)}")
         result = cleanup_app(reason, state)

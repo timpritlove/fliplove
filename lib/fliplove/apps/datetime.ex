@@ -30,7 +30,7 @@ defmodule Fliplove.Apps.Datetime do
     :ok
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:update, state) do
     update_display(state)
     schedule_next_minute()

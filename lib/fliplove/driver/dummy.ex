@@ -33,12 +33,12 @@ defmodule Fliplove.Driver.Dummy do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
-  @impl true
+  @impl GenServer
   def init(state) do
     {:ok, %{state | counter: 0}}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:display_updated, _bitmap}, state) do
     counter = state.counter + 1
     # Logger.debug("Dummy: Display updated (##{counter}).")

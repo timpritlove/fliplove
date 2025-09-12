@@ -67,7 +67,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
   # State changes:
   # - On success: Sends :try_connect message to self
   # - On failure: Stops with error if environment variable not set
-  @impl true
+  @impl GenServer
   def init(state) do
     case System.get_env(@device_env) do
       nil ->
@@ -91,7 +91,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
   # State changes:
   # - On success: Sets connected: true, sends newline to trigger initial prompt
   # - On failure: Schedules retry after interval, keeps disconnected state
-  @impl true
+  @impl GenServer
   def handle_info(:try_connect, state) do
     case initialize_connection(state) do
       {:ok, new_state} ->
@@ -113,7 +113,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
   # - When connected: Sends framebuf64 command, increments counter on success
   # - When disconnected: Ignores update
   # - On write failure: Triggers reconnection attempt
-  @impl true
+  @impl GenServer
   def handle_info({:display_updated, bitmap}, %{connected: true} = state) do
     cmd = "framebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64())
 
@@ -141,7 +141,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
   # - On error response: Clears buffer, marks not ready
   # - On prompt received: Clears buffer, marks ready for next command
   # - Otherwise: Accumulates data in buffer
-  @impl true
+  @impl GenServer
   def handle_info({:circuits_uart, _port, {:error, :einval}}, state) do
     Logger.info("USB device physically disconnected")
     # Clean up the existing connection
@@ -155,14 +155,14 @@ defmodule Fliplove.Driver.FluepdotUsb do
     {:noreply, new_state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:circuits_uart, _port, "Unrecognized command" <> _rest}, state) do
     # Log the unrecognized command but don't crash
     Logger.warning("Received unrecognized command response from device")
     {:noreply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:circuits_uart, _port, data}, state) when is_binary(data) do
     # Add data to both buffers
     buffer = state.buffer <> data
@@ -221,7 +221,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
   # State changes:
   # - When connected but not ready: Sends newline to trigger prompt
   # - Otherwise: No state change
-  @impl true
+  @impl GenServer
   def handle_info(:prompt_timeout, state) do
     if state.connected and not state.ready do
       Logger.debug("No prompt received, sending newline")
@@ -245,7 +245,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_cast({:command, command}, state) do
     case write_command(state, command) do
       {:ok, new_state} ->
@@ -357,7 +357,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
     end
   end
 
-  @impl true
+  @impl GenServer
   def terminate(_reason, state) do
     if state.uart do
       Circuits.UART.close(state.uart)

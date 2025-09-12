@@ -35,7 +35,7 @@ defmodule Fliplove.Apps.MazeSolver do
     :ok
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:next_frame, state) do
     {maze_stream, next_event, delay} =
       case Enum.take(state.maze_stream, 1) do

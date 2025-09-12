@@ -26,7 +26,7 @@ defmodule Fliplove.Weather.OpenWeather do
   @update_interval :timer.minutes(5)
   @api_key_env "FLIPLOVE_OPENWEATHERMAP_API_KEY"
 
-  @impl true
+  @impl Fliplove.Weather.WeatherService
   def get_current_weather(latitude, longitude) do
     with {:ok, api_key} <- get_api_key(),
          {:ok, data} <- call_api("/onecall", api_key, latitude, longitude) do
@@ -42,7 +42,7 @@ defmodule Fliplove.Weather.OpenWeather do
     end
   end
 
-  @impl true
+  @impl Fliplove.Weather.WeatherService
   def get_hourly_forecast(latitude, longitude, hours) when hours > 0 do
     with {:ok, api_key} <- get_api_key(),
          {:ok, data} <- call_api("/onecall", api_key, latitude, longitude) do
@@ -93,7 +93,7 @@ defmodule Fliplove.Weather.OpenWeather do
     end
   end
 
-  @impl true
+  @impl Fliplove.Weather.WeatherService
   def get_update_interval, do: @update_interval
 
   # Private helper functions

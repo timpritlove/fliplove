@@ -59,7 +59,7 @@ defmodule FliploveWeb.VirtualDisplay do
 
   # Server callbacks
 
-  @impl true
+  @impl GenServer
   def init(_opts) do
     width = Fliplove.Driver.width()
     height = Fliplove.Driver.height()
@@ -78,22 +78,22 @@ defmodule FliploveWeb.VirtualDisplay do
     {:ok, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:get_bitmap, _from, state) do
     {:reply, state.current_bitmap, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:get_delay_enabled, _from, state) do
     {:reply, state.delay_enabled, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_cast({:set_delay_enabled, enabled}, state) do
     {:noreply, %{state | delay_enabled: enabled}}
   end
 
-  @impl true
+  @impl GenServer
   def handle_cast({:update_bitmap, new_bitmap}, state) do
     # Cancel any ongoing update
     if state.timer_ref do
@@ -112,7 +112,7 @@ defmodule FliploveWeb.VirtualDisplay do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:process_next_column, state) do
     if state.current_column < state.width do
       {new_state, updated} = process_columns_until_update(state)

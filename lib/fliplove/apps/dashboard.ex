@@ -60,7 +60,7 @@ defmodule Fliplove.Apps.Dashboard do
     :ok
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:clock_timer, state) do
     update_dashboard(state)
     schedule_next_minute(:clock_timer)
@@ -68,7 +68,7 @@ defmodule Fliplove.Apps.Dashboard do
     {:noreply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:update_weather, _weather}, state) do
     update_dashboard(state)
     {:noreply, state}

@@ -13,7 +13,7 @@ defmodule Fliplove.Weather.OpenMeteo do
   @max_forecast_hours 168
   @update_interval :timer.minutes(5)
 
-  @impl true
+  @impl Fliplove.Weather.WeatherService
   def get_current_weather(latitude, longitude) do
     url = "#{@base_url}/forecast"
 
@@ -56,7 +56,7 @@ defmodule Fliplove.Weather.OpenMeteo do
     end
   end
 
-  @impl true
+  @impl Fliplove.Weather.WeatherService
   def get_hourly_forecast(latitude, longitude, hours) when hours > 0 do
     url = "#{@base_url}/forecast"
     hours = min(hours, @max_forecast_hours)
@@ -118,7 +118,7 @@ defmodule Fliplove.Weather.OpenMeteo do
     end
   end
 
-  @impl true
+  @impl Fliplove.Weather.WeatherService
   def get_update_interval, do: @update_interval
 
   # Private helper functions

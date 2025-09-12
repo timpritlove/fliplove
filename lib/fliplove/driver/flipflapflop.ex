@@ -28,7 +28,7 @@ defmodule Fliplove.Driver.Flipflapflop do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
-  @impl true
+  @impl GenServer
   def init(state) do
     case System.get_env(@device_env) do
       nil ->
@@ -48,7 +48,7 @@ defmodule Fliplove.Driver.Flipflapflop do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:try_connect, state) do
     case initialize_connection(state) do
       {:ok, new_state} ->
@@ -64,7 +64,7 @@ defmodule Fliplove.Driver.Flipflapflop do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:display_updated, bitmap}, %{connected: true} = state) do
     case send_frame(state, bitmap) do
       {:ok, new_state} ->
@@ -84,7 +84,7 @@ defmodule Fliplove.Driver.Flipflapflop do
     {:noreply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:circuits_uart, _port, {:error, :einval}}, state) do
     Logger.info("Flipflapflop USB device physically disconnected")
 
@@ -176,7 +176,7 @@ defmodule Fliplove.Driver.Flipflapflop do
     frame <> :binary.list_to_bin(chunks)
   end
 
-  @impl true
+  @impl GenServer
   def terminate(_reason, state) do
     if state.uart do
       Circuits.UART.close(state.uart)

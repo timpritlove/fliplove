@@ -148,7 +148,7 @@ defmodule Fliplove.Weather do
 
   # initialization functions
 
-  @impl true
+  @impl GenServer
   def init(state) do
     Logger.debug("Initializing Weather service...")
 
@@ -201,7 +201,7 @@ defmodule Fliplove.Weather do
     end
   end
 
-  @impl true
+  @impl GenServer
   def terminate(_reason, state) do
     if state.timer do
       {:ok, :cancel} = :timer.cancel(state.timer)
@@ -216,22 +216,22 @@ defmodule Fliplove.Weather do
 
   # server functions
 
-  @impl true
+  @impl GenServer
   def handle_call(:get_current_weather, _from, state) do
     {:reply, state.weather, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:get_weather_with_timestamp, _from, state) do
     {:reply, {state.weather, state.weather_timestamp}, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:update_weather, _from, state) do
     {:reply, :ok, do_update_weather(state)}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:get_hourly_forecast, hours}, _from, state) do
     if circuit_breaker_open?(state) do
       Logger.debug("Circuit breaker is open, not making weather service call")
@@ -255,7 +255,7 @@ defmodule Fliplove.Weather do
       {:reply, [], new_state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:update_weather, state) do
     # Don't crash on update failures
     new_state = do_update_weather(state)
@@ -267,7 +267,7 @@ defmodule Fliplove.Weather do
       {:noreply, new_state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:retry_initialization, state) do
     Logger.info("Retrying weather service initialization...")
 
@@ -304,7 +304,7 @@ defmodule Fliplove.Weather do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:retry_weather_service, state) do
     Logger.debug("Retrying weather service after circuit breaker timeout")
 

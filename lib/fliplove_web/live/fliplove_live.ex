@@ -14,7 +14,7 @@ defmodule FliploveWeb.FliploveLive do
   require Logger
   require Integer
 
-  @impl true
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     if connected?(socket) do
       :timer.send_interval(250, self(), :tick)
@@ -78,7 +78,7 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info({:bot_update, update}, socket) do
     Logger.debug("Got message: #{inspect(update)}")
 
@@ -93,25 +93,25 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info({:display_updated, bitmap}, socket) do
     VirtualDisplay.update_bitmap(bitmap)
     {:noreply, assign(socket, :bitmap, bitmap)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info({:bitmap, bitmap}, socket) do
     {:noreply, assign(socket, :bitmap, bitmap)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info({:running_app, app}, socket) do
     {:noreply,
      socket
      |> assign(:app, app)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info(:font_library_update, socket) do
     fonts = Library.get_fonts()
     font_select = build_font_select(fonts)
@@ -127,7 +127,7 @@ defmodule FliploveWeb.FliploveLive do
      |> assign(:font_name, font_name)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info(:tick, socket) do
     {:noreply,
      socket
@@ -135,78 +135,78 @@ defmodule FliploveWeb.FliploveLive do
      |> assign(:app, Fliplove.Apps.running_app())}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info({:virtual_display_updated, bitmap}, socket) do
     {:noreply, assign(socket, :virtual_bitmap, bitmap)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("translate-up", _params, socket) do
     Display.get() |> Bitmap.translate({0, 1}) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("translate-down", _params, socket) do
     Display.get() |> Bitmap.translate({0, -1}) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("translate-right", _params, socket) do
     Display.get() |> Bitmap.translate({1, 0}) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("translate-left", _params, socket) do
     Display.get() |> Bitmap.translate({-1, 0}) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("flip-horizontally", _params, socket) do
     Display.get() |> Bitmap.flip_horizontally() |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("flip-vertically", _params, socket) do
     Display.get() |> Bitmap.flip_vertically() |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("invert", _params, socket) do
     Display.get() |> Bitmap.invert() |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("random", _params, socket) do
     Generator.random(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("game-of-life", _params, socket) do
     Display.get() |> GameOfLife.game_of_life() |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("gradient-h", _params, socket) do
     Generator.gradient_h(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("gradient-v", _params, socket) do
     Generator.gradient_v(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("maze", _params, socket) do
     display_width = Display.width()
     display_height = Display.height()
@@ -220,7 +220,7 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("render-text", %{"text" => text, "font" => font_name} = _params, socket) do
     font = Library.get_font_by_name(font_name)
 
@@ -240,12 +240,12 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("mode", params, socket) do
     new_mode = String.to_atom(params["value"])
 
@@ -261,7 +261,7 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("app", params, socket) do
     app = String.to_atom(params["value"])
 
@@ -275,60 +275,60 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => ""}, socket) do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "random"}, socket) do
     Generator.random(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "perlin"}, socket) do
     Generator.random_perlin_noise(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "flow-field"}, socket) do
     Generator.flow_field(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "wave-interference"}, socket) do
     Generator.wave_interference(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "recursive-subdivision"}, socket) do
     Generator.recursive_subdivision(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "mandelbrot"}, socket) do
     Generator.mandelbrot(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "gradient-h"}, socket) do
     Generator.gradient_h(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "gradient-v"}, socket) do
     Generator.gradient_v(Display.width(), Display.height()) |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "maze"}, socket) do
     display_width = Display.width()
     display_height = Display.height()
@@ -342,13 +342,13 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => "game-of-life"}, socket) do
     Display.get() |> GameOfLife.game_of_life() |> Display.set()
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("image", %{"value" => image}, socket) do
     if bitmap = socket.assigns.display_images[image] do
       Display.set(bitmap)
@@ -357,14 +357,14 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("erase", _params, socket) do
     Bitmap.new(Display.width(), Display.height()) |> Display.set()
 
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("pixel", params, socket) do
     x = String.to_integer(params["x"])
     y = String.to_integer(params["y"])
@@ -395,7 +395,7 @@ defmodule FliploveWeb.FliploveLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("download", _params, socket) do
     bitmap_text = Display.get() |> Bitmap.to_text()
 
@@ -408,20 +408,20 @@ defmodule FliploveWeb.FliploveLive do
      })}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("usb-command", %{"command" => command}, socket) do
     GenServer.cast(Fliplove.Driver.FluepdotUsb, {:command, command})
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("update_component", %{"module" => module, "id" => id}, socket) do
     module = String.to_existing_atom(module)
     send_update(module, id: id, process_next_column: true)
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("toggle-delay", params, socket) do
     # When checkbox is checked, we get the value. When unchecked, the param is not present
     enabled = Map.has_key?(params, "delay-enabled")
@@ -509,7 +509,7 @@ defmodule FliploveWeb.FliploveLive do
     end)
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
