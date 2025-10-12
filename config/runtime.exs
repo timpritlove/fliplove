@@ -52,18 +52,9 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base,
-    # Allow WebSocket connections from the configured host and common development origins
-    check_origin: [
-      "#{url_scheme}://#{host}",
-      "#{url_scheme}://#{host}:#{port}",
-      "http://#{host}:#{port}",
-      "https://#{host}:#{port}",
-      # Common development/local access patterns
-      "http://localhost:#{port}",
-      "https://localhost:#{port}",
-      "http://127.0.0.1:#{port}",
-      "https://127.0.0.1:#{port}"
-    ]
+    # Disable origin checking for WebSocket connections
+    # WARNING: This is less secure but allows connections from any origin
+    check_origin: false
 
   # Enable HTTPS if requested via environment variable
   if System.get_env("FLIPLOVE_HTTPS") == "true" do
