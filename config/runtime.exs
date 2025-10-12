@@ -46,7 +46,15 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base
+    secret_key_base: secret_key_base,
+    # Allow WebSocket connections from the configured host and common local development hosts
+    check_origin: [
+      "//#{host}",
+      "//#{host}:#{port}",
+      "//blacklady.local:#{port}",
+      "//localhost:#{port}",
+      "//127.0.0.1:#{port}"
+    ]
 
   # Enable HTTPS if requested via environment variable
   if System.get_env("FLIPLOVE_HTTPS") == "true" do
