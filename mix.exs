@@ -22,7 +22,8 @@ defmodule Fliplove.MixProject do
         app: nil,
         included_applications: [:logger, :ex_png],
         path: "_build/tools/symbol_importer"
-      ]
+      ],
+      compilers: [:phoenix_live_view] ++ Mix.compilers()
     ]
   end
 
@@ -45,6 +46,7 @@ defmodule Fliplove.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:lazy_html, ">= 0.0.0", only: :test},
       {:usage_rules, "~> 0.1.24", only: [:dev]},
       {:phoenix, "~> 1.8.0"},
       {:phoenix_html, "~> 4.0"},
