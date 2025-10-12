@@ -36,8 +36,13 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
+  # Determine if we're using HTTPS based on environment
+  use_https = System.get_env("FLIPLOVE_HTTPS") == "true"
+  url_scheme = if use_https, do: "https", else: "http"
+  url_port = if use_https, do: 443, else: port
+
   config :fliplove, FliploveWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
+    url: [host: host, port: url_port, scheme: url_scheme],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
@@ -47,13 +52,17 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base,
-    # Allow WebSocket connections from the configured host and common local development hosts
+    # Allow WebSocket connections from the configured host and common development origins
     check_origin: [
-      "//#{host}",
-      "//#{host}:#{port}",
-      "//blacklady.local:#{port}",
-      "//localhost:#{port}",
-      "//127.0.0.1:#{port}"
+      "#{url_scheme}://#{host}",
+      "#{url_scheme}://#{host}:#{port}",
+      "http://#{host}:#{port}",
+      "https://#{host}:#{port}",
+      # Common development/local access patterns
+      "http://localhost:#{port}",
+      "https://localhost:#{port}",
+      "http://127.0.0.1:#{port}",
+      "https://127.0.0.1:#{port}"
     ]
 
   # Enable HTTPS if requested via environment variable
