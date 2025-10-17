@@ -103,7 +103,7 @@ defmodule Fliplove.MixProject do
       "assets.deploy": [
         "tailwind fliplove --minify",
         "esbuild fliplove --minify",
-        "phx.digest"
+        "phx.digest priv/static/assets/"
       ],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
