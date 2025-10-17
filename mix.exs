@@ -52,7 +52,8 @@ defmodule Fliplove.MixProject do
       {:phoenix_html, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.4", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},
-      {:heroicons, "~> 0.5"},
+      {:heroicons,
+       github: "tailwindlabs/heroicons", tag: "v2.2.0", sparse: "optimized", app: false, compile: false, depth: 1},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
@@ -93,10 +94,18 @@ defmodule Fliplove.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "assets.setup", "assets.build"],
+      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["tailwind default", "esbuild default"],
-      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"]
+      "assets.build": ["compile", "tailwind fliplove", "esbuild fliplove"],
+      "assets.deploy": [
+        "tailwind fliplove --minify",
+        "esbuild fliplove --minify",
+        "phx.digest"
+      ],
+      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end
 end
