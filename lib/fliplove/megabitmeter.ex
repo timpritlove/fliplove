@@ -129,13 +129,13 @@ defmodule Fliplove.Megabitmeter do
     {:noreply, %State{state | pending_value: value}}
   end
 
-  def handle_cast({:set_level, value}, state) do
+  def handle_cast({:set_level, value}, %State{} = state) do
     # Device not ready, store value silently
     {:noreply, %State{state | pending_value: value}}
   end
 
   @impl GenServer
-  def handle_info(:boot_complete, state) do
+  def handle_info(:boot_complete, %State{} = state) do
     Logger.info("Megabitmeter boot complete at #{state.device}")
     new_state = %State{state | connected?: true, booting?: false}
 
@@ -165,7 +165,7 @@ defmodule Fliplove.Megabitmeter do
     end
   end
 
-  def handle_info({:circuits_uart, _port, {:error, reason}}, state) do
+  def handle_info({:circuits_uart, _port, {:error, reason}}, %State{} = state) do
     Logger.debug("Megabitmeter error: #{inspect(reason)}")
 
     # Only log disconnection if we were previously connected
@@ -258,7 +258,7 @@ defmodule Fliplove.Megabitmeter do
     Process.send_after(self(), :try_reconnect, @reconnect_interval)
   end
 
-  defp start_animation(state, target_value) do
+  defp start_animation(%State{} = state, target_value) do
     # If no current value is set, initialize to 0
     current = state.current_value || 0
 
