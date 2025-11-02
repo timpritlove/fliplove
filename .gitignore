@@ -40,6 +40,5 @@ npm-debug.log
 /.elixir_ls/
 /.vscode/
 .DS_Store
-.tool-versions
 fliplove-*.tar
 .fliploverc
