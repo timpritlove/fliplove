@@ -21,6 +21,23 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() == :prod do
+  database_url =
+    System.get_env("DATABASE_URL") ||
+      raise """
+      environment variable DATABASE_URL is missing.
+      For example: ecto://USER:PASS@HOST/DATABASE
+      """
+
+  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+
+  config :fliplove, Fliplove.Repo,
+    # ssl: true,
+    url: database_url,
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
+    # For machines with several cores, consider starting multiple pools of `pool_size`
+    # pool_count: 4,
+    socket_options: maybe_ipv6
+
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
   # want to use a different value for prod and you most likely don't want
@@ -36,39 +53,19 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
-  # Determine if we're using HTTPS based on environment
-  use_https = System.get_env("FLIPLOVE_HTTPS") == "true"
-  url_scheme = if use_https, do: "https", else: "http"
-  url_port = if use_https, do: 443, else: port
+  config :fliplove, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   config :fliplove, FliploveWeb.Endpoint,
-    url: [host: host, port: url_port, scheme: url_scheme],
+    url: [host: host, port: 443, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
-      # See the documentation on https://hexdocs.pm/plug_cowboy/Plug.Cowboy.html
+      # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base,
-    # Disable origin checking for WebSocket connections
-    # WARNING: This is less secure but allows connections from any origin
-    check_origin: false
-
-  # Enable HTTPS if requested via environment variable
-  if System.get_env("FLIPLOVE_HTTPS") == "true" do
-    keyfile = System.get_env("FLIPLOVE_SSL_KEY_PATH") || "/etc/ssl/fliplove/ssl.key"
-    certfile = System.get_env("FLIPLOVE_SSL_CERT_PATH") || "/etc/ssl/fliplove/ssl.crt"
-
-    config :fliplove, FliploveWeb.Endpoint,
-      https: [
-        port: 443,
-        cipher_suite: :strong,
-        keyfile: keyfile,
-        certfile: certfile
-      ]
-  end
+    secret_key_base: secret_key_base
 
   # ## SSL Support
   #
@@ -94,26 +91,29 @@ if config_env() == :prod do
   # "priv/ssl/server.key". For all supported SSL configuration
   # options, see https://hexdocs.pm/plug/Plug.SSL.html#configure/1
   #
-  # We also recommend setting `force_ssl` in your endpoint, ensuring
-  # no data is ever sent via http, always redirecting to https:
+  # We also recommend setting `force_ssl` in your config/prod.exs,
+  # ensuring no data is ever sent via http, always redirecting to https:
   #
   #     config :fliplove, FliploveWeb.Endpoint,
   #       force_ssl: [hsts: true]
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
-end
 
-# Configure logging based on environment variables
-if log_file = System.get_env("FLIPLOVE_LOGFILE") do
-  config :logger,
-    backends: [{LoggerFileBackend, :file_log}]
-
-  config :logger, :file_log,
-    path: log_file,
-    format: "$time $metadata[$level] $message\n",
-    metadata: [:request_id]
-else
-  config :logger, :console,
-    format: "$time $metadata[$level] $message\n",
-    metadata: [:request_id]
+  # ## Configuring the mailer
+  #
+  # In production you need to configure the mailer to use a different adapter.
+  # Here is an example configuration for Mailgun:
+  #
+  #     config :fliplove, Fliplove.Mailer,
+  #       adapter: Swoosh.Adapters.Mailgun,
+  #       api_key: System.get_env("MAILGUN_API_KEY"),
+  #       domain: System.get_env("MAILGUN_DOMAIN")
+  #
+  # Most non-SMTP adapters require an API client. Swoosh supports Req, Hackney,
+  # and Finch out-of-the-box. This configuration is typically done at
+  # compile-time in your config/prod.exs:
+  #
+  #     config :swoosh, :api_client, Swoosh.ApiClient.Req
+  #
+  # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 end
