@@ -61,9 +61,7 @@ config :tailwind,
   ]
 
 # Configures Elixir's Logger
-config :logger,
-  level: :info,
-  backends: [:console]
+config :logger, level: :info
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
