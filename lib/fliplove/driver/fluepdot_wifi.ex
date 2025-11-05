@@ -30,7 +30,6 @@ defmodule Fliplove.Driver.FluepdotWifi do
   Driver for Fluepdot Display via Network (UDP + HTTP)
   """
   use GenServer
-  require HTTPoison
   require Logger
 
   @host_env "FLIPLOVE_HOST"
@@ -152,12 +151,14 @@ defmodule Fliplove.Driver.FluepdotWifi do
   end
 
   defp try_connect(state, addresses) do
-    case HTTPoison.put(Path.join(["http://", state.host, @rendering_mode_url]), <<?1>>) do
-      {:ok, %{status_code: 200}} ->
+    url = "http://#{state.host}#{@rendering_mode_url}"
+
+    case Req.put(url, body: <<?1>>) do
+      {:ok, %{status: 200}} ->
         Logger.debug("Successfully set pixel rendering mode")
         {:ok, %{state | addresses: addresses, connected: true}}
 
-      {:ok, %{status_code: status_code}} ->
+      {:ok, %{status: status_code}} ->
         {:error, "Failed to set pixel rendering mode. Status code: #{status_code}"}
 
       {:error, reason} ->

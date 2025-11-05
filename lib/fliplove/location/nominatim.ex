@@ -12,37 +12,29 @@ defmodule Fliplove.Location.Nominatim do
   Returns {:ok, {lat, lon}} on success, {:error, reason} on failure.
   """
   def resolve_location(location) when is_binary(location) do
-    query =
-      URI.encode_query(%{
-        q: location,
-        format: "json",
-        limit: "1"
-      })
+    params = [
+      q: location,
+      format: "json",
+      limit: "1"
+    ]
 
-    url = "#{@nominatim_url}?#{query}"
-    headers = [{"User-Agent", "Fliplove/1.0"}]
+    headers = [{"user-agent", "Fliplove/1.0"}]
 
-    case HTTPoison.get(url, headers) do
-      {:ok, %{status_code: 200, body: body}} ->
-        case Jason.decode(body) do
-          {:ok, [%{"lat" => lat, "lon" => lon} | _]} ->
-            {lat_float, _} = Float.parse(lat)
-            {lon_float, _} = Float.parse(lon)
-            Logger.info("Resolved location '#{location}' to coordinates: #{lat_float}, #{lon_float}")
-            {:ok, {lat_float, lon_float}}
+    case Req.get(@nominatim_url, params: params, headers: headers) do
+      {:ok, %{status: 200, body: [%{"lat" => lat, "lon" => lon} | _]}} ->
+        {lat_float, _} = Float.parse(lat)
+        {lon_float, _} = Float.parse(lon)
+        Logger.info("Resolved location '#{location}' to coordinates: #{lat_float}, #{lon_float}")
+        {:ok, {lat_float, lon_float}}
 
-          {:ok, []} ->
-            {:error, :location_not_found}
+      {:ok, %{status: 200, body: []}} ->
+        {:error, :location_not_found}
 
-          {:error, _} = error ->
-            error
-        end
-
-      {:ok, %{status_code: status}} ->
+      {:ok, %{status: status}} ->
         {:error, "HTTP error: #{status}"}
 
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        {:error, reason}
+      {:error, exception} ->
+        {:error, Exception.message(exception)}
     end
   end
 end

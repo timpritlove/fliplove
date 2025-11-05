@@ -113,30 +113,23 @@ defmodule Fliplove.Weather.OpenWeather do
     url = @base_url <> endpoint
 
     params = [
-      {"lat", latitude},
-      {"lon", longitude},
-      {"units", "metric"},
-      {"appid", api_key},
+      lat: latitude,
+      lon: longitude,
+      units: "metric",
+      appid: api_key,
       # Get times in the local timezone of the coordinates
-      {"timezone", "auto"}
+      timezone: "auto"
     ]
 
-    case HTTPoison.get(url, [], params: params) do
-      {:ok, %{status_code: 200, body: body}} ->
-        case Jason.decode(body) do
-          {:ok, data} ->
-            {:ok, data}
+    case Req.get(url, params: params) do
+      {:ok, %{status: 200, body: data}} ->
+        {:ok, data}
 
-          {:error, reason} ->
-            Logger.error("Failed to parse OpenWeather response: #{inspect(reason)}")
-            {:error, :invalid_response}
-        end
-
-      {:ok, %{status_code: 401}} ->
+      {:ok, %{status: 401}} ->
         Logger.error("OpenWeather API key is invalid")
         {:error, :invalid_api_key}
 
-      {:ok, %{status_code: status_code}} ->
+      {:ok, %{status: status_code}} ->
         Logger.error("OpenWeather API returned #{status_code}")
         {:error, :api_error}
 

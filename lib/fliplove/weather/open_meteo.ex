@@ -18,35 +18,25 @@ defmodule Fliplove.Weather.OpenMeteo do
     url = "#{@base_url}/forecast"
 
     params = [
-      {"latitude", latitude},
-      {"longitude", longitude},
-      {"current_weather", true},
-      {"timezone", "auto"}
+      latitude: latitude,
+      longitude: longitude,
+      current_weather: true,
+      timezone: "auto"
     ]
 
-    # Add timeout options to HTTPoison request
-    options = [recv_timeout: 10_000, timeout: 10_000]
+    case Req.get(url, params: params, receive_timeout: 10_000) do
+      {:ok, %{status: 200, body: data}} ->
+        current = data["current_weather"]
 
-    case HTTPoison.get(url, [], params: params, options: options) do
-      {:ok, %{status_code: 200, body: body}} ->
-        case Jason.decode(body) do
-          {:ok, data} ->
-            current = data["current_weather"]
+        {:ok,
+         %{
+           temperature: current["temperature"],
+           wind_speed: current["windspeed"],
+           # OpenMeteo doesn't provide current rainfall in free tier
+           rainfall_rate: 0.0
+         }}
 
-            {:ok,
-             %{
-               temperature: current["temperature"],
-               wind_speed: current["windspeed"],
-               # OpenMeteo doesn't provide current rainfall in free tier
-               rainfall_rate: 0.0
-             }}
-
-          {:error, reason} ->
-            Logger.error("Failed to parse OpenMeteo response: #{inspect(reason)}")
-            {:error, :invalid_response}
-        end
-
-      {:ok, %{status_code: status_code}} ->
+      {:ok, %{status: status_code}} ->
         Logger.error("OpenMeteo API returned #{status_code}")
         {:error, :api_error}
 
@@ -62,53 +52,43 @@ defmodule Fliplove.Weather.OpenMeteo do
     hours = min(hours, @max_forecast_hours)
 
     params = [
-      {"latitude", latitude},
-      {"longitude", longitude},
-      {"hourly", "temperature_2m,precipitation,is_day"},
-      {"timezone", "GMT"},
-      {"forecast_hours", hours}
+      latitude: latitude,
+      longitude: longitude,
+      hourly: "temperature_2m,precipitation,is_day",
+      timezone: "GMT",
+      forecast_hours: hours
     ]
 
-    # Add timeout options to HTTPoison request
-    options = [recv_timeout: 10_000, timeout: 10_000]
+    case Req.get(url, params: params, receive_timeout: 10_000) do
+      {:ok, %{status: 200, body: data}} ->
+        hourly_data = data["hourly"]
+        timezone = data["timezone"]
 
-    case HTTPoison.get(url, [], params: params, options: options) do
-      {:ok, %{status_code: 200, body: body}} ->
-        case Jason.decode(body) do
-          {:ok, data} ->
-            hourly_data = data["hourly"]
-            timezone = data["timezone"]
+        hourly =
+          Enum.zip_with(
+            [
+              hourly_data["time"],
+              hourly_data["temperature_2m"],
+              hourly_data["precipitation"],
+              hourly_data["is_day"]
+            ],
+            fn [time, temp, precip, is_day] ->
+              datetime = parse_time(time, timezone)
+              # OpenMeteo uses 1 for day, 0 for night
+              is_night = is_day == 0
 
-            hourly =
-              Enum.zip_with(
-                [
-                  hourly_data["time"],
-                  hourly_data["temperature_2m"],
-                  hourly_data["precipitation"],
-                  hourly_data["is_day"]
-                ],
-                fn [time, temp, precip, is_day] ->
-                  datetime = parse_time(time, timezone)
-                  # OpenMeteo uses 1 for day, 0 for night
-                  is_night = is_day == 0
+              %{
+                datetime: datetime,
+                temperature: temp,
+                rainfall_rate: precip,
+                is_night: is_night
+              }
+            end
+          )
 
-                  %{
-                    datetime: datetime,
-                    temperature: temp,
-                    rainfall_rate: precip,
-                    is_night: is_night
-                  }
-                end
-              )
+        {:ok, hourly}
 
-            {:ok, hourly}
-
-          {:error, reason} ->
-            Logger.error("Failed to parse OpenMeteo response: #{inspect(reason)}")
-            {:error, :invalid_response}
-        end
-
-      {:ok, %{status_code: status_code}} ->
+      {:ok, %{status: status_code}} ->
         Logger.error("OpenMeteo API returned #{status_code}")
         {:error, :api_error}
 
