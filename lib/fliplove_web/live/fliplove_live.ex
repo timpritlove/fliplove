@@ -757,10 +757,10 @@ defmodule FliploveWeb.FliploveLive do
         "hover:text-yellow-300",
         (@mode == @self && "text-gray-200") || "text-gray-200"
       ]}>
-        <Heroicons.pencil :if={@icon == "pencil"} class="h-5 w-5" />
-        <Heroicons.paint_brush :if={@icon == "fill"} class="h-5 w-5" />
-        <Heroicons.squares_2x2 :if={@icon == "draw-polygon"} class="h-5 w-5" />
-        <Heroicons.square_3_stack_3d :if={@icon == "vector-square"} class="h-5 w-5" />
+        <.icon :if={@icon == "pencil"} name="hero-pencil" class="h-5 w-5" />
+        <.icon :if={@icon == "fill"} name="hero-paint-brush" class="h-5 w-5" />
+        <.icon :if={@icon == "draw-polygon"} name="hero-squares-2x2" class="h-5 w-5" />
+        <.icon :if={@icon == "vector-square"} name="hero-square-3-stack-3d" class="h-5 w-5" />
       </div>
     </button>
     """
@@ -783,13 +783,13 @@ defmodule FliploveWeb.FliploveLive do
         "hover:text-yellow-300",
         (@app == @self && "text-gray-200") || "text-gray-200"
       ]}>
-        <Heroicons.chart_bar :if={@icon == "gauge-high"} class="h-5 w-5" />
-        <Heroicons.squares_2x2 :if={@icon == "images"} class="h-5 w-5" />
-        <Heroicons.sparkles :if={@icon == "hat-wizard"} class="h-5 w-5" />
-        <Heroicons.squares_plus :if={@icon == "icons"} class="h-5 w-5" />
-        <Heroicons.server :if={@icon == "server"} class="h-5 w-5" />
-        <Heroicons.clock :if={@icon == "clock"} class="h-5 w-5" />
-        <Heroicons.truck :if={@icon == "train"} class="h-5 w-5" />
+        <.icon :if={@icon == "gauge-high"} name="hero-chart-bar" class="h-5 w-5" />
+        <.icon :if={@icon == "images"} name="hero-squares-2x2" class="h-5 w-5" />
+        <.icon :if={@icon == "hat-wizard"} name="hero-sparkles" class="h-5 w-5" />
+        <.icon :if={@icon == "icons"} name="hero-squares-plus" class="h-5 w-5" />
+        <.icon :if={@icon == "server"} name="hero-server" class="h-5 w-5" />
+        <.icon :if={@icon == "clock"} name="hero-clock" class="h-5 w-5" />
+        <.icon :if={@icon == "train"} name="hero-truck" class="h-5 w-5" />
       </div>
     </button>
     """
@@ -804,15 +804,15 @@ defmodule FliploveWeb.FliploveLive do
       phx-click={@target}
     >
       <div class="text-gray-200">
-        <Heroicons.arrow_up :if={@icon == "arrow-up"} class="h-5 w-5" />
-        <Heroicons.arrow_down :if={@icon == "arrow-down"} class="h-5 w-5" />
-        <Heroicons.arrow_left :if={@icon == "arrow-left"} class="h-5 w-5" />
-        <Heroicons.arrow_right :if={@icon == "arrow-right"} class="h-5 w-5" />
-        <Heroicons.arrows_up_down :if={@icon == "arrow-down-up-across-line"} class="h-5 w-5" />
-        <Heroicons.arrows_right_left :if={@icon == "arrow-right-arrow-left"} class="h-5 w-5" />
-        <Heroicons.photo :if={@icon == "image"} class="h-5 w-5" />
-        <Heroicons.backspace :if={@icon == "eraser"} class="h-5 w-5" />
-        <Heroicons.squares_2x2 :if={@icon == "chess-board"} class="h-5 w-5" />
+        <.icon :if={@icon == "arrow-up"} name="hero-arrow-up" class="h-5 w-5" />
+        <.icon :if={@icon == "arrow-down"} name="hero-arrow-down" class="h-5 w-5" />
+        <.icon :if={@icon == "arrow-left"} name="hero-arrow-left" class="h-5 w-5" />
+        <.icon :if={@icon == "arrow-right"} name="hero-arrow-right" class="h-5 w-5" />
+        <.icon :if={@icon == "arrow-down-up-across-line"} name="hero-arrows-up-down" class="h-5 w-5" />
+        <.icon :if={@icon == "arrow-right-arrow-left"} name="hero-arrows-right-left" class="h-5 w-5" />
+        <.icon :if={@icon == "image"} name="hero-photo" class="h-5 w-5" />
+        <.icon :if={@icon == "eraser"} name="hero-backspace" class="h-5 w-5" />
+        <.icon :if={@icon == "chess-board"} name="hero-squares-2x2" class="h-5 w-5" />
       </div>
     </button>
     """
@@ -866,12 +866,12 @@ defmodule FliploveWeb.FliploveLive do
       phx-value-command={@command}
     >
       <div class="text-gray-200">
-        <Heroicons.backspace :if={@icon == "eraser"} class="h-5 w-5" />
-        <Heroicons.adjustments_horizontal :if={@icon == "circle-half-stroke"} class="h-5 w-5" />
-        <Heroicons.power :if={@icon == "power-off"} class="h-5 w-5" />
-        <Heroicons.signal :if={@icon == "signal"} class="h-5 w-5" />
-        <Heroicons.no_symbol :if={@icon == "ban"} class="h-5 w-5" />
-        <Heroicons.list_bullet :if={@icon == "list"} class="h-5 w-5" />
+        <.icon :if={@icon == "eraser"} name="hero-backspace" class="h-5 w-5" />
+        <.icon :if={@icon == "circle-half-stroke"} name="hero-adjustments-horizontal" class="h-5 w-5" />
+        <.icon :if={@icon == "power-off"} name="hero-power" class="h-5 w-5" />
+        <.icon :if={@icon == "signal"} name="hero-signal" class="h-5 w-5" />
+        <.icon :if={@icon == "ban"} name="hero-no-symbol" class="h-5 w-5" />
+        <.icon :if={@icon == "list"} name="hero-list-bullet" class="h-5 w-5" />
       </div>
     </button>
     """
