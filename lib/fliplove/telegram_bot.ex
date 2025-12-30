@@ -35,7 +35,8 @@ defmodule Fliplove.TelegramBot do
 
       error ->
         Logger.error("Bot failed to self-identify: #{inspect(error)}")
-        :error
+        # Return :ignore to terminate this GenServer without crashing the supervisor
+        :ignore
     end
   end
 
