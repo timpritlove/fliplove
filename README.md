@@ -72,3 +72,23 @@ Both services require location information which can be provided through:
   - `FLIPLOVE_LATITUDE`: Your location's latitude
   - `FLIPLOVE_LONGITUDE`: Your location's longitude
 - If not provided, the application will attempt to determine location using IP geolocation
+
+## Production release
+
+To build a production release (e.g. for deployment on a Raspberry Pi or server):
+
+1. **Build and digest assets** (tailwind and esbuild are dev dependencies, so this runs in dev):
+   ```bash
+   mix assets.deploy
+   ```
+2. **Build the release**:
+   ```bash
+   MIX_ENV=prod mix release
+   ```
+
+Or use the helper script:
+```bash
+./bin/build_release.sh
+```
+
+The release expects the digest manifest and digested static assets to be present (from step 1). Without them, the app will log an error about the missing `cache_manifest.json`.

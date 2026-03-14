@@ -98,6 +98,7 @@ defmodule Fliplove.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["compile", "tailwind fliplove", "esbuild fliplove"],
+      # Build and digest assets for production. Run this before "MIX_ENV=prod mix release".
       "assets.deploy": [
         "tailwind fliplove --minify",
         "esbuild fliplove --minify",
