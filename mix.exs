@@ -23,7 +23,15 @@ defmodule Fliplove.MixProject do
         included_applications: [:logger, :ex_png],
         path: "_build/tools/symbol_importer"
       ],
-      compilers: [:phoenix_live_view] ++ Mix.compilers()
+      compilers: [:phoenix_live_view] ++ Mix.compilers(),
+      usage_rules: usage_rules()
+    ]
+  end
+
+  defp usage_rules do
+    [
+      file: "AGENTS.md",
+      usage_rules: :all
     ]
   end
 
@@ -47,7 +55,7 @@ defmodule Fliplove.MixProject do
   defp deps do
     [
       {:lazy_html, ">= 0.0.0", only: :test},
-      {:usage_rules, "~> 0.1.24", only: [:dev]},
+      {:usage_rules, "~> 1.1", only: [:dev]},
       {:phoenix, "~> 1.8.0"},
       {:phoenix_html, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.4", only: :dev},
@@ -79,7 +87,7 @@ defmodule Fliplove.MixProject do
       {:circuits_uart, "~> 1.5"},
       {:mdns_lite, "~> 0.8.11"},
       {:observer_cli, "~> 1.7"},
-      {:igniter, "~> 0.3", only: [:dev]},
+      {:igniter, "~> 0.7.0", only: [:dev]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
