@@ -19,7 +19,7 @@ defmodule Fliplove.TelegramBot do
   def init(opts) do
     {key, _opts} = Keyword.pop!(opts, :bot_key)
 
-    case Telegram.Api.request(key, "getMe") do
+    case Fliplove.Telegram.Api.request(key, "getMe") do
       {:ok, me} ->
         Logger.info("Bot successfully self-identified: #{me["username"]}")
 
@@ -44,7 +44,7 @@ defmodule Fliplove.TelegramBot do
   def handle_info(:check, %{bot_key: key, last_seen: last_seen} = state) do
     state =
       key
-      |> Telegram.Api.request("getUpdates", offset: last_seen + 1, timeout: 30)
+      |> Fliplove.Telegram.Api.request("getUpdates", offset: last_seen + 1, timeout: 30)
       |> case do
         # Empty, typically a timeout. State returned unchanged.
         {:ok, []} ->
