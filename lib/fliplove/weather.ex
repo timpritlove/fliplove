@@ -17,14 +17,22 @@ defmodule Fliplove.Weather do
     :longitude,
     :weather,
     :weather_timestamp,
+    :hourly_forecast,
     :last_error,
     :last_success,
+    # Consumer tracking (pid => mref); fetch only when map is non-empty
+    :consumers,
+    # In-flight fetch: {ref, task_pid, mref} or nil
+    :in_flight,
     # Circuit breaker state
     :circuit_breaker_state,
     :failure_count,
     :last_failure_time,
     :retry_timer
   ]
+
+  # Hours of forecast to fetch per update (current + forecast in one Task)
+  @forecast_hours 73
 
   @latitude_env "FLIPLOVE_LATITUDE"
   @longitude_env "FLIPLOVE_LONGITUDE"
@@ -50,16 +58,25 @@ defmodule Fliplove.Weather do
 
   # Client API
 
-  def start_link(_state) do
-    GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def stop do
-    GenServer.stop(__MODULE__)
+  @doc """
+  Register the calling process as a consumer. Weather will fetch from the API
+  while at least one consumer is active. The caller is monitored; when it exits,
+  it is automatically removed (no need to call deactivate on crash).
+  """
+  def activate do
+    GenServer.call(__MODULE__, :activate, @call_timeout)
   end
 
-  def start do
-    start_link([])
+  @doc """
+  Unregister the calling process as a consumer. When the last consumer
+  deactivates, Weather stops fetching from the API.
+  """
+  def deactivate do
+    GenServer.call(__MODULE__, :deactivate, @call_timeout)
   end
 
   def get_weather do
@@ -149,8 +166,15 @@ defmodule Fliplove.Weather do
   # initialization functions
 
   @impl GenServer
-  def init(state) do
+  def init(_opts) do
     Logger.debug("Initializing Weather service...")
+
+    base_state = %__MODULE__{
+      timer: nil,
+      consumers: %{},
+      in_flight: nil,
+      hourly_forecast: nil
+    }
 
     with {:ok, service_module} <- get_service_module(),
          {:ok, lat, lon, source} <- get_location() do
@@ -161,9 +185,9 @@ defmodule Fliplove.Weather do
       update_interval = service_module.get_update_interval()
       Logger.debug("Weather update interval: #{update_interval}ms")
 
-      # Initialize circuit breaker state
+      # No timer yet; fetching starts when the first consumer calls activate()
       initial_state = %{
-        state
+        base_state
         | service_module: service_module,
           latitude: lat,
           longitude: lon,
@@ -173,26 +197,19 @@ defmodule Fliplove.Weather do
           retry_timer: nil
       }
 
-      # Update weather information in a second and then periodically
-      Logger.debug("Scheduling initial weather update...")
-      {:ok, _initial_timer} = :timer.send_after(1_000, :update_weather)
-      Logger.debug("Scheduling periodic weather updates...")
-      {:ok, periodic_timer} = :timer.send_interval(update_interval, :update_weather)
-
       Logger.info("Weather service enabled: #{service_name}")
       Logger.info("Weather service using #{source} location (#{lat}, #{lon})")
 
-      {:ok, %{initial_state | timer: periodic_timer}}
+      {:ok, initial_state}
     else
       {:error, reason} ->
         Logger.error("Failed to initialize weather service: #{inspect(reason)}")
-        # Instead of stopping, start in a degraded state and retry later
         Logger.info("Starting weather service in degraded mode, will retry initialization")
         {:ok, retry_timer} = :timer.send_after(@retry_interval, :retry_initialization)
 
         {:ok,
          %{
-           state
+           base_state
            | circuit_breaker_state: :open,
              failure_count: @max_failures,
              last_failure_time: DateTime.utc_now(),
@@ -217,6 +234,47 @@ defmodule Fliplove.Weather do
   # server functions
 
   @impl GenServer
+  def handle_call(:activate, {pid, _tag}, state) do
+    if Map.has_key?(state.consumers, pid) do
+      {:reply, :ok, state}
+    else
+      mref = Process.monitor(pid)
+      consumers = Map.put(state.consumers, pid, mref)
+      new_state = %{state | consumers: consumers}
+
+      # First consumer: start periodic timer and trigger an immediate update
+      if map_size(consumers) == 1 do
+        update_interval = state.service_module.get_update_interval()
+        {:ok, periodic_timer} = :timer.send_interval(update_interval, :update_weather)
+        {:ok, _} = :timer.send_after(1_000, :update_weather)
+        {:reply, :ok, %{new_state | timer: periodic_timer}}
+      else
+        {:reply, :ok, new_state}
+      end
+    end
+  end
+
+  @impl GenServer
+  def handle_call(:deactivate, {pid, _tag}, state) do
+    case Map.pop(state.consumers, pid) do
+      {nil, _consumers} ->
+        {:reply, :ok, state}
+
+      {mref, consumers} ->
+        Process.demonitor(mref, [:flush])
+        new_state = %{state | consumers: consumers}
+
+        if map_size(consumers) == 0 and new_state.timer do
+          {:ok, :cancel} = :timer.cancel(new_state.timer)
+          Logger.info("Weather service deactivated (no consumers)")
+          {:reply, :ok, %{new_state | timer: nil}}
+        else
+          {:reply, :ok, new_state}
+        end
+    end
+  end
+
+  @impl GenServer
   def handle_call(:get_current_weather, _from, state) do
     {:reply, state.weather, state}
   end
@@ -228,43 +286,66 @@ defmodule Fliplove.Weather do
 
   @impl GenServer
   def handle_call(:update_weather, _from, state) do
-    {:reply, :ok, do_update_weather(state)}
+    new_state = start_fetch_if_ready(state)
+    {:reply, :ok, new_state}
   end
 
   @impl GenServer
-  def handle_call({:get_hourly_forecast, hours}, _from, state) do
-    if circuit_breaker_open?(state) do
-      Logger.debug("Circuit breaker is open, not making weather service call")
-      {:reply, [], state}
-    else
-      case state.service_module.get_hourly_forecast(state.latitude, state.longitude, hours) do
-        {:ok, forecast} ->
-          new_state = record_success(state)
-          {:reply, forecast, new_state}
-
-        {:error, reason} ->
-          Logger.warning("Failed to get hourly forecast: #{inspect(reason)}")
-          new_state = record_failure(state, reason)
-          {:reply, [], new_state}
-      end
-    end
-  rescue
-    error ->
-      Logger.error("Unexpected error getting hourly forecast: #{inspect(error)}")
-      new_state = record_failure(state, error)
-      {:reply, [], new_state}
+  def handle_call({:get_hourly_forecast, _hours}, _from, state) do
+    # Return cached forecast; no HTTP from handle_call
+    forecast = state.hourly_forecast || []
+    {:reply, forecast, state}
   end
 
   @impl GenServer
   def handle_info(:update_weather, state) do
-    # Don't crash on update failures
-    new_state = do_update_weather(state)
+    new_state = start_fetch_if_ready(state)
     {:noreply, new_state}
-  rescue
-    error ->
-      Logger.error("Unexpected error in weather update: #{inspect(error)}")
-      new_state = record_failure(state, error)
-      {:noreply, new_state}
+  end
+
+  @impl GenServer
+  def handle_info({:weather_result, ref, result}, state) do
+    case state.in_flight do
+      {^ref, _task_pid, mref} ->
+        Process.demonitor(mref, [:flush])
+        new_state = apply_weather_result(%{state | in_flight: nil}, result)
+        {:noreply, new_state}
+
+      _ ->
+        {:noreply, state}
+    end
+  end
+
+  @impl GenServer
+  def handle_info({:DOWN, _mref, :process, pid, _reason}, state) do
+    # Consumer process exited: remove from consumers and stop timer if last
+    case Map.pop(state.consumers, pid) do
+      {mref, consumers} when not is_nil(mref) ->
+        new_state = %{state | consumers: consumers}
+
+        new_state =
+          if map_size(consumers) == 0 and new_state.timer do
+            {:ok, :cancel} = :timer.cancel(new_state.timer)
+            Logger.info("Weather service deactivated (consumer process exited)")
+            %{new_state | timer: nil}
+          else
+            new_state
+          end
+
+        {:noreply, new_state}
+
+      {nil, _consumers} ->
+        # In-flight fetch Task crashed (we get DOWN because we didn't demonitor before it died)
+        case state.in_flight do
+          {_ref, ^pid, mref} ->
+            Process.demonitor(mref, [:flush])
+            new_state = record_failure(%{state | in_flight: nil}, :task_crashed)
+            {:noreply, new_state}
+
+          _ ->
+            {:noreply, state}
+        end
+    end
   end
 
   @impl GenServer
@@ -277,25 +358,19 @@ defmodule Fliplove.Weather do
       Logger.info("Weather service initialization successful: #{service_name}")
       Logger.info("Weather service using #{source} location (#{lat}, #{lon})")
 
-      update_interval = service_module.get_update_interval()
-      {:ok, periodic_timer} = :timer.send_interval(update_interval, :update_weather)
-
-      # Reset circuit breaker and update state
+      # Reset circuit breaker; timer is started only when first consumer activates
       new_state = %{
         state
         | service_module: service_module,
           latitude: lat,
           longitude: lon,
-          timer: periodic_timer,
           circuit_breaker_state: :closed,
           failure_count: 0,
           last_failure_time: nil,
           retry_timer: nil
       }
 
-      # Try to get initial weather data
-      final_state = do_update_weather(new_state)
-      {:noreply, final_state}
+      {:noreply, new_state}
     else
       {:error, reason} ->
         Logger.warning("Weather service initialization still failing: #{inspect(reason)}")
@@ -307,47 +382,71 @@ defmodule Fliplove.Weather do
   @impl GenServer
   def handle_info(:retry_weather_service, state) do
     Logger.debug("Retrying weather service after circuit breaker timeout")
-
     new_state = %{state | circuit_breaker_state: :half_open, retry_timer: nil}
-
-    final_state = do_update_weather(new_state)
+    final_state = start_fetch_if_ready(new_state)
     {:noreply, final_state}
   end
 
-  defp do_update_weather(%{service_module: nil} = state) do
+  # Spawn a Task to fetch current weather + hourly forecast; only if no fetch in flight and consumers present
+  defp start_fetch_if_ready(%{service_module: nil} = state) do
     Logger.debug("Weather service module not initialized, skipping update")
     state
   end
 
-  defp do_update_weather(state) do
-    if circuit_breaker_open?(state) do
-      Logger.debug("Circuit breaker is open, skipping weather update")
-      broadcast_weather_update(state.weather)
-      state
-    else
-      Logger.debug("Fetching weather data from service...")
+  defp start_fetch_if_ready(state) do
+    cond do
+      map_size(state.consumers) == 0 ->
+        state
 
-      case state.service_module.get_current_weather(state.latitude, state.longitude) do
-        {:ok, weather} ->
-          timestamp = DateTime.utc_now()
-          Logger.debug("Weather data updated successfully")
-          broadcast_weather_update(weather)
-          new_state = record_success(state)
-          %{new_state | weather: weather, weather_timestamp: timestamp}
+      circuit_breaker_open?(state) ->
+        Logger.debug("Circuit breaker is open, skipping weather update")
+        broadcast_weather_update(state.weather, state.hourly_forecast)
+        state
 
-        {:error, reason} ->
-          Logger.warning("Failed to update weather: #{inspect(reason)}")
-          # Keep existing weather data and continue running
-          broadcast_weather_update(state.weather)
-          record_failure(state, reason)
-      end
+      state.in_flight != nil ->
+        state
+
+      true ->
+      ref = make_ref()
+      parent = self()
+      mod = state.service_module
+      lat = state.latitude
+      lon = state.longitude
+      hours = @forecast_hours
+
+      task =
+        Task.start(fn ->
+          result = fetch_weather_and_forecast(mod, lat, lon, hours)
+          send(parent, {:weather_result, ref, result})
+        end)
+
+      task_pid = elem(task, 1)
+      mref = Process.monitor(task_pid)
+      %{state | in_flight: {ref, task_pid, mref}}
     end
-  rescue
-    error ->
-      Logger.error("Unexpected error updating weather: #{inspect(error)}")
-      # Keep existing weather data and continue running
-      broadcast_weather_update(state.weather)
-      record_failure(state, error)
+  end
+
+  defp fetch_weather_and_forecast(mod, lat, lon, hours) do
+    with {:ok, weather} <- mod.get_current_weather(lat, lon),
+         {:ok, forecast} <- mod.get_hourly_forecast(lat, lon, hours) do
+      {:ok, weather, forecast}
+    else
+      {:error, _} = err -> err
+    end
+  end
+
+  defp apply_weather_result(state, {:ok, weather, forecast}) do
+    timestamp = DateTime.utc_now()
+    Logger.debug("Weather data updated successfully")
+    broadcast_weather_update(weather, forecast)
+    new_state = record_success(state)
+    %{new_state | weather: weather, weather_timestamp: timestamp, hourly_forecast: forecast}
+  end
+
+  defp apply_weather_result(state, {:error, reason}) do
+    Logger.warning("Failed to update weather: #{inspect(reason)}")
+    broadcast_weather_update(state.weather, state.hourly_forecast)
+    record_failure(state, reason)
   end
 
   # Circuit breaker helper functions
@@ -388,10 +487,9 @@ defmodule Fliplove.Weather do
     end
   end
 
-  defp broadcast_weather_update(nil), do: :ok
-
-  defp broadcast_weather_update(weather) do
-    PubSub.broadcast(Fliplove.PubSub, topic(), {:update_weather, weather})
+  defp broadcast_weather_update(weather, forecast) do
+    payload = %{current: weather, forecast: forecast || []}
+    PubSub.broadcast(Fliplove.PubSub, topic(), {:update_weather, payload})
   rescue
     error ->
       Logger.error("Failed to broadcast weather update: #{inspect(error)}")

@@ -16,6 +16,8 @@ defmodule Fliplove.Application do
         FliploveWeb.Telemetry,
         # Start the PubSub system
         {Phoenix.PubSub, name: Fliplove.PubSub},
+        # Weather service (fetch only when activated by a consumer)
+        Fliplove.Weather,
         # Start core services first
         Fliplove.Font.Library,
         # Start hardware-related services first since they define display dimensions

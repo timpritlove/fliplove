@@ -12,35 +12,25 @@ defmodule Fliplove.Apps.Dashboard do
   alias Phoenix.PubSub
   require Logger
 
-  defstruct font: nil, bitmap: nil
+  defstruct font: nil, bitmap: nil, weather_data: nil
 
   @font "flipdot_condensed"
-  @forecast_hours 73
 
   def init_app(_opts) do
     offset_minutes = TimezoneHelper.get_utc_offset_minutes()
     Logger.info("Dashboard using UTC offset: #{offset_minutes} minutes")
 
-    # Start the Weather service
-    case Weather.start() do
-      {:ok, _pid} ->
-        Logger.info("Weather service started")
-
-      {:error, {:already_started, _pid}} ->
-        Logger.info("Weather service was already running")
-
-      {:error, reason} ->
-        Logger.error("Failed to start Weather service: #{inspect(reason)}")
-        raise "Failed to start Weather service"
-    end
+    # Activate Weather so it fetches; we consume via broadcast only
+    Weather.activate()
+    Logger.info("Weather service activated for dashboard")
 
     state = %__MODULE__{
       font: Library.get_font_by_name(@font),
-      bitmap: nil
+      bitmap: nil,
+      weather_data: nil
     }
 
     update_dashboard(state)
-
     schedule_next_minute(:clock_timer)
     PubSub.subscribe(Fliplove.PubSub, Weather.topic())
 
@@ -53,10 +43,7 @@ defmodule Fliplove.Apps.Dashboard do
   def cleanup_app(reason, _state) do
     Logger.debug("Dashboard cleanup_app called with reason: #{inspect(reason)}")
     Logger.info("Dashboard has been shut down.")
-    # Stop the Weather service
-    Logger.debug("Stopping Weather service...")
-    result = Weather.stop()
-    Logger.debug("Weather service stop result: #{inspect(result)}")
+    Weather.deactivate()
     :ok
   end
 
@@ -69,7 +56,8 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   @impl GenServer
-  def handle_info({:update_weather, _weather}, state) do
+  def handle_info({:update_weather, payload}, state) do
+    state = %{state | weather_data: payload}
     update_dashboard(state)
     {:noreply, state}
   end
@@ -98,24 +86,22 @@ defmodule Fliplove.Apps.Dashboard do
     |> Calendar.strftime("%H:%M")
   end
 
-  defp get_max_min_temps do
-    case get_hourly_forecast() do
-      [] ->
-        {nil, nil}
+  defp get_max_min_temps(forecast) when is_list(forecast) do
+    if forecast == [] do
+      {nil, nil}
+    else
+      try do
+        forecast
+        |> Enum.map(& &1.temperature)
+        |> then(fn temps -> {Enum.max(temps), Enum.min(temps)} end)
+      rescue
+        Enum.EmptyError ->
+          {nil, nil}
 
-      temperatures ->
-        try do
-          temperatures
-          |> Enum.map(& &1.temperature)
-          |> then(fn temps -> {Enum.max(temps), Enum.min(temps)} end)
-        rescue
-          Enum.EmptyError ->
-            {nil, nil}
-
-          error ->
-            Logger.error("Error calculating temperature extremes: #{inspect(error)}")
-            {nil, nil}
-        end
+        error ->
+          Logger.error("Error calculating temperature extremes: #{inspect(error)}")
+          {nil, nil}
+      end
     end
   end
 
@@ -129,58 +115,54 @@ defmodule Fliplove.Apps.Dashboard do
   defp update_dashboard(state) do
     Bitmap.new(Display.width(), Display.height())
     |> render_time(state.font)
-    |> render_weather_data(state.font)
+    |> render_weather_data(state)
     |> maybe_update_display(state.bitmap)
   end
 
-  defp render_weather_data(bitmap, font) do
-    case Weather.get_current_temperature() do
-      nil ->
-        # If no current temperature, skip all weather rendering
+  defp render_weather_data(bitmap, state) do
+    case state.weather_data do
+      %{current: current} when not is_nil(current) ->
+        forecast = state.weather_data[:forecast] || []
         bitmap
+        |> render_current_temperature(state.font, current)
+        |> render_temperature_chart(forecast)
+        |> render_temperature_extremes(state.font, forecast)
 
-      _temp ->
+      _ ->
         bitmap
-        |> render_current_temperature(font)
-        |> render_temperature_chart()
-        |> render_temperature_extremes(font)
     end
   end
 
-  defp render_current_temperature(bitmap, font) do
-    case Weather.get_current_temperature() do
-      nil -> bitmap
-      temp -> place_text(bitmap, font, format_temp(temp), :top, :left)
-    end
+  defp render_current_temperature(bitmap, font, current) do
+    temp = current && current.temperature
+    if temp, do: place_text(bitmap, font, format_temp(temp), :top, :left), else: bitmap
   end
 
   defp render_time(bitmap, font) do
     place_text(bitmap, font, get_time_string(), :bottom, :left)
   end
 
-  defp render_temperature_chart(bitmap) do
-    case get_hourly_forecast() do
-      [] ->
-        bitmap
+  defp render_temperature_chart(bitmap, forecast) do
+    if forecast == [] do
+      bitmap
+    else
+      try do
+        weather_bitmap = create_temperature_chart(Display.height(), forecast)
 
-      _forecast ->
-        try do
-          weather_bitmap = create_temperature_chart(Display.height())
+        result =
+          Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
 
-          result =
-            Bitmap.crop_relative(weather_bitmap, Display.width(), Display.height(), rel_x: :center, rel_y: :middle)
-
-          Bitmap.overlay(bitmap, result)
-        rescue
-          error ->
-            Logger.error("Failed to render temperature chart: #{inspect(error)}")
-            bitmap
-        end
+        Bitmap.overlay(bitmap, result)
+      rescue
+        error ->
+          Logger.error("Failed to render temperature chart: #{inspect(error)}")
+          bitmap
+      end
     end
   end
 
-  defp render_temperature_extremes(bitmap, font) do
-    case get_max_min_temps() do
+  defp render_temperature_extremes(bitmap, font, forecast) do
+    case get_max_min_temps(forecast) do
       {nil, nil} ->
         bitmap
 
@@ -200,8 +182,7 @@ defmodule Fliplove.Apps.Dashboard do
   end
 
   # Temperature chart creation functions
-  defp create_temperature_chart(height) do
-    forecast = get_hourly_forecast()
+  defp create_temperature_chart(height, forecast) do
     width = length(forecast)
     # Reduce height by 2 for frame
     chart_height = height - 2
@@ -339,29 +320,4 @@ defmodule Fliplove.Apps.Dashboard do
     )
   end
 
-  # Add helper to get hourly forecast with maximum available hours
-  defp get_hourly_forecast do
-    try do
-      case Weather.get_hourly_forecast(@forecast_hours) do
-        [] ->
-          Logger.warning("No hourly forecast data available")
-          []
-
-        forecast ->
-          forecast
-      end
-    rescue
-      error ->
-        Logger.error("Failed to get hourly forecast: #{inspect(error)}")
-        []
-    catch
-      :exit, reason ->
-        Logger.error("Weather service call timed out: #{inspect(reason)}")
-        []
-
-      :throw, reason ->
-        Logger.error("Weather service call failed: #{inspect(reason)}")
-        []
-    end
-  end
 end
