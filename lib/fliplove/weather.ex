@@ -570,33 +570,67 @@ defmodule Fliplove.Weather do
   end
 
   defp get_location_from_ip do
-    # Configure Req with retries
+    # Configure Req with retries; custom retry fn logs with context so logs show the source
     request_options = [
-      # Retry on network-related errors
-      retry: :transient,
+      retry: &ip_geolocation_retry/2,
       max_retries: 3,
-      # Exponential backoff
       retry_delay: fn attempt ->
         trunc(:math.pow(2, attempt - 1) * 500)
       end,
+      retry_log_level: false,
       connect_options: [
-        # 10 seconds timeout
         timeout: 10_000
       ]
     ]
 
-    case Req.get(@ip_geolocation_url, request_options) do
-      {:ok, %Req.Response{status: 200, body: %{"lat" => lat, "lon" => lon}}} ->
+    case Req.run(@ip_geolocation_url, request_options) do
+      {_request, %Req.Response{status: 200, body: %{"lat" => lat, "lon" => lon}}} = result ->
+        req = elem(result, 0)
+        retry_count = Req.Request.get_private(req, :req_retry_count, 0)
+        if retry_count > 0 do
+          Logger.info("IP geolocation request succeeded after #{retry_count} retries")
+        end
         {:ok, lat, lon, "IP geolocation"}
 
-      {:ok, response} ->
+      {_request, %Req.Response{} = response} ->
         Logger.error("Unexpected response from IP geolocation service: #{inspect(response)}")
         {:error, "Invalid response from IP geolocation service"}
 
-      {:error, exception} ->
+      {_request, exception} ->
         Logger.error("Failed to get location from IP after retries: #{inspect(exception)}")
         {:error, "Failed to get location from IP after retries"}
     end
+  end
+
+  # Custom retry for IP geolocation: same as :transient but logs with "IP geolocation" context.
+  defp ip_geolocation_retry(request, %Req.TransportError{reason: reason})
+       when reason in [:timeout, :econnrefused, :closed] do
+    log_ip_geolocation_retry(request, to_string(reason))
+    true
+  end
+
+  defp ip_geolocation_retry(request, %Req.Response{status: status})
+       when status in [408, 429, 500, 502, 503, 504] do
+    log_ip_geolocation_retry(request, "HTTP #{status}")
+    true
+  end
+
+  defp ip_geolocation_retry(request, %Req.HTTPError{protocol: :http2, reason: :unprocessed}) do
+    log_ip_geolocation_retry(request, "HTTP/2 unprocessed")
+    true
+  end
+
+  defp ip_geolocation_retry(_request, _response_or_exception), do: false
+
+  defp log_ip_geolocation_retry(request, reason) do
+    retry_count = Req.Request.get_private(request, :req_retry_count, 0)
+    max_retries = Req.Request.get_option(request, :max_retries, 3)
+    attempts_left = max_retries - retry_count
+    delay_fun = Req.Request.get_option(request, :retry_delay)
+    delay_ms = if is_function(delay_fun, 1), do: delay_fun.(retry_count), else: 1000
+    Logger.warning(
+      "IP geolocation request: retrying due to #{reason}, will retry in #{delay_ms}ms, #{attempts_left} attempts left"
+    )
   end
 
   def get_weather_with_timestamp, do: GenServer.call(__MODULE__, :get_weather_with_timestamp)
