@@ -12,7 +12,11 @@ defmodule FliploveWeb.Endpoint do
     same_site: "Lax"
   ]
 
-  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
+  # Phoenix 1.8 defaults longpoll to false; LiveView still falls back to /live/longpoll when
+  # WebSocket is flaky, so omitting it yields 404 from the router and reconnect loops.
+  socket "/live", Phoenix.LiveView.Socket,
+    websocket: [connect_info: [session: @session_options]],
+    longpoll: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -37,6 +41,7 @@ defmodule FliploveWeb.Endpoint do
     cookie_key: "request_logger"
 
   plug Plug.RequestId
+  plug FliploveWeb.Plugs.BrowserIconSink
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
   plug Plug.Parsers,
