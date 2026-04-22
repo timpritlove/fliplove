@@ -54,6 +54,7 @@ defmodule Fliplove.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:tidewave, "~> 0.5", only: [:dev]},
       {:lazy_html, ">= 0.0.0", only: :test},
       {:usage_rules, "~> 1.1", only: [:dev]},
       {:phoenix, "~> 1.8.0"},
