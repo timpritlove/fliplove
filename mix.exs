@@ -106,6 +106,7 @@ defmodule Fliplove.MixProject do
       "assets.build": ["compile", "tailwind fliplove", "esbuild fliplove"],
       # Build and digest assets for production. Run this before "MIX_ENV=prod mix release".
       "assets.deploy": [
+        "compile",
         "tailwind fliplove --minify",
         "esbuild fliplove --minify",
         "phx.digest priv/static/assets/"
