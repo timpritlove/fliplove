@@ -68,9 +68,9 @@ defmodule Fliplove.MixProject do
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
       {:tailwind, ">= 0.1.8", runtime: Mix.env() == :dev},
       {:finch, "~> 0.13"},
-      {:telemetry_metrics, "~> 0.6"},
+      {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.20"},
+      {:gettext, "~> 1.0"},
       {:nimble_parsec, ">= 1.2.3"},
       {:nimble_options, "~> 1.0", override: true},
       {:bandit, ">= 1.8.0"},
@@ -85,9 +85,9 @@ defmodule Fliplove.MixProject do
       {:easing, "~> 0.3.1"},
       {:logger_file_backend, "~> 0.0.13"},
       {:circuits_uart, "~> 1.5"},
-      {:mdns_lite, "~> 0.8.11"},
+      {:mdns_lite, "~> 0.9"},
       {:observer_cli, "~> 1.7"},
-      {:igniter, "~> 0.7.0", only: [:dev]},
+      {:igniter, "~> 0.8", only: [:dev]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
