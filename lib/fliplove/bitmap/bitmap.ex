@@ -1,6 +1,4 @@
 defmodule Fliplove.Bitmap do
-  require Integer
-
   @moduledoc """
   Basic functions for working with low-resolution monochrome 2D-bitmaps. You can
   create, crop, transform, invert, flip and overlay bitmaps as well as read

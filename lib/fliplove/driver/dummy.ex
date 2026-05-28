@@ -19,7 +19,6 @@ defmodule Fliplove.Driver.Dummy do
   Dummy driver that just logs updates
   """
   use GenServer
-  require Logger
 
   @device_width 115
   @device_height 16

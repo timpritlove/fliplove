@@ -84,10 +84,8 @@ defmodule Fliplove.Apps do
         {:ok, :app_already_running}
 
       _ ->
-        case stop_app() do
-          :ok -> start_new_app(app)
-          error -> error
-        end
+        stop_app()
+        start_new_app(app)
     end
   end
 

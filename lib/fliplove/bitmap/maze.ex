@@ -25,7 +25,6 @@ defmodule Fliplove.Bitmap.Maze do
   Generate a maze. Both width and height must be odd numbers
   """
   require Integer
-  require Logger
 
   def generate_maze(bitmap) do
     generate_maze(bitmap.width, bitmap.height)

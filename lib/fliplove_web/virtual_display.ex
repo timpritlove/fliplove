@@ -17,7 +17,6 @@ defmodule FliploveWeb.VirtualDisplay do
   """
   use GenServer
   alias Fliplove.Bitmap
-  require Logger
 
   # Column update delay in milliseconds
   @update_delay 10
