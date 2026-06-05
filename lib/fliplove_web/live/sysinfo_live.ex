@@ -38,15 +38,10 @@ defmodule FliploveWeb.SysinfoLive do
 
   @impl Phoenix.LiveView
   def handle_info({:usb_driver_state, :ready}, socket) do
-    socket =
-      if socket.assigns.last_action == :reboot do
-        Sysinfo.query_config()
-        assign(socket, :last_action, nil)
-      else
-        assign(socket, :last_action, nil)
-      end
-
-    {:noreply, assign(socket, :device_state, :ready)}
+    {:noreply,
+     socket
+     |> assign(:device_state, :ready)
+     |> assign(:last_action, nil)}
   end
 
   @impl Phoenix.LiveView

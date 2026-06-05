@@ -168,8 +168,8 @@ defmodule Fliplove.Driver.FluepdotUsb do
   # - On prompt received: Broadcasts response (if query), broadcasts :ready, dispatches next queued command
   # - Otherwise: Accumulates data in buffer
   @impl GenServer
-  def handle_info({:circuits_uart, _port, {:error, :einval}}, state) do
-    Logger.info("USB device physically disconnected")
+  def handle_info({:circuits_uart, _port, {:error, reason}}, state) when reason in [:einval, :eio] do
+    Logger.info("USB device disconnected (#{reason})")
 
     if state.uart do
       Circuits.UART.close(state.uart)
@@ -221,7 +221,12 @@ defmodule Fliplove.Driver.FluepdotUsb do
         end
 
         Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_driver_state, :ready})
-        Logger.debug("USB prompt detected, setting ready state")
+
+        if state.connected do
+          Logger.debug("USB prompt detected, device ready")
+        else
+          Logger.info("USB device ready (first prompt received)")
+        end
 
         new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, last_sent: nil}
 
@@ -345,7 +350,9 @@ defmodule Fliplove.Driver.FluepdotUsb do
         init_commands = [
           {:display, "wifi stop"},
           {:display, "config_rendering_mode differential"},
-          {:display, "flipdot_clear"}
+          {:display, "flipdot_clear"},
+          {:query, "show_version", :version},
+          {:query, "config_show", :config}
         ]
 
         queued_state =
