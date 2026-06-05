@@ -37,8 +37,10 @@ defmodule Fliplove.Driver.FluepdotUsb do
   @device_bitrate 115_200
   # 5 seconds between retries
   @retry_interval 5000
-  # 1 second timeout for prompt
+  # 3 seconds between prompt nudges
   @prompt_timeout 3000
+  # After this many consecutive nudges without a prompt, close and reopen (covers ~60 s, well beyond reboot time)
+  @max_prompt_retries 20
   @prompt_regex ~r/\n(?:\e\[\d+(?:;\d+)*m)?[^\s]+>\s*(?:\e\[\d+(?:;\d+)*m)?$/
   @pubsub_topic "usb_responses"
 
@@ -61,6 +63,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
     :last_sent,
     connected: false,
     ready: false,
+    prompt_retries: 0,
     buffer: "",
     log_buffer: "",
     # entries are {:display, cmd} | {:query, cmd, tag}
@@ -228,7 +231,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
           Logger.info("USB device ready (first prompt received)")
         end
 
-        new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, last_sent: nil}
+        new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, last_sent: nil, prompt_retries: 0}
 
         case new_state.command_queue do
           [] ->
@@ -254,18 +257,37 @@ defmodule Fliplove.Driver.FluepdotUsb do
 
   # Handles prompt timeout events to maintain connection health.
   # State changes:
-  # - When connected but not ready: Sends newline to trigger prompt
+  # - When connected but not ready: Sends newline to nudge the device, increments retry counter
+  # - After @max_prompt_retries consecutive nudges: closes port and re-enters try_connect loop
   # - Otherwise: No state change
   @impl GenServer
-  def handle_info(:prompt_timeout, state) do
-    if state.connected and not state.ready do
-      Logger.debug("No prompt received, sending newline")
+  def handle_info(:prompt_timeout, %{connected: true, ready: false} = state) do
+    retries = state.prompt_retries + 1
+
+    if retries >= @max_prompt_retries do
+      Logger.warning(
+        "No prompt received after #{retries} attempts (~#{div(retries * @prompt_timeout, 1000)} s), " <>
+          "closing port and retrying connection"
+      )
+
+      Circuits.UART.close(state.uart)
+
+      Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_driver_state, :disconnected})
+
+      Process.send_after(self(), :try_connect, @retry_interval)
+
+      {:noreply,
+       %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: [], last_sent: nil, prompt_retries: 0}}
+    else
+      Logger.debug("No prompt received (attempt #{retries}/#{@max_prompt_retries}), sending newline")
       Circuits.UART.write(state.uart, "\n")
       timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
-      {:noreply, %{state | prompt_timer: timer_ref}}
-    else
-      {:noreply, state}
+      {:noreply, %{state | prompt_timer: timer_ref, prompt_retries: retries}}
     end
+  end
+
+  def handle_info(:prompt_timeout, state) do
+    {:noreply, state}
   end
 
   defp extract_complete_lines(buffer) do
@@ -344,7 +366,8 @@ defmodule Fliplove.Driver.FluepdotUsb do
             counter: 0,
             ready: false,
             buffer: "",
-            log_buffer: ""
+            log_buffer: "",
+            prompt_retries: 0
         }
 
         init_commands = [
