@@ -35,14 +35,15 @@ defmodule Fliplove.Display do
   end
 
   def clear do
-    Bitmap.new(width(), height()) |> set()
+    Bitmap.new(width(), height()) |> set(force: true)
   end
 
-  def set(bitmap) do
+  def set(bitmap, opts \\ []) do
+    force = Keyword.get(opts, :force, false)
     old_bitmap = get()
     new_bitmap = Bitmap.crop_relative(bitmap, width(), height(), rel_x: :center, rel_y: :middle)
 
-    if new_bitmap != old_bitmap do
+    if force or new_bitmap != old_bitmap do
       # Count pixels in the new bitmap
       pixel_count = count_active_pixels(new_bitmap)
       total_pixels = width() * height()
