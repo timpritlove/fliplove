@@ -16,6 +16,8 @@ defmodule Fliplove.Driver.FluepdotUsb do
   - Protocol handshake with command prompt detection
   - Bitmap encoding and transmission
   - Connection retry logic on failures
+  - Priority command queue: sysinfo queries jump ahead of display frames
+  - PubSub broadcasts for query responses and driver state changes
 
   ## Example
       # Set USB device path
@@ -38,6 +40,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
   # 1 second timeout for prompt
   @prompt_timeout 3000
   @prompt_regex ~r/\n(?:\e\[\d+(?:;\d+)*m)?[^\s]+>\s*(?:\e\[\d+(?:;\d+)*m)?$/
+  @pubsub_topic "usb_responses"
 
   @device_width 115
   @device_height 16
@@ -45,22 +48,49 @@ defmodule Fliplove.Driver.FluepdotUsb do
   def width, do: @device_width
   def height, do: @device_height
 
+  @doc "PubSub topic for driver state and query response messages."
+  def topic, do: @pubsub_topic
+
   defstruct [
     :counter,
     :device,
     :uart,
     :timer,
     :prompt_timer,
-    :last_sent_command,
+    # nil | {:display} | {:query, tag}
+    :last_sent,
     connected: false,
     ready: false,
     buffer: "",
     log_buffer: "",
+    # entries are {:display, cmd} | {:query, cmd, tag}
     command_queue: []
   ]
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
+  end
+
+  # Public API
+
+  @doc """
+  Queue a query command with priority (prepended to the front of the queue).
+
+  When the device responds the text between the command echo and the next prompt
+  is broadcast as `{:usb_response, tag, text}` on `topic/0`.
+  """
+  def query(command, tag) do
+    GenServer.cast(__MODULE__, {:query_command, command, tag})
+  end
+
+  @doc """
+  Prepend a sequence of tagged command tuples atomically to the front of the queue.
+
+  Each entry must be `{:display, cmd}` or `{:query, cmd, tag}`.
+  Used by `Fliplove.Sysinfo` for multi-step save flows.
+  """
+  def command_sequence(commands) when is_list(commands) do
+    GenServer.cast(__MODULE__, {:command_sequence, commands})
   end
 
   # Initializes the GenServer state and begins connection process.
@@ -74,7 +104,6 @@ defmodule Fliplove.Driver.FluepdotUsb do
         {:stop, "#{@device_env} environment variable not set"}
 
       device ->
-        # Start the UART process once
         case Circuits.UART.start_link() do
           {:ok, uart} ->
             send(self(), :try_connect)
@@ -96,7 +125,6 @@ defmodule Fliplove.Driver.FluepdotUsb do
     case initialize_connection(state) do
       {:ok, new_state} ->
         Logger.info("Successfully initialized USB display")
-        # Send initial newline to trigger prompt
         Circuits.UART.write(new_state.uart, "\n")
         timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
         {:noreply, %{new_state | prompt_timer: timer_ref}}
@@ -110,14 +138,14 @@ defmodule Fliplove.Driver.FluepdotUsb do
 
   # Handles display update requests.
   # State changes:
-  # - When connected: Sends framebuf64 command, increments counter on success
+  # - When connected: Enqueues framebuf64 command (display-priority, appended to back)
   # - When disconnected: Ignores update
   # - On write failure: Triggers reconnection attempt
   @impl GenServer
   def handle_info({:display_updated, bitmap}, %{connected: true} = state) do
     cmd = "framebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64())
 
-    case write_command(state, cmd) do
+    case write_display_command(state, cmd) do
       {:ok, new_state} ->
         counter = new_state.counter + 1
         Logger.debug("USB: Display updated (##{counter}).")
@@ -125,85 +153,87 @@ defmodule Fliplove.Driver.FluepdotUsb do
 
       {:error, reason} ->
         Logger.error("Failed to write to serial port: #{inspect(reason)}")
-        # If we fail to write, try reconnecting
         send(self(), :try_connect)
         {:noreply, %{state | connected: false, ready: false, buffer: "", log_buffer: ""}}
     end
   end
 
   def handle_info({:display_updated, _bitmap}, state) do
-    # If not connected, ignore display updates
     {:noreply, state}
   end
 
   # Processes incoming UART data and manages command/response flow.
   # State changes:
   # - On error response: Clears buffer, marks not ready
-  # - On prompt received: Clears buffer, marks ready for next command
+  # - On prompt received: Broadcasts response (if query), broadcasts :ready, dispatches next queued command
   # - Otherwise: Accumulates data in buffer
   @impl GenServer
   def handle_info({:circuits_uart, _port, {:error, :einval}}, state) do
     Logger.info("USB device physically disconnected")
-    # Clean up the existing connection
+
     if state.uart do
       Circuits.UART.close(state.uart)
     end
 
-    # Reset state and try reconnecting
-    new_state = %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: []}
+    Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_driver_state, :disconnected})
+
+    new_state = %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: [], last_sent: nil}
     send(self(), :try_connect)
     {:noreply, new_state}
   end
 
   @impl GenServer
   def handle_info({:circuits_uart, _port, "Unrecognized command" <> _rest}, state) do
-    # Log the unrecognized command but don't crash
     Logger.warning("Received unrecognized command response from device")
     {:noreply, state}
   end
 
   @impl GenServer
   def handle_info({:circuits_uart, _port, data}, state) when is_binary(data) do
-    # Add data to both buffers
     buffer = state.buffer <> data
     log_buffer = state.log_buffer <> data
 
-    # Process log buffer for complete lines
     {lines, remaining_log_buffer} = extract_complete_lines(log_buffer)
-    # Log any complete lines
+
     for line <- lines do
       Logger.debug("USB received: #{inspect(line, binaries: :as_strings)}")
     end
 
     cond do
       String.contains?(buffer, "Unrecognized command") ->
-        [failed_command | remaining_queue] = state.command_queue
-        Logger.error("Command not recognized: #{inspect(failed_command)}")
+        Logger.error("Command not recognized, last sent: #{inspect(state.last_sent)}")
         if state.prompt_timer, do: Process.cancel_timer(state.prompt_timer)
-        {:noreply, %{state | buffer: "", log_buffer: "", command_queue: remaining_queue, ready: false}}
+        {:noreply, %{state | buffer: "", log_buffer: "", ready: false, last_sent: nil}}
 
       Regex.match?(@prompt_regex, buffer) ->
         if state.prompt_timer, do: Process.cancel_timer(state.prompt_timer)
-        # Log success of the last command if there was one
-        if state.last_sent_command do
-          Logger.debug("Command completed successfully: #{inspect(state.last_sent_command)}")
+
+        case state.last_sent do
+          {:query, tag} ->
+            response = extract_query_response(buffer)
+            Logger.debug("Query #{inspect(tag)} completed, broadcasting response")
+            Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_response, tag, response})
+
+          _ ->
+            if state.last_sent do
+              Logger.debug("Command completed successfully: #{inspect(state.last_sent)}")
+            end
         end
 
+        Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_driver_state, :ready})
         Logger.debug("USB prompt detected, setting ready state")
-        new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, last_sent_command: nil}
+
+        new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, last_sent: nil}
 
         case new_state.command_queue do
           [] ->
-            # No pending commands, just update state
             {:noreply, %{new_state | connected: true}}
 
           [next_command | remaining_queue] ->
-            # Send the next command in queue
             Logger.debug("Processing next command (#{length(state.command_queue)} commands in queue)")
 
             case send_command(new_state, next_command) do
               {:ok, updated_state} ->
-                # Remove the executed command from the queue
                 {:noreply, %{updated_state | command_queue: remaining_queue}}
 
               error ->
@@ -233,7 +263,6 @@ defmodule Fliplove.Driver.FluepdotUsb do
     end
   end
 
-  # Helper function to extract complete lines from a buffer
   defp extract_complete_lines(buffer) do
     case String.split(buffer, "\n", parts: 2) do
       [line, rest] ->
@@ -245,9 +274,10 @@ defmodule Fliplove.Driver.FluepdotUsb do
     end
   end
 
+  # Fire-and-forget command cast — display priority (appended to back of queue).
   @impl GenServer
   def handle_cast({:command, command}, state) do
-    case write_command(state, command) do
+    case write_display_command(state, command) do
       {:ok, new_state} ->
         Logger.debug("USB command sent: #{command}")
         {:noreply, new_state}
@@ -258,14 +288,43 @@ defmodule Fliplove.Driver.FluepdotUsb do
     end
   end
 
+  # Sysinfo query — prepended to front of queue for priority dispatch.
+  @impl GenServer
+  def handle_cast({:query_command, command, tag}, state) do
+    new_state = %{state | command_queue: [{:query, command, tag} | state.command_queue]}
+
+    case maybe_dispatch_next(new_state) do
+      {:ok, dispatched} -> {:noreply, dispatched}
+      _ -> {:noreply, new_state}
+    end
+  end
+
+  # Multi-command sequence — prepended atomically to front of queue.
+  @impl GenServer
+  def handle_cast({:command_sequence, commands}, state) do
+    new_state = %{state | command_queue: commands ++ state.command_queue}
+
+    case maybe_dispatch_next(new_state) do
+      {:ok, dispatched} -> {:noreply, dispatched}
+      _ -> {:noreply, new_state}
+    end
+  end
+
+  # If the driver is ready and the queue is non-empty, immediately dispatch the next command.
+  defp maybe_dispatch_next(%{ready: true, command_queue: [next | rest]} = state) do
+    case send_command(state, next) do
+      {:ok, new_state} -> {:ok, %{new_state | command_queue: rest}}
+      error -> error
+    end
+  end
+
+  defp maybe_dispatch_next(state), do: {:ok, state}
+
   # Initializes USB connection and configures display.
   # State flow:
   # 1. Opens UART connection
-  # 2. Sets differential rendering mode
-  # 3. Clears display
-  # 4. Marks connection as ready
-  #
-  # Reverts all changes and returns error if any step fails.
+  # 2. Queues initialization commands (display priority)
+  # 3. Sends newline to trigger initial prompt
   defp initialize_connection(state) do
     case Circuits.UART.open(state.uart, state.device,
            speed: @device_bitrate,
@@ -273,7 +332,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
          ) do
       :ok ->
         Logger.info("Successfully opened serial connection to #{state.device}")
-        # Rest of the initialization code...
+
         initial_state = %{
           state
           | connected: true,
@@ -283,16 +342,15 @@ defmodule Fliplove.Driver.FluepdotUsb do
             log_buffer: ""
         }
 
-        # Queue initialization commands...
         init_commands = [
-          "wifi stop",
-          "config_rendering_mode differential",
-          "flipdot_clear"
+          {:display, "wifi stop"},
+          {:display, "config_rendering_mode differential"},
+          {:display, "flipdot_clear"}
         ]
 
         queued_state =
           Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
-            Logger.debug("Queueing init command: #{cmd}")
+            Logger.debug("Queueing init command: #{inspect(cmd)}")
             %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
           end)
 
@@ -306,7 +364,6 @@ defmodule Fliplove.Driver.FluepdotUsb do
         end
 
       {:error, :port_timed_out} ->
-        # Just close the port, keep the process
         Circuits.UART.close(state.uart)
         Logger.debug("USB port timed out while opening #{state.device}, will retry")
         {:error, :port_timed_out}
@@ -318,43 +375,53 @@ defmodule Fliplove.Driver.FluepdotUsb do
     end
   end
 
-  # Queue a command for execution
-  defp queue_command(state, command) do
-    Logger.debug("Queueing command: #{command} (#{length(state.command_queue)} commands in queue)")
-    {:ok, %{state | command_queue: state.command_queue ++ [command]}}
+  # Send a tagged command tuple over UART and update last_sent tracking.
+  defp send_command(state, {:display, cmd}) do
+    do_send(state, cmd, {:display})
   end
 
-  # Actually send a command over UART
-  defp send_command(state, command) do
-    case Circuits.UART.write(state.uart, command <> "\n") do
+  defp send_command(state, {:query, cmd, tag}) do
+    do_send(state, cmd, {:query, tag})
+  end
+
+  defp do_send(state, cmd, last_sent_tag) do
+    case Circuits.UART.write(state.uart, cmd <> "\n") do
       :ok ->
-        Logger.debug("Command sent: #{inspect(command)}")
+        Logger.debug("Command sent: #{inspect(cmd)}")
         timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
-        # Keep the command in queue until we get confirmation and track the sent command
-        {:ok, %{state | ready: false, prompt_timer: timer_ref, last_sent_command: command}}
+        {:ok, %{state | ready: false, prompt_timer: timer_ref, last_sent: last_sent_tag}}
 
       error ->
         error
     end
   end
 
-  # Manages command writing with prompt-based flow control
-  defp write_command(state, command) do
+  # Appends a display command to the back of the queue, or sends immediately if ready.
+  defp write_display_command(state, cmd) do
     cond do
       not state.connected ->
         {:error, :not_connected}
 
-      not state.ready ->
-        # Queue the command for later execution
-        queue_command(state, command)
+      state.ready ->
+        send_command(state, {:display, cmd})
 
       true ->
-        # Can send immediately
-        case send_command(state, command) do
-          {:ok, new_state} -> {:ok, new_state}
-          error -> error
-        end
+        Logger.debug("Queueing display command (#{length(state.command_queue)} in queue)")
+        {:ok, %{state | command_queue: state.command_queue ++ [{:display, cmd}]}}
     end
+  end
+
+  # Extracts the response text from the accumulated buffer after a query completes.
+  # The buffer contains: "echoed_command\r\nresponse_lines\r\nprompt"
+  defp extract_query_response(buffer) do
+    without_prompt = Regex.replace(@prompt_regex, buffer, "")
+
+    without_prompt
+    |> String.split("\n", parts: 2)
+    |> List.last("")
+    |> String.replace("\r\n", "\n")
+    |> String.replace("\r", "\n")
+    |> String.trim()
   end
 
   @impl GenServer
