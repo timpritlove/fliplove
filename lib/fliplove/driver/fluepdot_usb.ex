@@ -127,7 +127,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
   def handle_info(:try_connect, state) do
     case initialize_connection(state) do
       {:ok, new_state} ->
-        Logger.info("Successfully initialized USB display")
+        Logger.info("USB serial port opened, waiting for device prompt")
         Circuits.UART.write(new_state.uart, "\n")
         timer_ref = Process.send_after(self(), :prompt_timeout, @prompt_timeout)
         {:noreply, %{new_state | prompt_timer: timer_ref}}
@@ -174,13 +174,11 @@ defmodule Fliplove.Driver.FluepdotUsb do
   def handle_info({:circuits_uart, _port, {:error, reason}}, state) when reason in [:einval, :eio] do
     Logger.info("USB device disconnected (#{reason})")
 
-    if state.uart do
-      Circuits.UART.close(state.uart)
-    end
+    safe_close(state.uart)
 
     Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_driver_state, :disconnected})
 
-    new_state = %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: [], last_sent: nil}
+    new_state = %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: [], last_sent: nil, uart: nil}
     send(self(), :try_connect)
     {:noreply, new_state}
   end
@@ -270,14 +268,14 @@ defmodule Fliplove.Driver.FluepdotUsb do
           "closing port and retrying connection"
       )
 
-      Circuits.UART.close(state.uart)
+      safe_close(state.uart)
 
       Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_driver_state, :disconnected})
 
       Process.send_after(self(), :try_connect, @retry_interval)
 
       {:noreply,
-       %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: [], last_sent: nil, prompt_retries: 0}}
+       %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: [], last_sent: nil, prompt_retries: 0, uart: nil}}
     else
       Logger.debug("No prompt received (attempt #{retries}/#{@max_prompt_retries}), sending newline")
       Circuits.UART.write(state.uart, "\n")
@@ -349,60 +347,82 @@ defmodule Fliplove.Driver.FluepdotUsb do
 
   # Initializes USB connection and configures display.
   # State flow:
-  # 1. Opens UART connection
-  # 2. Queues initialization commands (display priority)
-  # 3. Sends newline to trigger initial prompt
+  # 1. Ensures a live UART process exists (restarts if the previous one died)
+  # 2. Opens the serial port
+  # 3. Queues initialization commands (display priority + sysinfo queries)
+  # 4. Sends newline to trigger the initial prompt
   defp initialize_connection(state) do
-    case Circuits.UART.open(state.uart, state.device,
-           speed: @device_bitrate,
-           active: true
-         ) do
-      :ok ->
-        Logger.info("Successfully opened serial connection to #{state.device}")
+    with {:ok, uart} <- ensure_uart(state.uart),
+         :ok <- Circuits.UART.open(uart, state.device, speed: @device_bitrate, active: true) do
+      Logger.debug("USB serial port opened: #{state.device}")
 
-        initial_state = %{
-          state
-          | connected: true,
-            counter: 0,
-            ready: false,
-            buffer: "",
-            log_buffer: "",
-            prompt_retries: 0
-        }
+      initial_state = %{
+        state
+        | uart: uart,
+          connected: true,
+          counter: 0,
+          ready: false,
+          buffer: "",
+          log_buffer: "",
+          prompt_retries: 0
+      }
 
-        init_commands = [
-          {:display, "wifi stop"},
-          {:display, "config_rendering_mode differential"},
-          {:display, "flipdot_clear"},
-          {:query, "show_version", :version},
-          {:query, "config_show", :config}
-        ]
+      init_commands = [
+        {:display, "wifi stop"},
+        {:display, "config_rendering_mode differential"},
+        {:display, "flipdot_clear"},
+        {:query, "show_version", :version},
+        {:query, "config_show", :config}
+      ]
 
-        queued_state =
-          Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
-            Logger.debug("Queueing init command: #{inspect(cmd)}")
-            %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
-          end)
+      queued_state =
+        Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
+          Logger.debug("Queueing init command: #{inspect(cmd)}")
+          %{acc_state | command_queue: acc_state.command_queue ++ [cmd]}
+        end)
 
-        case Circuits.UART.write(state.uart, "\n") do
-          :ok ->
-            {:ok, queued_state}
+      case Circuits.UART.write(uart, "\n") do
+        :ok ->
+          {:ok, queued_state}
 
-          error ->
-            Circuits.UART.close(state.uart)
-            error
-        end
-
+        error ->
+          safe_close(uart)
+          error
+      end
+    else
       {:error, :port_timed_out} ->
-        Circuits.UART.close(state.uart)
         Logger.debug("USB port timed out while opening #{state.device}, will retry")
         {:error, :port_timed_out}
 
       {:error, reason} = error ->
-        Circuits.UART.close(state.uart)
         Logger.debug("Unable to initialize USB connection: #{inspect(reason)}")
         error
     end
+  end
+
+  # Returns the existing UART pid if alive, or starts a fresh one.
+  defp ensure_uart(uart) when is_pid(uart) and node(uart) == node() do
+    if Process.alive?(uart) do
+      {:ok, uart}
+    else
+      Logger.debug("UART process was dead, starting a new one")
+      Circuits.UART.start_link()
+    end
+  end
+
+  defp ensure_uart(_) do
+    Circuits.UART.start_link()
+  end
+
+  # Closes the UART port, swallowing any errors from an already-dead port.
+  defp safe_close(nil), do: :ok
+
+  defp safe_close(uart) do
+    Circuits.UART.close(uart)
+  rescue
+    e -> Logger.debug("UART close failed (port may already be gone): #{inspect(e)}")
+  catch
+    :exit, reason -> Logger.debug("UART close exit (port may already be gone): #{inspect(reason)}")
   end
 
   # Send a tagged command tuple over UART and update last_sent tracking.
@@ -456,8 +476,6 @@ defmodule Fliplove.Driver.FluepdotUsb do
 
   @impl GenServer
   def terminate(_reason, state) do
-    if state.uart do
-      Circuits.UART.close(state.uart)
-    end
+    safe_close(state.uart)
   end
 end
