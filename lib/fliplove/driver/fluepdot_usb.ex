@@ -414,15 +414,23 @@ defmodule Fliplove.Driver.FluepdotUsb do
     Circuits.UART.start_link()
   end
 
-  # Closes the UART port, swallowing any errors from an already-dead port.
+  # Terminates the UART process without calling Circuits.UART.close/1.
+  #
+  # Circuits.UART.close/1 is a blocking GenServer.call to the native port. When
+  # the device is switched off or firmware is hung, the native port does not
+  # respond and the call times out, crashing the UART GenServer with
+  # :port_timed_out (logged as an OTP error). Instead we unlink and send
+  # :shutdown, which terminates the process immediately and is not logged at
+  # error level by OTP.
   defp safe_close(nil), do: :ok
 
-  defp safe_close(uart) do
-    Circuits.UART.close(uart)
-  rescue
-    e -> Logger.debug("UART close failed (port may already be gone): #{inspect(e)}")
-  catch
-    :exit, reason -> Logger.debug("UART close exit (port may already be gone): #{inspect(reason)}")
+  defp safe_close(uart) when is_pid(uart) do
+    if Process.alive?(uart) do
+      Process.unlink(uart)
+      Process.exit(uart, :shutdown)
+    end
+
+    :ok
   end
 
   # Send a tagged command tuple over UART and update last_sent tracking.
