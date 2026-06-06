@@ -178,7 +178,17 @@ defmodule Fliplove.Driver.FluepdotUsb do
 
     Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_driver_state, :disconnected})
 
-    new_state = %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: [], last_sent: nil, uart: nil}
+    new_state = %{
+      state
+      | connected: false,
+        ready: false,
+        buffer: "",
+        log_buffer: "",
+        command_queue: [],
+        last_sent: nil,
+        uart: nil
+    }
+
     send(self(), :try_connect)
     {:noreply, new_state}
   end
@@ -229,7 +239,14 @@ defmodule Fliplove.Driver.FluepdotUsb do
           Logger.info("USB device ready (first prompt received)")
         end
 
-        new_state = %{state | buffer: "", log_buffer: remaining_log_buffer, ready: true, last_sent: nil, prompt_retries: 0}
+        new_state = %{
+          state
+          | buffer: "",
+            log_buffer: remaining_log_buffer,
+            ready: true,
+            last_sent: nil,
+            prompt_retries: 0
+        }
 
         case new_state.command_queue do
           [] ->
@@ -265,7 +282,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
     if retries >= @max_prompt_retries do
       Logger.warning(
         "No prompt received after #{retries} attempts (~#{div(retries * @prompt_timeout, 1000)} s), " <>
-          "closing port and retrying connection"
+          "closing USB serial port and retrying connection"
       )
 
       safe_close(state.uart)
@@ -275,7 +292,17 @@ defmodule Fliplove.Driver.FluepdotUsb do
       Process.send_after(self(), :try_connect, @retry_interval)
 
       {:noreply,
-       %{state | connected: false, ready: false, buffer: "", log_buffer: "", command_queue: [], last_sent: nil, prompt_retries: 0, uart: nil}}
+       %{
+         state
+         | connected: false,
+           ready: false,
+           buffer: "",
+           log_buffer: "",
+           command_queue: [],
+           last_sent: nil,
+           prompt_retries: 0,
+           uart: nil
+       }}
     else
       Logger.debug("No prompt received (attempt #{retries}/#{@max_prompt_retries}), sending newline")
       Circuits.UART.write(state.uart, "\n")
