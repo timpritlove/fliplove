@@ -425,13 +425,14 @@ defmodule Fliplove.Driver.FluepdotUsb do
           connect_retries: 0
       }
 
-      init_commands = [
-        {:display, "wifi stop"},
-        {:display, "config_rendering_mode differential"},
-        {:display, "flipdot_clear"},
-        {:query, "show_version", :version},
-        {:query, "config_show", :config}
-      ]
+      init_commands =
+        [
+          {:display, "wifi stop"},
+          {:display, "config_rendering_mode differential"},
+          {:display, "flipdot_clear"},
+          {:query, "show_version", :version},
+          {:query, "config_show", :config}
+        ] ++ restore_display_commands()
 
       queued_state =
         Enum.reduce(init_commands, initial_state, fn cmd, acc_state ->
@@ -455,6 +456,22 @@ defmodule Fliplove.Driver.FluepdotUsb do
       {:error, reason} = error ->
         Logger.debug("Unable to initialize USB connection: #{inspect(reason)}")
         error
+    end
+  end
+
+  # After a reconnect the running app does not re-send the current frame until
+  # its next own update (e.g. the dashboard only redraws on minute boundaries),
+  # which would leave the display blank after the flipdot_clear init command.
+  # Queue the current display content to restore it. At application startup the
+  # Display agent is not running yet (it starts after the driver) — skip then.
+  defp restore_display_commands do
+    case Process.whereis(Fliplove.Display) do
+      nil ->
+        []
+
+      _pid ->
+        bitmap = Fliplove.Display.get()
+        [{:display, "framebuf64 " <> (Bitmap.to_binary(bitmap) |> Base.encode64())}]
     end
   end
 
