@@ -73,6 +73,23 @@ Both services require location information which can be provided through:
   - `FLIPLOVE_LONGITUDE`: Your location's longitude
 - If not provided, the application will attempt to determine location using IP geolocation
 
+## Telegram Bot
+
+The built-in Telegram bot lets you control the display from any Telegram client. It is enabled by setting an environment variable with a bot token (create one via [@BotFather](https://t.me/BotFather)):
+
+- `FLIPLOVE_TELEGRAM_BOT_SECRET`: The bot token. If unset, the bot is disabled.
+- `FLIPLOVE_TELEGRAM_ALLOWED_USERS` (optional): Comma-separated list of Telegram usernames or numeric user IDs allowed to use the bot. If unset, anyone who finds the bot can control the display.
+
+Any plain text message sent to the bot is rendered on the display using the default font, just like the text field in the web interface. Available commands (also offered via Telegram's "/" command menu):
+
+- `/apps` — choose an app to start via an inline keyboard, or stop the running app
+- `/stop` — stop the running app
+- `/clear` — clear the display
+- `/screenshot` — send a picture of the current display content, rendered like the web interface
+- `/status` — show display size and the running app
+- `/text <text>` — render text that starts with a slash
+- `/help` — usage overview
+
 ## Production release
 
 To build a production release (e.g. for deployment on a Raspberry Pi or server):

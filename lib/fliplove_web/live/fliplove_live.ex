@@ -20,7 +20,6 @@ defmodule FliploveWeb.FliploveLive do
       :timer.send_interval(250, self(), :tick)
       Phoenix.PubSub.subscribe(Fliplove.PubSub, Display.topic())
       Phoenix.PubSub.subscribe(Fliplove.PubSub, Library.topic())
-      Phoenix.PubSub.subscribe(Fliplove.PubSub, Fliplove.TelegramBot.topic())
       VirtualDisplay.subscribe()
     end
 
@@ -74,21 +73,6 @@ defmodule FliploveWeb.FliploveLive do
         {:ok, bitmap}
       end)
     end
-
-    {:noreply, socket}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_info({:bot_update, update}, socket) do
-    Logger.debug("Got message: #{inspect(update)}")
-
-    Display.clear()
-    |> Renderer.render_text(
-      {0, 2},
-      Library.get_font_by_name("flipdot"),
-      update["message"]["chat"]["first_name"] <> ": " <> update["message"]["text"]
-    )
-    |> Display.set()
 
     {:noreply, socket}
   end

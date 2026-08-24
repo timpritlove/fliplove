@@ -89,6 +89,11 @@ defmodule Fliplove.Apps do
     end
   end
 
+  @doc """
+  Names of all available apps
+  """
+  def available_apps, do: Map.keys(@apps)
+
   def running_app do
     case Registry.lookup(@registry, :running_app) do
       [{_pid, running_app}] -> running_app
