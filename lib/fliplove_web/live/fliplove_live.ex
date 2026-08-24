@@ -585,8 +585,7 @@ defmodule FliploveWeb.FliploveLive do
                   navigate={~p"/sysinfo"}
                   class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg inline-flex items-center gap-2 transition-colors"
                 >
-                  <.icon name="hero-cpu-chip" class="h-5 w-5" />
-                  System Info & Commands
+                  <.icon name="hero-cpu-chip" class="h-5 w-5" /> System Info & Commands
                 </.link>
               </div>
             </div>
@@ -845,5 +844,4 @@ defmodule FliploveWeb.FliploveLive do
     </div>
     """
   end
-
 end

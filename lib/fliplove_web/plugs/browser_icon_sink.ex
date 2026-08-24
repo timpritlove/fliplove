@@ -5,9 +5,9 @@ defmodule FliploveWeb.Plugs.BrowserIconSink do
 
   # Safari / iOS and some clients probe these on every visit; we do not ship icons at these URLs.
   @paths MapSet.new([
-    "/apple-touch-icon.png",
-    "/apple-touch-icon-precomposed.png"
-  ])
+           "/apple-touch-icon.png",
+           "/apple-touch-icon-precomposed.png"
+         ])
 
   def init(opts), do: opts
 
