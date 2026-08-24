@@ -38,6 +38,12 @@ defmodule FliploveWeb.SysinfoLive do
 
   @impl Phoenix.LiveView
   def handle_info({:usb_driver_state, :ready}, socket) do
+    # After a reboot the device config may have changed (e.g. saved hostname
+    # or WiFi settings now active) — refresh the info cards automatically.
+    if socket.assigns.last_action == :reboot do
+      Sysinfo.query_config()
+    end
+
     {:noreply,
      socket
      |> assign(:device_state, :ready)
@@ -145,7 +151,6 @@ defmodule FliploveWeb.SysinfoLive do
     <Layouts.app flash={@flash}>
       <div class="min-h-screen bg-gray-900 text-gray-100">
         <div class="max-w-4xl mx-auto px-4 py-8">
-
           <%!-- Header --%>
           <div class="flex items-center gap-4 mb-8">
             <.link navigate={~p"/"} class="text-gray-400 hover:text-gray-200 transition-colors">
@@ -158,8 +163,7 @@ defmodule FliploveWeb.SysinfoLive do
                 phx-click="refresh"
                 class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2 text-sm transition-colors"
               >
-                <.icon name="hero-arrow-path" class="h-4 w-4" />
-                Refresh
+                <.icon name="hero-arrow-path" class="h-4 w-4" /> Refresh
               </button>
             </div>
           </div>
@@ -168,7 +172,10 @@ defmodule FliploveWeb.SysinfoLive do
           <div :if={@device_state == :not_configured} class="bg-gray-800 p-6 rounded-lg text-center">
             <.icon name="hero-exclamation-triangle" class="h-12 w-12 mx-auto mb-4 text-yellow-500" />
             <p class="text-lg font-semibold mb-2">USB not configured</p>
-            <p class="text-gray-400">Set <code class="bg-gray-700 px-1 rounded">FLIPLOVE_DRIVER=FLUEPDOT_USB</code> to enable USB device management.</p>
+            <p class="text-gray-400">
+              Set <code class="bg-gray-700 px-1 rounded">FLIPLOVE_DRIVER=FLUEPDOT_USB</code>
+              to enable USB device management.
+            </p>
           </div>
 
           <%!-- Disconnected --%>
@@ -186,9 +193,19 @@ defmodule FliploveWeb.SysinfoLive do
               if(@last_action == :reboot, do: "bg-amber-900/40 border border-amber-700", else: "bg-gray-800")
             ]}
           >
-            <svg class="animate-spin h-5 w-5 text-indigo-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg
+              class="animate-spin h-5 w-5 text-indigo-400 flex-shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              >
+              </path>
             </svg>
             <span class="text-sm">
               <%= cond do %>
@@ -204,7 +221,6 @@ defmodule FliploveWeb.SysinfoLive do
 
           <%!-- Main content — shown when we have data or are in ready/waiting state with data --%>
           <div :if={@device_state in [:ready, :waiting]} class="space-y-6">
-
             <%!-- System Card --%>
             <.info_card title="System">
               <div :if={is_nil(@version)} class="text-gray-500 italic">Loading…</div>
@@ -335,7 +351,11 @@ defmodule FliploveWeb.SysinfoLive do
             <.info_card title="USB Commands">
               <div class="flex flex-wrap gap-2">
                 <.usb_cmd tooltip="Clear Display" command="flipdot_clear" icon="hero-backspace" />
-                <.usb_cmd tooltip="Clear Display (Inverted)" command="flipdot_clear --invert" icon="hero-adjustments-horizontal" />
+                <.usb_cmd
+                  tooltip="Clear Display (Inverted)"
+                  command="flipdot_clear --invert"
+                  icon="hero-adjustments-horizontal"
+                />
                 <.usb_cmd tooltip="Start WiFi" command="wifi start" icon="hero-signal" />
                 <.usb_cmd tooltip="Stop WiFi" command="wifi stop" icon="hero-no-symbol" />
                 <.usb_cmd tooltip="Show Tasks" command="show_tasks" icon="hero-list-bullet" />
@@ -350,7 +370,6 @@ defmodule FliploveWeb.SysinfoLive do
                 </button>
               </div>
             </.info_card>
-
           </div>
         </div>
       </div>
