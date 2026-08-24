@@ -72,18 +72,25 @@ defmodule Fliplove.Telegram.Handler do
     chat_id = message["chat"]["id"]
     from = message["from"]
 
+    text = String.trim(text)
+
     if authorized?(from) do
-      handle_text(key, chat_id, String.trim(text))
+      Logger.info("Telegram bot: #{describe_user(from)} sent #{describe_input(text)}")
+      handle_text(key, chat_id, text)
     else
-      Logger.warning("Telegram: unauthorized message from #{inspect(from["username"] || from["id"])}")
+      Logger.warning("Telegram bot: unauthorized message from #{describe_user(from)}")
       Api.send_message(key, chat_id, "⛔ Sorry, you are not authorized to use this bot.")
     end
   end
 
   def handle_update(key, %{"callback_query" => %{"id" => query_id} = query}) do
-    if authorized?(query["from"]) do
+    from = query["from"]
+
+    if authorized?(from) do
+      Logger.info("Telegram bot: #{describe_user(from)} pressed menu button #{inspect(query["data"])}")
       handle_callback(key, query)
     else
+      Logger.warning("Telegram bot: unauthorized menu button press from #{describe_user(from)}")
       Api.request(key, "answerCallbackQuery", callback_query_id: query_id, text: "Not authorized")
     end
   end
@@ -228,6 +235,22 @@ defmodule Fliplove.Telegram.Handler do
         "⏹ Stopped #{app}."
     end
   end
+
+  # "Tim Pritlove (@tim, id 12345)" — Telegram includes the sender in every update,
+  # so no lookup is needed. The username is optional and may be absent.
+  defp describe_user(from) do
+    name =
+      [from["first_name"], from["last_name"]]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.join(" ")
+
+    handle = if from["username"], do: "@#{from["username"]}, ", else: ""
+
+    "#{name} (#{handle}id #{from["id"]})"
+  end
+
+  defp describe_input("/" <> _ = command), do: "command #{command}"
+  defp describe_input(text), do: "text #{inspect(text)}"
 
   defp authorized?(from) do
     case allowed_users() do
