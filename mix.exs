@@ -64,7 +64,7 @@ defmodule Fliplove.MixProject do
       {:heroicons,
        github: "tailwindlabs/heroicons", tag: "v2.2.0", sparse: "optimized", app: false, compile: false, depth: 1},
       {:floki, ">= 0.30.0", only: :test},
-      {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:phoenix_live_dashboard, "~> 0.9"},
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
       {:tailwind, ">= 0.1.8", runtime: Mix.env() == :dev},
       {:finch, "~> 0.13"},

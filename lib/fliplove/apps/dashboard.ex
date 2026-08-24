@@ -123,6 +123,7 @@ defmodule Fliplove.Apps.Dashboard do
     case state.weather_data do
       %{current: current} when not is_nil(current) ->
         forecast = state.weather_data[:forecast] || []
+
         bitmap
         |> render_current_temperature(state.font, current)
         |> render_temperature_chart(forecast)
@@ -319,5 +320,4 @@ defmodule Fliplove.Apps.Dashboard do
       valign: align_vertically
     )
   end
-
 end

@@ -407,22 +407,22 @@ defmodule Fliplove.Weather do
         state
 
       true ->
-      ref = make_ref()
-      parent = self()
-      mod = state.service_module
-      lat = state.latitude
-      lon = state.longitude
-      hours = @forecast_hours
+        ref = make_ref()
+        parent = self()
+        mod = state.service_module
+        lat = state.latitude
+        lon = state.longitude
+        hours = @forecast_hours
 
-      task =
-        Task.start(fn ->
-          result = fetch_weather_and_forecast(mod, lat, lon, hours)
-          send(parent, {:weather_result, ref, result})
-        end)
+        task =
+          Task.start(fn ->
+            result = fetch_weather_and_forecast(mod, lat, lon, hours)
+            send(parent, {:weather_result, ref, result})
+          end)
 
-      task_pid = elem(task, 1)
-      mref = Process.monitor(task_pid)
-      %{state | in_flight: {ref, task_pid, mref}}
+        task_pid = elem(task, 1)
+        mref = Process.monitor(task_pid)
+        %{state | in_flight: {ref, task_pid, mref}}
     end
   end
 
@@ -587,9 +587,11 @@ defmodule Fliplove.Weather do
       {_request, %Req.Response{status: 200, body: %{"lat" => lat, "lon" => lon}}} = result ->
         req = elem(result, 0)
         retry_count = Req.Request.get_private(req, :req_retry_count, 0)
+
         if retry_count > 0 do
           Logger.info("IP geolocation request succeeded after #{retry_count} retries")
         end
+
         {:ok, lat, lon, "IP geolocation"}
 
       {_request, %Req.Response{} = response} ->
@@ -628,6 +630,7 @@ defmodule Fliplove.Weather do
     attempts_left = max_retries - retry_count
     delay_fun = Req.Request.get_option(request, :retry_delay)
     delay_ms = if is_function(delay_fun, 1), do: delay_fun.(retry_count), else: 1000
+
     Logger.warning(
       "IP geolocation request: retrying due to #{reason}, will retry in #{delay_ms}ms, #{attempts_left} attempts left"
     )

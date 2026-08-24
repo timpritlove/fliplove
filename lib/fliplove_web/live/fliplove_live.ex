@@ -409,12 +409,6 @@ defmodule FliploveWeb.FliploveLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("usb-command", %{"command" => command}, socket) do
-    GenServer.cast(Fliplove.Driver.FluepdotUsb, {:command, command})
-    {:noreply, socket}
-  end
-
-  @impl Phoenix.LiveView
   def handle_event("update_component", %{"module" => module, "id" => id}, socket) do
     module = String.to_existing_atom(module)
     send_update(module, id: id, process_next_column: true)
@@ -584,21 +578,16 @@ defmodule FliploveWeb.FliploveLive do
                 </.button_group>
               </.section>
 
-              <%!-- USB Commands Section --%>
-              <.section :if={@usb_mode?} title="USB Commands">
-                <.button_group>
-                  <.usb_command tooltip="Clear Display" command="flipdot_clear" icon="eraser" />
-                  <.usb_command
-                    tooltip="Clear Display (Inverted)"
-                    command="flipdot_clear --invert"
-                    icon="circle-half-stroke"
-                  />
-                  <.usb_command tooltip="Reboot Device" command="reboot" icon="power-off" />
-                  <.usb_command tooltip="Start WiFi" command="wifi start" icon="signal" />
-                  <.usb_command tooltip="Stop WiFi" command="wifi stop" icon="ban" />
-                  <.usb_command tooltip="Show Tasks" command="show_tasks" icon="list" />
-                </.button_group>
-              </.section>
+              <%!-- USB Device Section --%>
+              <div :if={@usb_mode?} class="bg-gray-800 p-4 rounded-lg">
+                <h2 class="text-xl font-bold mb-4">USB Device</h2>
+                <.link
+                  navigate={~p"/sysinfo"}
+                  class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg inline-flex items-center gap-2 transition-colors"
+                >
+                  <.icon name="hero-cpu-chip" class="h-5 w-5" /> System Info & Commands
+                </.link>
+              </div>
             </div>
 
             <%!-- Right Column --%>
@@ -853,27 +842,6 @@ defmodule FliploveWeb.FliploveLive do
     <div class="flex flex-wrap gap-2">
       {render_slot(@inner_block)}
     </div>
-    """
-  end
-
-  def usb_command(assigns) do
-    ~H"""
-    <button
-      title={@tooltip}
-      class="relative p-3 rounded-lg bg-gray-700 transition-colors duration-200
-             hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      phx-click="usb-command"
-      phx-value-command={@command}
-    >
-      <div class="text-gray-200">
-        <.icon :if={@icon == "eraser"} name="hero-backspace" class="h-5 w-5" />
-        <.icon :if={@icon == "circle-half-stroke"} name="hero-adjustments-horizontal" class="h-5 w-5" />
-        <.icon :if={@icon == "power-off"} name="hero-power" class="h-5 w-5" />
-        <.icon :if={@icon == "signal"} name="hero-signal" class="h-5 w-5" />
-        <.icon :if={@icon == "ban"} name="hero-no-symbol" class="h-5 w-5" />
-        <.icon :if={@icon == "list"} name="hero-list-bullet" class="h-5 w-5" />
-      </div>
-    </button>
     """
   end
 end

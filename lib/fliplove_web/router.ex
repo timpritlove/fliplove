@@ -17,6 +17,7 @@ defmodule FliploveWeb.Router do
     pipe_through(:browser)
 
     live("/", FliploveLive)
+    live("/sysinfo", SysinfoLive)
     live("/slidebrowser", SlidebrowserLive)
     get("/download", DownloadController, :download)
     get("/hello", PageController, :hello)
