@@ -31,13 +31,17 @@ defmodule Fliplove.Font.Renderer do
   @type alignment :: :left | :center | :right
   @type vertical_alignment :: :top | :middle | :bottom
 
+  # Emoji variation selectors (VS15 text-style, VS16 emoji-style). They only
+  # select a presentation style, so they carry no glyph of their own.
+  @variation_selectors [0xFE0E, 0xFE0F]
+
   @doc """
   Renders text into a new bitmap that is exactly the size needed.
   Returns a bitmap sized to fit the rendered text. Returns an empty 0x0 bitmap for empty text.
   """
   def create_text(font, text) when is_binary(text) do
     # Logger.debug("Creating text bitmap for: #{text}")
-    create_text(font, String.to_charlist(text))
+    create_text(font, text_to_codepoints(text))
   end
 
   def create_text(_font, []), do: Bitmap.new(0, 0)
@@ -102,6 +106,27 @@ defmodule Fliplove.Font.Renderer do
       # Logger.debug("Final bitmap after overlay: #{inspect(result)}")
       # Logger.debug("Final bitmap dimensions: #{result.width}x#{result.height}, baseline_y: #{result.baseline_y}")
       result
+    end
+  end
+
+  # Converts a string into one codepoint per grapheme cluster, so that glyphs
+  # are looked up per visible character rather than per raw codepoint. Emoji
+  # variation selectors are stripped (e.g. "❤️" becomes just U+2764), and
+  # complex clusters (ZWJ sequences, skin-tone modifiers, flags) collapse to
+  # their first codepoint so an unsupported emoji renders as a single fallback
+  # glyph instead of several.
+  defp text_to_codepoints(text) do
+    text
+    |> String.graphemes()
+    |> Enum.map(&grapheme_to_codepoint/1)
+  end
+
+  defp grapheme_to_codepoint(grapheme) do
+    codepoints = String.to_charlist(grapheme)
+
+    case Enum.reject(codepoints, &(&1 in @variation_selectors)) do
+      [codepoint | _] -> codepoint
+      [] -> hd(codepoints)
     end
   end
 

@@ -20,7 +20,10 @@ defmodule Fliplove.Font.Fonts.Flipdot do
       slant: "R",
       pixel_size: 7
     },
-    characters: %{
+    characters:
+      Fliplove.Font.Fonts.Emoji.characters()
+      |> Map.merge(Fliplove.Font.Fonts.Invaders.characters())
+      |> Map.merge(%{
       0 => %{
         name: "defaultchar",
         bitmap:
@@ -1754,100 +1757,99 @@ defmodule Fliplove.Font.Fonts.Flipdot do
       # SPACE INVADERS
 
       ?á => %{
-        name: "crab_invader_0",
+        name: "a with acute",
         bitmap:
           defbitmap do
-            "  X     X  "
-            "   X   X   "
-            "  XXXXXXX  "
-            " XX XXX XX "
-            "XXXXXXXXXXX"
-            "X XXXXXXX X"
-            "X X     X X"
-            "   XX XX   "
+            "   X "
+            "  X  "
+            "     "
+            " XXX "
+            "    X"
+            " XXXX"
+            "X   X"
+            " XXXX"
           end
       },
       ?à => %{
-        name: "crab_invader_1",
+        name: "a with grave",
         bitmap:
           defbitmap do
-            "  X     X  "
-            "X  X   X  X"
-            "X XXXXXXX X"
-            "XXX XXX XXX"
-            "XXXXXXXXXXX"
-            " XXXXXXXXX "
-            "  X     X  "
-            " X       X "
+            " X   "
+            "  X  "
+            "     "
+            " XXX "
+            "    X"
+            " XXXX"
+            "X   X"
+            " XXXX"
           end
       },
       ?í => %{
-        name: "squid_invader_0",
+        name: "i with acute",
         bitmap:
           defbitmap do
-            "   XX   "
-            "  XXXX  "
-            " XXXXXX "
-            "XX XX XX"
-            "XXXXXXXX"
-            "  X  X  "
-            " X XX X "
-            "X X  X X"
+            " X"
+            "X "
+            "  "
+            "X "
+            "X "
+            "X "
+            "X "
           end
       },
       ?ì => %{
-        name: "squid_invader_1",
+        name: "i with grave",
         bitmap:
           defbitmap do
-            "   XX   "
-            "  XXXX  "
-            " XXXXXX "
-            "XX XX XX"
-            "XXXXXXXX"
-            " X XX X "
-            "X      X"
-            " X    X "
+            "X "
+            " X"
+            "  "
+            " X"
+            " X"
+            " X"
+            " X"
           end
       },
       ?ó => %{
-        name: "octopus_invader_0",
+        name: "o with acute",
         bitmap:
           defbitmap do
-            "    XXXX    "
-            " XXXXXXXXXX "
-            "XXXXXXXXXXXX"
-            "XXX  XX  XXX"
-            "XXXXXXXXXXXX"
-            "   XX  XX   "
-            "  XX XX XX  "
-            "XX        XX"
+            "   X "
+            "  X  "
+            "     "
+            " XXX "
+            "X   X"
+            "X   X"
+            "X   X"
+            " XXX "
           end
       },
       ?ò => %{
-        name: "octopus_invader_1",
+        name: "o with grave",
         bitmap:
           defbitmap do
-            "    XXXX    "
-            " XXXXXXXXXX "
-            "XXXXXXXXXXXX"
-            "XXX  XX  XXX"
-            "XXXXXXXXXXXX"
-            "  XXX  XXX  "
-            " XX  XX  XX "
-            "  XX    XX  "
+            " X   "
+            "  X  "
+            "     "
+            " XXX "
+            "X   X"
+            "X   X"
+            "X   X"
+            " XXX "
           end
       },
       ?å => %{
-        name: "invader_ufo",
+        name: "a with ring above",
         bitmap:
           defbitmap do
-            "     XXXXXX     "
-            "   XXXXXXXXXX   "
-            "  XXXXXXXXXXXX  "
-            " XX XX XX XX XX "
-            "XXXXXXXXXXXXXXXX"
-            "  XXX  XX   XXX "
-            "   X         X  "
+            "  X  "
+            " X X "
+            "  X  "
+            " XXX "
+            "    X"
+            " XXXX"
+            "X   X"
+            " XXXX"
           end
       },
       0xF72E => %{
@@ -2000,8 +2002,302 @@ defmodule Fliplove.Font.Fonts.Flipdot do
             " X XXX X "
             "  XXXXX  "
           end
+      },
+      ?é => %{
+        name: "e with acute",
+        bitmap:
+          defbitmap do
+            "   X "
+            "  X  "
+            "     "
+            " XXX "
+            "X   X"
+            "XXXXX"
+            "X    "
+            " XXX "
+          end
+      },
+      ?è => %{
+        name: "e with grave",
+        bitmap:
+          defbitmap do
+            " X   "
+            "  X  "
+            "     "
+            " XXX "
+            "X   X"
+            "XXXXX"
+            "X    "
+            " XXX "
+          end
+      },
+      ?ê => %{
+        name: "e with circumflex",
+        bitmap:
+          defbitmap do
+            "  X  "
+            " X X "
+            "     "
+            " XXX "
+            "X   X"
+            "XXXXX"
+            "X    "
+            " XXX "
+          end
+      },
+      ?ë => %{
+        name: "e with diaresis",
+        bitmap:
+          defbitmap do
+            " X X "
+            "     "
+            " XXX "
+            "X   X"
+            "XXXXX"
+            "X    "
+            " XXX "
+          end
+      },
+      ?ú => %{
+        name: "u with acute",
+        bitmap:
+          defbitmap do
+            "   X "
+            "  X  "
+            "     "
+            "X   X"
+            "X   X"
+            "X   X"
+            "X   X"
+            " XXX "
+          end
+      },
+      ?ù => %{
+        name: "u with grave",
+        bitmap:
+          defbitmap do
+            " X   "
+            "  X  "
+            "     "
+            "X   X"
+            "X   X"
+            "X   X"
+            "X   X"
+            " XXX "
+          end
+      },
+      ?ñ => %{
+        name: "n with tilde",
+        bitmap:
+          defbitmap do
+            " X X"
+            "X X "
+            "    "
+            "XXX "
+            "X  X"
+            "X  X"
+            "X  X"
+            "X  X"
+          end
+      },
+      ?ç => %{
+        name: "c with cedilla",
+        bitmap:
+          defbitmap baseline_y: -2 do
+            " XXXX"
+            "X    "
+            "X    "
+            "X    "
+            " XXXX"
+            "  X  "
+            " XX  "
+          end
+      },
+      0x2013 => %{
+        name: "en dash",
+        bitmap:
+          defbitmap do
+            "      "
+            "      "
+            "      "
+            "XXXXXX"
+            "      "
+            "      "
+            "      "
+          end
+      },
+      0x2014 => %{
+        name: "em dash",
+        bitmap:
+          defbitmap do
+            "         "
+            "         "
+            "         "
+            "XXXXXXXXX"
+            "         "
+            "         "
+            "         "
+          end
+      },
+      0x2212 => %{
+        name: "minus sign",
+        bitmap:
+          defbitmap do
+            "     "
+            "     "
+            "     "
+            "XXXXX"
+            "     "
+            "     "
+            "     "
+          end
+      },
+      0x2026 => %{
+        name: "horizontal ellipsis",
+        bitmap:
+          defbitmap do
+            "X X X"
+          end
+      },
+      0x2018 => %{
+        name: "left single quotation mark",
+        bitmap:
+          defbitmap do
+            " X"
+            "XX"
+            "  "
+            "  "
+            "  "
+            "  "
+            "  "
+          end
+      },
+      0x2019 => %{
+        name: "right single quotation mark",
+        bitmap:
+          defbitmap do
+            "XX"
+            " X"
+            "  "
+            "  "
+            "  "
+            "  "
+            "  "
+          end
+      },
+      0x201C => %{
+        name: "left double quotation mark",
+        bitmap:
+          defbitmap do
+            " X  X"
+            "XX XX"
+            "     "
+            "     "
+            "     "
+            "     "
+            "     "
+          end
+      },
+      0x201D => %{
+        name: "right double quotation mark",
+        bitmap:
+          defbitmap do
+            "XX XX"
+            " X  X"
+            "     "
+            "     "
+            "     "
+            "     "
+            "     "
+          end
+      },
+      0x201E => %{
+        name: "double low-9 quotation mark",
+        bitmap:
+          defbitmap baseline_y: -1 do
+            "XX XX"
+            " X  X"
+          end
+      },
+      ?× => %{
+        name: "multiplication sign",
+        bitmap:
+          defbitmap do
+            "   "
+            "   "
+            "X X"
+            " X "
+            "X X"
+            "   "
+            "   "
+          end
+      },
+      ?÷ => %{
+        name: "division sign",
+        bitmap:
+          defbitmap do
+            "     "
+            "  X  "
+            "     "
+            "XXXXX"
+            "     "
+            "  X  "
+            "     "
+          end
+      },
+      ?← => %{
+        name: "leftwards arrow",
+        bitmap:
+          defbitmap do
+            "     "
+            "  X  "
+            " X   "
+            "XXXXX"
+            " X   "
+            "  X  "
+            "     "
+          end
+      },
+      ?↑ => %{
+        name: "upwards arrow",
+        bitmap:
+          defbitmap do
+            "  X  "
+            " XXX "
+            "XXXXX"
+            "  X  "
+            "  X  "
+            "  X  "
+            "  X  "
+          end
+      },
+      ?→ => %{
+        name: "rightwards arrow",
+        bitmap:
+          defbitmap do
+            "     "
+            "  X  "
+            "   X "
+            "XXXXX"
+            "   X "
+            "  X  "
+            "     "
+          end
+      },
+      ?↓ => %{
+        name: "downwards arrow",
+        bitmap:
+          defbitmap do
+            "  X  "
+            "  X  "
+            "  X  "
+            "  X  "
+            "XXXXX"
+            " XXX "
+            "  X  "
+          end
       }
-    }
+    })
   }
 
   def get, do: @font

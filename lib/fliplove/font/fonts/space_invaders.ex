@@ -19,7 +19,7 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
       slant: "R",
       pixel_size: 7
     },
-    characters: %{
+    characters: Map.merge(Fliplove.Font.Fonts.Invaders.characters(), %{
       0 => %{
         encoding: 0,
         name: "defaultchar",
@@ -1669,115 +1669,8 @@ defmodule Fliplove.Font.Fonts.SpaceInvaders do
             "X   X"
             " XXX "
           end
-      },
-
-      # SPACE INVADERS
-
-      ?á => %{
-        encoding: ?á,
-        name: "crab_invader_0",
-        bitmap:
-          defbitmap do
-            "  X     X  "
-            "   X   X   "
-            "  XXXXXXX  "
-            " XX XXX XX "
-            "XXXXXXXXXXX"
-            "X XXXXXXX X"
-            "X X     X X"
-            "   XX XX   "
-          end
-      },
-      ?à => %{
-        encoding: ?à,
-        name: "crab_invader_1",
-        bitmap:
-          defbitmap do
-            "  X     X  "
-            "X  X   X  X"
-            "X XXXXXXX X"
-            "XXX XXX XXX"
-            "XXXXXXXXXXX"
-            " XXXXXXXXX "
-            "  X     X  "
-            " X       X "
-          end
-      },
-      ?í => %{
-        encoding: ?ì,
-        name: "squid_invader_0",
-        bitmap:
-          defbitmap do
-            "   XX   "
-            "  XXXX  "
-            " XXXXXX "
-            "XX XX XX"
-            "XXXXXXXX"
-            "  X  X  "
-            " X XX X "
-            "X X  X X"
-          end
-      },
-      ?ì => %{
-        encoding: ?ì,
-        name: "squid_invader_1",
-        bitmap:
-          defbitmap do
-            "   XX   "
-            "  XXXX  "
-            " XXXXXX "
-            "XX XX XX"
-            "XXXXXXXX"
-            " X XX X "
-            "X      X"
-            " X    X "
-          end
-      },
-      ?ó => %{
-        encoding: ?ó,
-        name: "octopus_invader_0",
-        bitmap:
-          defbitmap do
-            "    XXXX    "
-            " XXXXXXXXXX "
-            "XXXXXXXXXXXX"
-            "XXX  XX  XXX"
-            "XXXXXXXXXXXX"
-            "   XX  XX   "
-            "  XX XX XX  "
-            "XX        XX"
-          end
-      },
-      ?ò => %{
-        encoding: ?ò,
-        name: "octopus_invader_1",
-        bitmap:
-          defbitmap do
-            "    XXXX    "
-            " XXXXXXXXXX "
-            "XXXXXXXXXXXX"
-            "XXX  XX  XXX"
-            "XXXXXXXXXXXX"
-            "  XXX  XXX  "
-            " XX  XX  XX "
-            "  XX    XX  "
-          end
-      },
-      ?å => %{
-        encoding: ?å,
-        name: "invader_ufo",
-        bitmap:
-          defbitmap do
-            "     XXXXXX     "
-            "   XXXXXXXXXX   "
-            "  XXXXXXXXXXXX  "
-            " XX XX XX XX XX "
-            "XXXXXXXXXXXXXXXX"
-            "  XXX  XX   XXX "
-            "   X         X  "
-          end
       }
-    }
+    })
   }
 
   def get, do: @font

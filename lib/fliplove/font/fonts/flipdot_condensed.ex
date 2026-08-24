@@ -19,7 +19,10 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
       slant: "R",
       pixel_size: 7
     },
-    characters: %{
+    characters:
+      Fliplove.Font.Fonts.Emoji.characters()
+      |> Map.merge(Fliplove.Font.Fonts.Invaders.characters())
+      |> Map.merge(%{
       0 => %{
         name: "defaultchar",
         bitmap:
@@ -1747,8 +1750,398 @@ defmodule Fliplove.Font.Fonts.FlipdotCondensed do
             "X X"
             " X "
           end
+      },
+      ?á => %{
+        name: "a with acute",
+        bitmap:
+          defbitmap do
+            "  X"
+            " X "
+            "   "
+            "XX "
+            "  X"
+            " XX"
+            "X X"
+            "XXX"
+          end
+      },
+      ?à => %{
+        name: "a with grave",
+        bitmap:
+          defbitmap do
+            "X  "
+            " X "
+            "   "
+            "XX "
+            "  X"
+            " XX"
+            "X X"
+            "XXX"
+          end
+      },
+      ?í => %{
+        name: "i with acute",
+        bitmap:
+          defbitmap do
+            " X"
+            "X "
+            "  "
+            "X "
+            "X "
+            "X "
+            "X "
+          end
+      },
+      ?ì => %{
+        name: "i with grave",
+        bitmap:
+          defbitmap do
+            "X "
+            " X"
+            "  "
+            " X"
+            " X"
+            " X"
+            " X"
+          end
+      },
+      ?ó => %{
+        name: "o with acute",
+        bitmap:
+          defbitmap do
+            "  X"
+            " X "
+            "   "
+            " X "
+            "X X"
+            "X X"
+            "X X"
+            " X "
+          end
+      },
+      ?ò => %{
+        name: "o with grave",
+        bitmap:
+          defbitmap do
+            "X  "
+            " X "
+            "   "
+            " X "
+            "X X"
+            "X X"
+            "X X"
+            " X "
+          end
+      },
+      ?å => %{
+        name: "a with ring above",
+        bitmap:
+          defbitmap do
+            " X "
+            "X X"
+            " X "
+            "XX "
+            "  X"
+            " XX"
+            "X X"
+            "XXX"
+          end
+      },
+      ?é => %{
+        name: "e with acute",
+        bitmap:
+          defbitmap do
+            "  X"
+            " X "
+            "   "
+            " X "
+            "X X"
+            "XXX"
+            "X  "
+            " XX"
+          end
+      },
+      ?è => %{
+        name: "e with grave",
+        bitmap:
+          defbitmap do
+            "X  "
+            " X "
+            "   "
+            " X "
+            "X X"
+            "XXX"
+            "X  "
+            " XX"
+          end
+      },
+      ?ê => %{
+        name: "e with circumflex",
+        bitmap:
+          defbitmap do
+            " X "
+            "X X"
+            "   "
+            " X "
+            "X X"
+            "XXX"
+            "X  "
+            " XX"
+          end
+      },
+      ?ë => %{
+        name: "e with diaresis",
+        bitmap:
+          defbitmap do
+            "X X"
+            "   "
+            " X "
+            "X X"
+            "XXX"
+            "X  "
+            " XX"
+          end
+      },
+      ?ú => %{
+        name: "u with acute",
+        bitmap:
+          defbitmap do
+            "  X"
+            " X "
+            "   "
+            "X X"
+            "X X"
+            "X X"
+            "X X"
+            " XX"
+          end
+      },
+      ?ù => %{
+        name: "u with grave",
+        bitmap:
+          defbitmap do
+            "X  "
+            " X "
+            "   "
+            "X X"
+            "X X"
+            "X X"
+            "X X"
+            " XX"
+          end
+      },
+      ?ñ => %{
+        name: "n with tilde",
+        bitmap:
+          defbitmap do
+            " XX"
+            "XX "
+            "   "
+            "XX "
+            "X X"
+            "X X"
+            "X X"
+            "X X"
+          end
+      },
+      ?ç => %{
+        name: "c with cedilla",
+        bitmap:
+          defbitmap baseline_y: -2 do
+            " XX"
+            "X  "
+            "X  "
+            "X  "
+            " XX"
+            " X "
+            "XX "
+          end
+      },
+      0x2013 => %{
+        name: "en dash",
+        bitmap:
+          defbitmap do
+            "    "
+            "    "
+            "    "
+            "XXXX"
+            "    "
+            "    "
+            "    "
+          end
+      },
+      0x2014 => %{
+        name: "em dash",
+        bitmap:
+          defbitmap do
+            "      "
+            "      "
+            "      "
+            "XXXXXX"
+            "      "
+            "      "
+            "      "
+          end
+      },
+      0x2212 => %{
+        name: "minus sign",
+        bitmap:
+          defbitmap do
+            "   "
+            "   "
+            "   "
+            "XXX"
+            "   "
+            "   "
+            "   "
+          end
+      },
+      0x2026 => %{
+        name: "horizontal ellipsis",
+        bitmap:
+          defbitmap do
+            "X X X"
+          end
+      },
+      0x2018 => %{
+        name: "left single quotation mark",
+        bitmap:
+          defbitmap do
+            " X"
+            "XX"
+            "  "
+            "  "
+            "  "
+            "  "
+            "  "
+          end
+      },
+      0x2019 => %{
+        name: "right single quotation mark",
+        bitmap:
+          defbitmap do
+            "XX"
+            " X"
+            "  "
+            "  "
+            "  "
+            "  "
+            "  "
+          end
+      },
+      0x201C => %{
+        name: "left double quotation mark",
+        bitmap:
+          defbitmap do
+            " X  X"
+            "XX XX"
+            "     "
+            "     "
+            "     "
+            "     "
+            "     "
+          end
+      },
+      0x201D => %{
+        name: "right double quotation mark",
+        bitmap:
+          defbitmap do
+            "XX XX"
+            " X  X"
+            "     "
+            "     "
+            "     "
+            "     "
+            "     "
+          end
+      },
+      0x201E => %{
+        name: "double low-9 quotation mark",
+        bitmap:
+          defbitmap baseline_y: -1 do
+            "XX XX"
+            " X  X"
+          end
+      },
+      ?× => %{
+        name: "multiplication sign",
+        bitmap:
+          defbitmap do
+            "   "
+            "   "
+            "X X"
+            " X "
+            "X X"
+            "   "
+            "   "
+          end
+      },
+      ?÷ => %{
+        name: "division sign",
+        bitmap:
+          defbitmap do
+            "   "
+            " X "
+            "   "
+            "XXX"
+            "   "
+            " X "
+            "   "
+          end
+      },
+      ?← => %{
+        name: "leftwards arrow",
+        bitmap:
+          defbitmap do
+            "   "
+            " X "
+            "X  "
+            "XXX"
+            "X  "
+            " X "
+            "   "
+          end
+      },
+      ?↑ => %{
+        name: "upwards arrow",
+        bitmap:
+          defbitmap do
+            " X "
+            "XXX"
+            " X "
+            " X "
+            " X "
+            " X "
+            " X "
+          end
+      },
+      ?→ => %{
+        name: "rightwards arrow",
+        bitmap:
+          defbitmap do
+            "   "
+            " X "
+            "  X"
+            "XXX"
+            "  X"
+            " X "
+            "   "
+          end
+      },
+      ?↓ => %{
+        name: "downwards arrow",
+        bitmap:
+          defbitmap do
+            " X "
+            " X "
+            " X "
+            " X "
+            " X "
+            "XXX"
+            " X "
+          end
       }
-    }
+    })
   }
 
   def get, do: @font
