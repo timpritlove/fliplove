@@ -63,7 +63,12 @@ defmodule Fliplove.Driver.FluepdotUsb do
     :last_sent,
     connected: false,
     ready: false,
+    # true once the first prompt of the current connection has been seen;
+    # used to log connection recovery at info level exactly once
+    seen_prompt: false,
     prompt_retries: 0,
+    # consecutive failed :try_connect attempts, for log throttling
+    connect_retries: 0,
     buffer: "",
     log_buffer: "",
     # entries are {:display, cmd} | {:query, cmd, tag}
@@ -141,9 +146,18 @@ defmodule Fliplove.Driver.FluepdotUsb do
         end
 
       {:error, reason} ->
-        Logger.debug("USB display not available (#{inspect(reason)}), retrying in #{@retry_interval}ms")
+        retries = state.connect_retries + 1
+        message = "USB device not available (#{inspect(reason)}), retrying every #{div(@retry_interval, 1000)} s"
+
+        # First failure and roughly once a minute at info level, the rest at debug
+        if retries == 1 or rem(retries, 12) == 0 do
+          Logger.info(message <> " (attempt #{retries})")
+        else
+          Logger.debug(message <> " (attempt #{retries})")
+        end
+
         Process.send_after(self(), :try_connect, @retry_interval)
-        {:noreply, disconnected_state(state)}
+        {:noreply, %{disconnected_state(state) | connect_retries: retries}}
     end
   end
 
@@ -240,10 +254,10 @@ defmodule Fliplove.Driver.FluepdotUsb do
 
         Phoenix.PubSub.broadcast(Fliplove.PubSub, @pubsub_topic, {:usb_driver_state, :ready})
 
-        if state.connected do
+        if state.seen_prompt do
           Logger.debug("USB prompt detected, device ready")
         else
-          Logger.info("USB device ready (first prompt received)")
+          Logger.info("USB device ready (prompt received)")
         end
 
         new_state = %{
@@ -251,6 +265,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
           | buffer: "",
             log_buffer: remaining_log_buffer,
             ready: true,
+            seen_prompt: true,
             last_sent: nil,
             prompt_retries: 0
         }
@@ -299,7 +314,15 @@ defmodule Fliplove.Driver.FluepdotUsb do
       Process.send_after(self(), :try_connect, @retry_interval)
       {:noreply, disconnected_state(state)}
     else
-      Logger.debug("No prompt received (attempt #{retries}/#{@max_prompt_retries}), sending newline")
+      message = "No prompt received (attempt #{retries}/#{@max_prompt_retries}), sending newline"
+
+      # Surface progress at info level every 5th attempt so a long wait
+      # (device rebooting, stale port) is visible in production logs
+      if rem(retries, 5) == 0 do
+        Logger.info(message)
+      else
+        Logger.debug(message)
+      end
 
       case uart_write(state.uart, "\n") do
         :ok ->
@@ -395,9 +418,11 @@ defmodule Fliplove.Driver.FluepdotUsb do
           connected: true,
           counter: 0,
           ready: false,
+          seen_prompt: false,
           buffer: "",
           log_buffer: "",
-          prompt_retries: 0
+          prompt_retries: 0,
+          connect_retries: 0
       }
 
       init_commands = [
@@ -481,6 +506,7 @@ defmodule Fliplove.Driver.FluepdotUsb do
       state
       | connected: false,
         ready: false,
+        seen_prompt: false,
         uart: nil,
         buffer: "",
         log_buffer: "",
