@@ -25,7 +25,7 @@ defmodule Fliplove.TelegramBot do
 
     case Fliplove.Telegram.Api.request(key, "getMe") do
       {:ok, me} ->
-        Logger.info("Bot successfully self-identified: #{me["username"]}")
+        Logger.info("Telegram bot started as @#{me["username"]}, polling for updates (#{access_summary()})")
 
         Fliplove.Telegram.Handler.register_commands(key)
 
@@ -40,7 +40,7 @@ defmodule Fliplove.TelegramBot do
         {:ok, state}
 
       error ->
-        Logger.error("Bot failed to self-identify: #{inspect(error)}")
+        Logger.error("Telegram bot failed to start (getMe): #{inspect(error)}")
         # Return :ignore to terminate this GenServer without crashing the supervisor
         :ignore
     end
@@ -68,7 +68,7 @@ defmodule Fliplove.TelegramBot do
           %{state | last_seen: last_seen}
 
         {:error, reason} ->
-          Logger.warning("Bot: Can't get updates: #{inspect(reason)} — retrying in #{@retry_delay_ms}ms")
+          Logger.warning("Telegram bot: can't get updates: #{inspect(reason)} — retrying in #{@retry_delay_ms}ms")
           next_loop(@retry_delay_ms)
           state
       end
@@ -98,9 +98,16 @@ defmodule Fliplove.TelegramBot do
   defp dispatch(key, update) do
     Fliplove.Telegram.Handler.handle_update(key, update)
   rescue
-    e -> Logger.error("Bot: handler failed: #{Exception.message(e)}")
+    e -> Logger.error("Telegram bot: handler failed: #{Exception.message(e)}")
   catch
-    :exit, reason -> Logger.error("Bot: handler exited: #{inspect(reason)}")
+    :exit, reason -> Logger.error("Telegram bot: handler exited: #{inspect(reason)}")
+  end
+
+  defp access_summary do
+    case Fliplove.Telegram.Handler.allowed_users() do
+      nil -> "open to all users"
+      users -> "restricted to #{length(users)} allowed user(s)"
+    end
   end
 
   def topic, do: @topic

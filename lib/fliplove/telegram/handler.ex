@@ -241,7 +241,11 @@ defmodule Fliplove.Telegram.Handler do
     end
   end
 
-  defp allowed_users do
+  @doc """
+  Returns the list of allowed usernames/user IDs from FLIPLOVE_TELEGRAM_ALLOWED_USERS,
+  or nil when access is not restricted.
+  """
+  def allowed_users do
     with value when is_binary(value) <- System.get_env("FLIPLOVE_TELEGRAM_ALLOWED_USERS"),
          [_ | _] = users <-
            value
