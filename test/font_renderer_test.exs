@@ -63,6 +63,45 @@ defmodule Fliplove.Font.RendererTest do
       assert family.width == fallback.width
     end
 
+    test "color heart variants render like the standard heart", %{font: font} do
+      heart = Renderer.create_text(font, "❤")
+
+      color_hearts = [0x1F9E1, 0x1F49B, 0x1F49A, 0x1F499, 0x1F49C, 0x1F90E, 0x1F5A4, 0x1FA77, 0x1FA75, 0x1FA76]
+      decorated_hearts = [0x1F497, 0x1F493, 0x1F496, 0x1F498, 0x1F49D, 0x1F49F]
+
+      for codepoint <- color_hearts ++ decorated_hearts do
+        assert Renderer.create_text(font, <<codepoint::utf8>>) == heart,
+               "0x#{Integer.to_string(codepoint, 16)} should render like the standard heart"
+      end
+    end
+
+    test "white and broken hearts have their own glyphs", %{font: font} do
+      heart = Renderer.create_text(font, "❤")
+
+      white = Renderer.create_text(font, "🤍")
+      broken = Renderer.create_text(font, "💔")
+
+      refute white == heart
+      refute broken == heart
+      assert white == Renderer.create_text(font, "♡")
+    end
+
+    test "heart on fire ZWJ sequence renders as its own glyph", %{font: font} do
+      # ❤️‍🔥 is U+2764, VS16, ZWJ, U+1F525
+      heart_on_fire = <<0x2764::utf8, 0xFE0F::utf8, 0x200D::utf8, 0x1F525::utf8>>
+      burning = Renderer.create_text(font, heart_on_fire)
+
+      assert burning == Renderer.create_text(font, [0xE010])
+      refute burning == Renderer.create_text(font, "❤")
+    end
+
+    test "unknown ZWJ sequence still falls back to its first codepoint", %{font: font} do
+      # ❤ joined with something we have no ligature for renders the plain heart
+      sequence = <<0x2764::utf8, 0x200D::utf8, 0x1F9E1::utf8>>
+
+      assert Renderer.create_text(font, sequence) == Renderer.create_text(font, "❤")
+    end
+
     test "combining accents do not produce spurious fallback glyphs", %{font: font} do
       # "a" followed by combining acute accent (U+0301) is one grapheme; the
       # cluster collapses to its base letter

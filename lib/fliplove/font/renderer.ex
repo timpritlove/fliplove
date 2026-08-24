@@ -25,6 +25,7 @@ defmodule Fliplove.Font.Renderer do
   """
   alias Fliplove.Bitmap
   alias Fliplove.Font
+  alias Fliplove.Font.Fonts.Emoji
   alias Fliplove.Font.Kerning
   require Logger
 
@@ -35,13 +36,16 @@ defmodule Fliplove.Font.Renderer do
   # select a presentation style, so they carry no glyph of their own.
   @variation_selectors [0xFE0E, 0xFE0F]
 
+  # Zero-width joiner, the glue in emoji sequences like ❤️‍🔥
+  @zero_width_joiner 0x200D
+
   @doc """
   Renders text into a new bitmap that is exactly the size needed.
   Returns a bitmap sized to fit the rendered text. Returns an empty 0x0 bitmap for empty text.
   """
   def create_text(font, text) when is_binary(text) do
     # Logger.debug("Creating text bitmap for: #{text}")
-    create_text(font, text_to_codepoints(text))
+    create_text(font, text_to_codepoints(text, font))
   end
 
   def create_text(_font, []), do: Bitmap.new(0, 0)
@@ -111,22 +115,35 @@ defmodule Fliplove.Font.Renderer do
 
   # Converts a string into one codepoint per grapheme cluster, so that glyphs
   # are looked up per visible character rather than per raw codepoint. Emoji
-  # variation selectors are stripped (e.g. "❤️" becomes just U+2764), and
-  # complex clusters (ZWJ sequences, skin-tone modifiers, flags) collapse to
-  # their first codepoint so an unsupported emoji renders as a single fallback
-  # glyph instead of several.
-  defp text_to_codepoints(text) do
+  # variation selectors are stripped (e.g. "❤️" becomes just U+2764). Known
+  # ZWJ sequences (like ❤️‍🔥) map to their own glyph when the font provides
+  # one; any other complex cluster (skin-tone modifiers, flags, unsupported
+  # sequences) collapses to its first codepoint so an unsupported emoji
+  # renders as a single fallback glyph instead of several.
+  defp text_to_codepoints(text, font) do
     text
     |> String.graphemes()
-    |> Enum.map(&grapheme_to_codepoint/1)
+    |> Enum.map(&grapheme_to_codepoint(&1, font))
   end
 
-  defp grapheme_to_codepoint(grapheme) do
+  defp grapheme_to_codepoint(grapheme, font) do
     codepoints = String.to_charlist(grapheme)
 
-    case Enum.reject(codepoints, &(&1 in @variation_selectors)) do
-      [codepoint | _] -> codepoint
-      [] -> hd(codepoints)
+    case Enum.reject(codepoints, &(&1 in [@zero_width_joiner | @variation_selectors])) do
+      [codepoint] ->
+        codepoint
+
+      [] ->
+        hd(codepoints)
+
+      [first | _] = cluster ->
+        ligature = Map.get(Emoji.zwj_sequences(), cluster)
+
+        if ligature != nil and Font.has_encoding?(font, ligature) do
+          ligature
+        else
+          first
+        end
     end
   end
 
